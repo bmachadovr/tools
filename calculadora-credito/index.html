@@ -3,10 +3,11 @@
 
 <nav class="tool-tabs" aria-label="Ferramentas">
 <button type="button" class="tool-tab active" data-tool="0">Calcular crédito</button>
-<button type="button" class="tool-tab" data-tool="1">Atualizar saldo</button>
-<button type="button" class="tool-tab" data-tool="2">Amortizar</button>
+<button type="button" class="tool-tab" data-tool="1">Simular crédito</button>
+<button type="button" class="tool-tab" data-tool="2">Atualizar saldo</button>
+<button type="button" class="tool-tab" data-tool="3">Amortizar</button>
 </nav>
-<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i></div>
+<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i></div>
 
 <div class="tools-carousel" id="toolsCarousel">
 <section class="tool-panel">
@@ -21,6 +22,8 @@
 <section id="result" class="result embedded hidden" aria-live="polite"><p class="result-label" id="resultLabel"></p><strong id="resultValue"></strong><p id="resultExtra"></p><div class="next"><button type="button" id="sendToUpdate">Usar em Atualizar saldo</button><button type="button" id="showEvolution">Ver evolução</button></div></section>
 <section id="evolution" class="embedded hidden"><div class="section-head"><h3>Evolução estimada</h3><button type="button" class="secondary small" id="hideEvolution">Fechar</button></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Saldo inicial</th><th>Juros</th><th>Amortização</th><th>Parcela</th><th>Saldo final</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>
 </div></section>
+
+<section class="tool-panel"><div class="card tool-card coming-tool"><div class="tool-heading"><h2>Simular crédito</h2><p>Simule uma contratação a partir do valor desejado, taxa e prazo, considerando os custos da operação, especialmente o IOF.</p></div><div class="tool-placeholder"><strong>Próxima ferramenta</strong><span>Calcular a parcela estimada e permitir informar a parcela real oferecida para comparar os valores e identificar divergências, custos adicionais ou uma taxa efetiva diferente.</span></div></div></section>
 
 <section class="tool-panel">
 <div class="card tool-card"><div class="tool-heading"><h2>Atualizar saldo devedor</h2><p>Informe os dados conhecidos do contrato e escolha a data para atualização.</p></div><div class="grid">
