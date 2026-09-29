@@ -4,6 +4,7 @@ import { buildSchedule } from './core/schedule.js';
 import { brl, pct, parseBRNumber } from './utils/currency.js';
 import { updateBalance } from './features/update-balance.js';
 import { simulateCredit } from './features/simulate-credit.js';
+import { amortizeBalance } from './features/amortize-balance.js';
 const $=id=>document.getElementById(id); const form=$('calcForm'); let current=null;
 
 function formatFixed2(input) {
@@ -13,8 +14,8 @@ function formatFixed2(input) {
   if (!digits || /^0+$/.test(digits)) { input.value = ''; return; }
   input.value=(Number(digits)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
-['i','upI','simI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','amPv','amPmt','amExtra'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['i','upI','simI','amI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
 
 function formatDate(input) {
   const digits = input.value.replace(/\D/g, '').slice(0, 8);
@@ -272,3 +273,34 @@ $('clearSimulation').addEventListener('click',()=>{
   $('simulateError').textContent='';$('simulationResult').classList.add('hidden');setSimulationKind('new');
 });
 setSimulationKind('new');
+
+
+function validateAmortization(){
+  const ids=['amPv','amPmt','amN','amI','amExtra'];
+  const ok=ids.every(id=>{const value=parseBRNumber($(id).value);const valid=Number.isFinite(value)&&value>0;updateFieldState(id,valid);return valid;});
+  const pv=parseBRNumber($('amPv').value),extra=parseBRNumber($('amExtra').value);
+  const extraOk=Number.isFinite(extra)&&Number.isFinite(pv)&&extra>0&&extra<pv;
+  if($('amExtra').value.trim()!=='')updateFieldState('amExtra',extraOk);
+  $('amortize').disabled=!(ok&&extraOk);
+}
+['amPv','amPmt','amN','amI','amExtra'].forEach(id=>$(id).addEventListener('input',validateAmortization));
+$('amortizeForm').addEventListener('submit',e=>{
+  e.preventDefault();$('amortizeError').textContent='';$('amortizationResult').classList.add('hidden');
+  try{
+    validateAmortization();if($('amortize').disabled)throw new Error('Preencha os campos essenciais com valores válidos. A amortização deve ser menor que o saldo.');
+    const r=amortizeBalance({principal:parseBRNumber($('amPv').value),currentPayment:parseBRNumber($('amPmt').value),remainingPeriods:parseBRNumber($('amN').value),monthlyRate:parseBRNumber($('amI').value)/100,extraPayment:parseBRNumber($('amExtra').value)});
+    $('amNewBalance').textContent=brl.format(r.newBalance);
+    $('amNewN').textContent=Math.ceil(r.reducedPeriods).toLocaleString('pt-BR')+' parcelas';
+    $('amSavedN').textContent='redução de aproximadamente '+Math.max(0,Math.floor(r.periodsSaved)).toLocaleString('pt-BR')+' parcelas';
+    $('amNewPmt').textContent=brl.format(r.newPayment);
+    $('amSavedPmt').textContent='redução de '+brl.format(r.paymentReduction)+' por parcela';
+    $('amInterestTerm').textContent=brl.format(r.interestSavingTerm);
+    $('amInterestPayment').textContent=brl.format(r.interestSavingPayment);
+    $('amortizationResult').classList.remove('hidden');
+  }catch(err){$('amortizeError').textContent=err.message;}
+});
+$('clearAmortization').addEventListener('click',()=>{
+  $('amortizeForm').reset();['amPv','amPmt','amN','amI','amExtra'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));
+  $('amortizeError').textContent='';$('amortizationResult').classList.add('hidden');validateAmortization();
+});
+validateAmortization();
