@@ -3,6 +3,7 @@ import { payment } from './core/price.js';
 import { buildSchedule } from './core/schedule.js';
 import { brl, pct, parseBRNumber } from './utils/currency.js';
 import { updateBalance } from './features/update-balance.js';
+import { simulateCredit } from './features/simulate-credit.js';
 const $=id=>document.getElementById(id); const form=$('calcForm'); let current=null;
 
 function formatFixed2(input) {
@@ -12,8 +13,8 @@ function formatFixed2(input) {
   if (!digits || /^0+$/.test(digits)) { input.value = ''; return; }
   input.value=(Number(digits)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-['pv','pmt','originalPv','upPv','upPmt'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
-['i','upI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['i','upI','simI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
 
 function formatDate(input) {
   const digits = input.value.replace(/\D/g, '').slice(0, 8);
@@ -38,7 +39,7 @@ function validDate(value) {
   const date = new Date(year, month - 1, day);
   return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
 }
-['due','baseDate','firstDue','upBaseDate','upDue','updateDate'].forEach(id => $(id).addEventListener('input', e => formatDate(e.target)));
+['due','baseDate','firstDue','upBaseDate','upDue','updateDate','simContractDate','simFirstDue'].forEach(id => $(id).addEventListener('input', e => formatDate(e.target)));
 
 function parseDateBR(value) {
   if (!value) return null;
@@ -184,3 +185,74 @@ $('calculateUpdateBalance').addEventListener('click',()=>{
     $('updatedBalanceResult').classList.remove('hidden');
   }catch(err){$('updateError').textContent=err.message;}
 });
+
+let simulationKind='new';
+const kindButtons=[...document.querySelectorAll('.kind-option')];
+function setSimulationKind(kind){
+  simulationKind=kind;
+  const renewal=kind==='renewal';
+  $('simBalanceLabel').classList.toggle('hidden',!renewal);
+  kindButtons.forEach(button=>{
+    const active=button.dataset.kind===kind;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  if(!renewal){$('simBalance').value='';$('simBalance').classList.remove('field-valid','field-invalid');}
+  $('simulationResult').classList.add('hidden');
+  validateSimulation();
+}
+kindButtons.forEach(button=>button.addEventListener('click',()=>setSimulationKind(button.dataset.kind)));
+
+function positiveSimulationField(id){
+  const value=parseBRNumber($(id).value);
+  const valid=Number.isFinite(value)&&value>0;
+  updateFieldState(id,valid);
+  return valid;
+}
+function validateSimulation(){
+  const amountOk=positiveSimulationField('simAmount');
+  const nOk=positiveSimulationField('simN');
+  const rateOk=positiveSimulationField('simI');
+  const balanceOk=simulationKind==='new'||positiveSimulationField('simBalance');
+  for(const id of ['simContractDate','simFirstDue']){
+    const raw=$(id).value.trim(),valid=raw===''||validDate(raw);
+    $(id).classList.toggle('field-valid',raw!==''&&valid);
+    $(id).classList.toggle('field-invalid',raw!==''&&!valid);
+  }
+  $('simulate').disabled=!(amountOk&&nOk&&rateOk&&balanceOk);
+}
+['simAmount','simBalance','simN','simI','simContractDate','simFirstDue'].forEach(id=>$(id).addEventListener('input',validateSimulation));
+
+$('simulateForm').addEventListener('submit',e=>{
+  e.preventDefault(); $('simulateError').textContent=''; $('simulationResult').classList.add('hidden');
+  try{
+    validateSimulation();
+    if($('simulate').disabled)throw new Error('Preencha os campos essenciais com valores válidos.');
+    for(const id of ['simContractDate','simFirstDue'])if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');
+    const contractDate=parseDateBR($('simContractDate').value)??new Date();
+    const firstDue=parseDateBR($('simFirstDue').value)??defaultNextDue(contractDate);
+    if(firstDue<=contractDate)throw new Error('O primeiro vencimento deve ser posterior à data da contratação.');
+    const result=simulateCredit({
+      kind:simulationKind,
+      requestedAmount:parseBRNumber($('simAmount').value),
+      outstandingBalance:simulationKind==='renewal'?parseBRNumber($('simBalance').value):0,
+      periods:parseBRNumber($('simN').value),
+      monthlyRate:parseBRNumber($('simI').value)/100,
+      contractDate,firstDue
+    });
+    $('simPayment').textContent=brl.format(result.payment);
+    $('simFinanced').textContent=brl.format(result.financedAmount);
+    $('simIof').textContent=brl.format(result.iof);
+    $('simReleased').textContent=brl.format(result.requestedAmount);
+    $('simReleasedLabel').textContent=simulationKind==='renewal'?'Valor liberado':'Valor contratado';
+    $('simRenewalStat').classList.toggle('hidden',simulationKind==='new');
+    $('simAssumption').textContent='IOF estimado incluído no valor financiado. Primeiro vencimento em '+formatDateBR(firstDue)+'.';
+    $('simulationResult').classList.remove('hidden');
+  }catch(err){$('simulateError').textContent=err.message;}
+});
+$('clearSimulation').addEventListener('click',()=>{
+  $('simulateForm').reset();
+  ['simAmount','simBalance','simN','simI','simContractDate','simFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));
+  $('simulateError').textContent='';$('simulationResult').classList.add('hidden');setSimulationKind('new');
+});
+setSimulationKind('new');
