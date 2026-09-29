@@ -246,7 +246,9 @@ $('simulateForm').addEventListener('submit',e=>{
     $('simReleased').textContent=brl.format(result.requestedAmount);
     $('simReleasedLabel').textContent=simulationKind==='renewal'?'Valor liberado':'Valor contratado';
     $('simRenewalStat').classList.toggle('hidden',simulationKind==='new');
-    $('simAssumption').textContent='IOF estimado incluído no valor financiado. Primeiro vencimento em '+formatDateBR(firstDue)+'.';
+    $('simAssumption').textContent=simulationKind==='renewal'
+      ? 'IOF estimado sobre o valor novo liberado. Eventual IOF complementar sobre o saldo renovado não está incluído e depende da tributação da operação original. Primeiro vencimento em '+formatDateBR(firstDue)+'.'
+      : 'IOF estimado incluído no valor financiado. Primeiro vencimento em '+formatDateBR(firstDue)+'.';
     $('simulationResult').classList.remove('hidden');
   }catch(err){$('simulateError').textContent=err.message;}
 });
