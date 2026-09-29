@@ -91,13 +91,25 @@ function updateFieldState(id, valid){
 }
 function validateUpdateForm(){
   const requiredNumeric=['upPv','upPmt','upI'];
-  let ok=true;
-  for(const id of requiredNumeric){const v=parseBRNumber($(id).value);const valid=Number.isFinite(v)&&v>0;updateFieldState(id,valid);ok=ok&&valid;}
-  const targetValid=$('updateDate').value!==''&&validDate($('updateDate').value);updateFieldState('updateDate',targetValid);ok=ok&&targetValid;
-  const optionalNumeric=['upN'];for(const id of optionalNumeric){const raw=$(id).value.trim(),v=parseBRNumber(raw);const valid=raw===''||(Number.isFinite(v)&&v>0);$(id).classList.toggle('field-valid',raw!==''&&valid);$(id).classList.toggle('field-invalid',!valid);ok=ok&&valid;}
-  for(const id of ['upBaseDate','upDue']){const raw=$(id).value.trim(),valid=raw===''||validDate(raw);$(id).classList.toggle('field-valid',raw!==''&&valid);$(id).classList.toggle('field-invalid',!valid);ok=ok&&valid;}
-  if(ok&&$('upBaseDate').value){const base=parseDateBR($('upBaseDate').value),target=parseDateBR($('updateDate').value);if(target<base)ok=false;if($('upDue').value&&parseDateBR($('upDue').value)<=base)ok=false;}
-  $('calculateUpdateBalance').disabled=!ok;
+  const numericOk=requiredNumeric.every(id=>{
+    const value=parseBRNumber($(id).value);
+    const valid=Number.isFinite(value)&&value>0;
+    updateFieldState(id,valid);
+    return valid;
+  });
+  const targetValid=$('updateDate').value.trim()!==''&&validDate($('updateDate').value);
+  updateFieldState('updateDate',targetValid);
+
+  // Campos avançados refinam o cálculo, mas não controlam a habilitação do botão.
+  const nRaw=$('upN').value.trim(),n=parseBRNumber(nRaw);
+  $('upN').classList.toggle('field-valid',nRaw!==''&&Number.isFinite(n)&&n>0);
+  $('upN').classList.toggle('field-invalid',nRaw!==''&&!(Number.isFinite(n)&&n>0));
+  for(const id of ['upBaseDate','upDue']){
+    const raw=$(id).value.trim(),valid=raw===''||validDate(raw);
+    $(id).classList.toggle('field-valid',raw!==''&&valid);
+    $(id).classList.toggle('field-invalid',raw!==''&&!valid);
+  }
+  $('calculateUpdateBalance').disabled=!(numericOk&&targetValid);
 }
 function fillUpdateFromCurrent(){
   if(!current)return;
