@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {payment, principal, periods, rate, rateWithFirstPeriod, annualEquivalent} from '../js/core/price.js';
+import {updateBalance} from '../js/features/update-balance.js';
 const near=(a,b,t=1e-8)=>assert.ok(Math.abs(a-b)<t,`${a} != ${b}`);
 const pv=50000,i=.015,n=36,pmt=payment(pv,i,n);
 near(principal(pmt,i,n),pv,1e-6); near(periods(pv,pmt,i),n,1e-8); near(rate(pv,pmt,n),i,1e-10); near(payment(12000,0,12),1000); near(annualEquivalent(.01),Math.pow(1.01,12)-1);
@@ -12,4 +13,10 @@ assert.ok(Math.abs(recovered-contractRate)<1e-7, 'Taxa recuperada divergiu além
 const realCase=rateWithFirstPeriod(11265.12,383.66,87,21);
 near(realCase,.03220067051966365,1e-12);
 assert.equal(Math.round(realCase*10000)/100,3.22);
+const base=new Date(2026,0,1), due=new Date(2026,0,31);
+const upd=updateBalance({principal:12000,monthlyRate:.01,payment:payment(12000,.01,12),periods:12,baseDate:base,nextDue:due,targetDate:new Date(2026,0,31)});
+assert.equal(upd.paid,1); assert.equal(upd.remaining,11); near(upd.balance,11053.815459589805,1e-6);
+const sameDay=updateBalance({principal:12000,monthlyRate:.01,payment:payment(12000,.01,12),periods:12,baseDate:base,nextDue:due,targetDate:base});
+near(sameDay.balance,12000,1e-8); assert.equal(sameDay.paid,0);
+assert.throws(()=>updateBalance({principal:12000,monthlyRate:.01,payment:1000,periods:12,baseDate:base,nextDue:due,targetDate:new Date(2025,11,31)}),/anterior/);
 console.log('OK', {pmt, recoveredRate:rate(pv,pmt,n)});
