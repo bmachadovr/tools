@@ -10,7 +10,29 @@
 <div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i></div>
 
 <div class="tools-carousel" id="toolsCarousel">
-<section class="tool-panel"><div class="card tool-card coming-tool"><div class="tool-heading"><h2>Simular crédito</h2><p>Simule uma contratação a partir do valor desejado, taxa e prazo, considerando os custos da operação, especialmente o IOF.</p></div><div class="tool-placeholder"><strong>Próxima ferramenta</strong><span>Calcular a parcela estimada e permitir informar a parcela real oferecida para comparar os valores e identificar divergências, custos adicionais ou uma taxa efetiva diferente.</span></div></div></section>
+<section class="tool-panel">
+<div class="card tool-card"><div class="tool-heading"><h2>Simular crédito</h2><p>Informe quanto deseja contratar, o prazo e a taxa. O IOF é calculado automaticamente.</p></div>
+<form id="simulateForm" novalidate>
+<div class="credit-kind" role="group" aria-label="Tipo de contratação">
+<button type="button" class="kind-option active" data-kind="new" aria-pressed="true">Novo</button>
+<button type="button" class="kind-option" data-kind="renewal" aria-pressed="false">Renovação</button>
+</div>
+<div class="grid">
+<label>Valor contratado <span>R$</span><input id="simAmount" inputmode="numeric"></label>
+<label id="simBalanceLabel" class="hidden">Saldo devedor <span>R$</span><input id="simBalance" inputmode="numeric"></label>
+<label>Prazo <input id="simN" inputmode="numeric"></label>
+<label>Taxa mensal <span>% a.m.</span><input id="simI" inputmode="numeric"></label>
+</div>
+<details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Informe as datas da contratação para calcular com maior precisão o período até a primeira parcela e o IOF.</p><div class="grid advanced">
+<label>Data da contratação <input id="simContractDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Vencimento da primeira parcela <input id="simFirstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<p class="coming">Se as datas não forem informadas, a contratação será considerada hoje e o primeiro vencimento em 30 dias.</p>
+</div></details>
+<div class="actions"><button type="submit" id="simulate" disabled>Simular</button><button type="button" class="secondary" id="clearSimulation">Limpar</button></div>
+<p id="simulateError" class="error" role="alert"></p>
+</form>
+<section id="simulationResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Parcela estimada</p><strong id="simPayment"></strong><div class="simulation-meta"><div class="balance-stat"><span>Valor financiado</span><b id="simFinanced"></b></div><div class="balance-stat"><span>IOF estimado</span><b id="simIof"></b></div><div class="balance-stat" id="simRenewalStat"><span id="simReleasedLabel">Valor liberado</span><b id="simReleased"></b></div></div><p class="assumption-note" id="simAssumption"></p></section>
+</div></section>
 
 <section class="tool-panel">
 <div class="card tool-card"><div class="tool-heading"><h2>Recalcular crédito</h2><p>Informe três dados financeiros e deixe em branco o que deseja descobrir.</p></div><form id="calcForm" novalidate><div class="grid">
@@ -44,4 +66,4 @@
 
 <section class="tool-panel"><div class="card tool-card coming-tool"><div class="tool-heading"><h2>Amortizar saldo</h2><p>Compare o efeito de uma amortização extraordinária no prazo ou no valor da parcela.</p></div><div class="tool-placeholder"><strong>Próxima ferramenta</strong><span>Vamos construir este módulo na próxima etapa.</span></div></div></section>
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260929-12"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260929-13"></script></body></html>
