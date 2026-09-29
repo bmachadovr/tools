@@ -10,14 +10,14 @@
 <div class="actions"><button type="submit" id="calculate" disabled>Calcular</button><button type="button" class="secondary" id="clear">Limpar</button></div><p id="error" class="error" role="alert"></p></form></section>
 <section id="result" class="result hidden" aria-live="polite"><p class="result-label" id="resultLabel"></p><strong id="resultValue"></strong><p id="resultExtra"></p><div class="next"><button type="button" disabled title="Próxima etapa">Amortizar</button><button type="button" id="openUpdateBalance">Atualizar saldo</button><button type="button" id="showEvolution">Ver evolução</button></div></section>
 <section id="updateBalance" class="card hidden">
-  <div class="section-head"><div><h2>Atualizar saldo devedor</h2><p class="section-copy">Veja a posição do financiamento em outra data.</p></div><button type="button" class="secondary small" id="closeUpdateBalance">Fechar</button></div>
+  <div class="section-head update-head"><div><h2>Atualizar saldo devedor</h2><p class="section-copy">Veja a posição do financiamento em outra data.</p></div><button type="button" class="secondary small" id="closeUpdateBalance">Fechar</button></div>
   <div class="update-form"><label>Data para atualização <input id="updateDate" inputmode="numeric" maxlength="10" autocomplete="off"></label><button type="button" id="calculateUpdateBalance">Atualizar saldo</button></div>
   <p id="updateError" class="error" role="alert"></p>
   <div id="updatedBalanceResult" class="balance-summary hidden">
     <p class="result-label" id="updatedBalanceDate"></p><strong id="updatedBalanceValue"></strong><p class="balance-caption">Saldo devedor estimado</p>
-    <div class="balance-meta"><span><b id="paidPeriods"></b> parcelas transcorridas</span><span><b id="remainingPeriods"></b> restantes</span><span>Próximo vencimento <b id="updatedNextDue"></b></span></div>
-    <p class="assumption-note">✓ Parcelas anteriores consideradas pagas em dia.</p>
+    <div class="balance-meta"><div class="balance-stat"><b id="paidPeriods"></b><span>parcelas transcorridas</span></div><div class="balance-stat"><b id="remainingPeriods"></b><span>parcelas restantes</span></div><div class="balance-stat"><span>Próximo vencimento</span><b id="updatedNextDue"></b></div></div>
+    <p class="assumption-note">Valores em atraso foram desconsiderados.</p>
   </div>
 </section>
 <section id="evolution" class="card hidden"><div class="section-head"><h2>Evolução estimada</h2><button type="button" class="secondary small" id="hideEvolution">Fechar</button></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Saldo inicial</th><th>Juros</th><th>Amortização</th><th>Parcela</th><th>Saldo final</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260929-5"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260929-6"></script></body></html>
