@@ -68,6 +68,20 @@
 <div id="updatedBalanceResult" class="balance-summary hidden"><p class="result-label" id="updatedBalanceDate"></p><strong id="updatedBalanceValue"></strong><p class="balance-caption">Saldo devedor estimado</p><div class="balance-meta"><div class="balance-stat"><b id="paidPeriods"></b><span>parcelas transcorridas</span></div><div class="balance-stat"><b id="remainingPeriods"></b><span>parcelas restantes</span></div><div class="balance-stat"><span>Próximo vencimento</span><b id="updatedNextDue"></b></div></div><p class="assumption-note">Valores em atraso foram desconsiderados.</p></div>
 </div></section>
 
-<section class="tool-panel"><div class="card tool-card coming-tool"><div class="tool-heading"><h2>Amortizar saldo</h2><p>Compare o efeito de uma amortização extraordinária no prazo ou no valor da parcela.</p></div><div class="tool-placeholder"><strong>Próxima ferramenta</strong><span>Vamos construir este módulo na próxima etapa.</span></div></div></section>
+<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Amortizar saldo</h2><p>Compare o efeito de uma amortização extraordinária reduzindo o prazo ou o valor da parcela.</p></div>
+<form id="amortizeForm" novalidate><div class="grid">
+<label>Saldo devedor <span>R$</span><input id="amPv" inputmode="numeric"></label>
+<label>Valor da parcela <span>R$</span><input id="amPmt" inputmode="numeric"></label>
+<label>Parcelas restantes <input id="amN" inputmode="numeric"></label>
+<label>Taxa mensal <span>% a.m.</span><input id="amI" inputmode="numeric"></label>
+<label>Valor a amortizar <span>R$</span><input id="amExtra" inputmode="numeric"></label>
+</div><div class="actions"><button type="submit" id="amortize" disabled>Calcular amortização</button><button type="button" class="secondary" id="clearAmortization">Limpar</button></div><p id="amortizeError" class="error" role="alert"></p></form>
+<section id="amortizationResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Novo saldo devedor</p><strong id="amNewBalance"></strong><div class="simulation-meta">
+<div class="balance-stat"><span>Reduzindo o prazo</span><b id="amNewN"></b><small id="amSavedN"></small></div>
+<div class="balance-stat"><span>Mantendo o prazo</span><b id="amNewPmt"></b><small id="amSavedPmt"></small></div>
+<div class="balance-stat"><span>Economia de juros · prazo</span><b id="amInterestTerm"></b></div>
+<div class="balance-stat"><span>Economia de juros · parcela</span><b id="amInterestPayment"></b></div>
+</div><p class="assumption-note">Estimativa pelo sistema Price, sem tarifas, seguros ou outros eventos do contrato.</p></section>
+</div></section>
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260929-15"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260929-16"></script></body></html>
