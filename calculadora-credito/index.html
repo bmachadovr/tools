@@ -1,23 +1,41 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f7f5"><title>Calculadora de Crédito</title><link rel="stylesheet" href="css/app.css"></head>
-<body><main class="wrap"><header><p class="eyebrow">FINANÇAS</p><h1>Calculadora de Crédito</h1><p class="lead">Informe três dados financeiros e deixe em branco o que deseja descobrir.</p></header>
-<section class="card"><div class="assumption">Price · parcelas mensais · períodos regulares · sem carência</div><form id="calcForm" novalidate><div class="grid">
+<body><main class="wrap"><header><p class="eyebrow">FINANÇAS</p><h1>Calculadora de Crédito</h1><p class="lead">Escolha a ferramenta que precisa. Os dados podem ser reaproveitados entre elas.</p></header>
+
+<nav class="tool-tabs" aria-label="Ferramentas">
+<button type="button" class="tool-tab active" data-tool="0">Calcular crédito</button>
+<button type="button" class="tool-tab" data-tool="1">Atualizar saldo</button>
+<button type="button" class="tool-tab" data-tool="2">Amortizar</button>
+</nav>
+<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i></div>
+
+<div class="tools-carousel" id="toolsCarousel">
+<section class="tool-panel">
+<div class="card tool-card"><div class="tool-heading"><h2>Calcular crédito</h2><p>Informe três dados financeiros e deixe em branco o que deseja descobrir.</p></div><div class="assumption">Price · parcelas mensais · períodos regulares · sem carência</div><form id="calcForm" novalidate><div class="grid">
 <label>Saldo devedor <span>R$</span><input id="pv" inputmode="numeric"></label>
 <label>Valor da parcela <span>R$</span><input id="pmt" inputmode="numeric"></label>
 <label>Parcelas restantes <input id="n" inputmode="decimal"></label>
 <label>Taxa mensal <span>% a.m.</span><input id="i" inputmode="numeric"></label>
 </div>
 <details><summary>Opções avançadas</summary><div class="grid advanced"><label>Data do saldo devedor <input id="baseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label><label>Próximo vencimento <input id="due" inputmode="numeric" maxlength="10" autocomplete="off"></label><label>Primeiro vencimento <input id="firstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label><label>Valor originalmente financiado <span>R$</span><input id="originalPv" inputmode="numeric"></label><label>Quantidade original de parcelas <input id="originalN" inputmode="numeric"></label><p class="coming">Se o próximo vencimento for necessário e não estiver informado, será considerada carência padrão de 30 dias.</p></div></details>
-<div class="actions"><button type="submit" id="calculate" disabled>Calcular</button><button type="button" class="secondary" id="clear">Limpar</button></div><p id="error" class="error" role="alert"></p></form></section>
-<section id="result" class="result hidden" aria-live="polite"><p class="result-label" id="resultLabel"></p><strong id="resultValue"></strong><p id="resultExtra"></p><div class="next"><button type="button" disabled title="Próxima etapa">Amortizar</button><button type="button" id="openUpdateBalance">Atualizar saldo</button><button type="button" id="showEvolution">Ver evolução</button></div></section>
-<section id="updateBalance" class="card hidden">
-  <div class="section-head update-head"><div><h2>Atualizar saldo devedor</h2><p class="section-copy">Veja a posição do financiamento em outra data.</p></div><button type="button" class="secondary small" id="closeUpdateBalance">Fechar</button></div>
-  <div class="update-form"><label>Data para atualização <input id="updateDate" inputmode="numeric" maxlength="10" autocomplete="off"></label><button type="button" id="calculateUpdateBalance">Atualizar saldo</button></div>
-  <p id="updateError" class="error" role="alert"></p>
-  <div id="updatedBalanceResult" class="balance-summary hidden">
-    <p class="result-label" id="updatedBalanceDate"></p><strong id="updatedBalanceValue"></strong><p class="balance-caption">Saldo devedor estimado</p>
-    <div class="balance-meta"><div class="balance-stat"><b id="paidPeriods"></b><span>parcelas transcorridas</span></div><div class="balance-stat"><b id="remainingPeriods"></b><span>parcelas restantes</span></div><div class="balance-stat"><span>Próximo vencimento</span><b id="updatedNextDue"></b></div></div>
-    <p class="assumption-note">Valores em atraso foram desconsiderados.</p>
-  </div>
-</section>
-<section id="evolution" class="card hidden"><div class="section-head"><h2>Evolução estimada</h2><button type="button" class="secondary small" id="hideEvolution">Fechar</button></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Saldo inicial</th><th>Juros</th><th>Amortização</th><th>Parcela</th><th>Saldo final</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260929-6"></script></body></html>
+<div class="actions"><button type="submit" id="calculate" disabled>Calcular</button><button type="button" class="secondary" id="clear">Limpar</button></div><p id="error" class="error" role="alert"></p></form>
+<section id="result" class="result embedded hidden" aria-live="polite"><p class="result-label" id="resultLabel"></p><strong id="resultValue"></strong><p id="resultExtra"></p><div class="next"><button type="button" id="sendToUpdate">Usar em Atualizar saldo</button><button type="button" id="showEvolution">Ver evolução</button></div></section>
+<section id="evolution" class="embedded hidden"><div class="section-head"><h3>Evolução estimada</h3><button type="button" class="secondary small" id="hideEvolution">Fechar</button></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Saldo inicial</th><th>Juros</th><th>Amortização</th><th>Parcela</th><th>Saldo final</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>
+</div></section>
+
+<section class="tool-panel">
+<div class="card tool-card"><div class="tool-heading"><h2>Atualizar saldo devedor</h2><p>Informe os dados conhecidos do contrato e escolha a data para atualização.</p></div><div class="grid">
+<label>Saldo devedor <span>R$</span><input id="upPv" inputmode="numeric"></label>
+<label>Valor da parcela <span>R$</span><input id="upPmt" inputmode="numeric"></label>
+<label>Parcelas restantes <input id="upN" inputmode="decimal"></label>
+<label>Taxa mensal <span>% a.m.</span><input id="upI" inputmode="numeric"></label>
+<label>Data do saldo devedor <input id="upBaseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Próximo vencimento <input id="upDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Data para atualização <input id="updateDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+</div><div class="actions"><button type="button" id="calculateUpdateBalance" disabled>Atualizar saldo</button><button type="button" class="secondary" id="clearUpdate">Limpar</button></div>
+<p id="updateError" class="error" role="alert"></p>
+<div id="updatedBalanceResult" class="balance-summary hidden"><p class="result-label" id="updatedBalanceDate"></p><strong id="updatedBalanceValue"></strong><p class="balance-caption">Saldo devedor estimado</p><div class="balance-meta"><div class="balance-stat"><b id="paidPeriods"></b><span>parcelas transcorridas</span></div><div class="balance-stat"><b id="remainingPeriods"></b><span>parcelas restantes</span></div><div class="balance-stat"><span>Próximo vencimento</span><b id="updatedNextDue"></b></div></div><p class="assumption-note">Valores em atraso foram desconsiderados.</p></div>
+</div></section>
+
+<section class="tool-panel"><div class="card tool-card coming-tool"><div class="tool-heading"><h2>Simular amortização</h2><p>Compare o efeito de uma amortização extraordinária no prazo ou no valor da parcela.</p></div><div class="tool-placeholder"><strong>Próxima ferramenta</strong><span>Vamos construir este módulo na próxima etapa.</span></div></div></section>
+</div>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260929-7"></script></body></html>
