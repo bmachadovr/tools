@@ -52,16 +52,17 @@ function read(){const pv=parseBRNumber($('pv').value),pmt=parseBRNumber($('pmt')
   const firstPeriodDays=due ? daysBetween(base,due) : 30;
   if (firstPeriodDays <= 0) throw new Error('O próximo vencimento deve ser posterior à data-base.');
   return{pv,pmt,n,i:rawI===null?null:rawI/100,firstPeriodDays};}
+function essentialFieldState(id) {
+  const raw = $(id).value.trim();
+  if (raw === '') return 'empty';
+  const value = parseBRNumber(raw);
+  return Number.isFinite(value) && value > 0 ? 'valid' : 'invalid';
+}
 function updateCalculateState() {
-  const values = [
-    parseBRNumber($('pv').value),
-    parseBRNumber($('pmt').value),
-    parseBRNumber($('n').value),
-    parseBRNumber($('i').value)
-  ];
-  const validCount = values.filter(v => Number.isFinite(v) && v > 0).length;
-  const filledCount = ['pv','pmt','n','i'].filter(id => $(id).value.trim() !== '').length;
-  $('calculate').disabled = !(filledCount === 3 && validCount === 3);
+  const states = ['pv','pmt','n','i'].map(essentialFieldState);
+  const validCount = states.filter(state => state === 'valid').length;
+  const emptyCount = states.filter(state => state === 'empty').length;
+  $('calculate').disabled = !(validCount === 3 && emptyCount === 1);
 }
 ['pv','pmt','n','i'].forEach(id => $(id).addEventListener('input', updateCalculateState));
 updateCalculateState();
