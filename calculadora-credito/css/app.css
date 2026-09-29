@@ -11,3 +11,7 @@
 @media(max-width:620px){.wrap{overflow:hidden}.tool-tabs{margin-left:-4px;margin-right:-4px;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}.tool-tab{flex:0 0 auto;white-space:nowrap}.tool-dots{display:flex}.tools-carousel{margin-left:-16px;margin-right:-16px;padding:0}.tool-panel{padding:0 16px}.tool-card{margin-top:10px}.tool-heading h2{font-size:1.2rem}}
 
 .precision-help{margin:-5px 0 14px;color:#6b6b67;font-size:.8rem;line-height:1.4;max-width:620px}
+
+.tool-tabs{overflow-x:auto;scrollbar-width:none;scroll-behavior:smooth;justify-content:flex-start}
+.tool-tabs::-webkit-scrollbar{display:none}
+.tool-tab{flex:0 0 auto;min-width:max-content}
