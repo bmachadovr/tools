@@ -111,6 +111,11 @@ function validateUpdateForm(){
   }
   $('calculateUpdateBalance').disabled=!(numericOk&&targetValid);
 }
+['upPv','upPmt','upN','upI','upBaseDate','upDue','updateDate'].forEach(id => {
+  $(id).addEventListener('input', validateUpdateForm);
+});
+validateUpdateForm();
+
 function fillUpdateFromCurrent(){
   if(!current)return;
   $('upPv').value=(current.pv).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
