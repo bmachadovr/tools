@@ -37,7 +37,19 @@ function validDate(value) {
 }
 ['due','baseDate','firstDue'].forEach(id => $(id).addEventListener('input', e => formatDate(e.target)));
 
-function read(){const pv=parseBRNumber($('pv').value),pmt=parseBRNumber($('pmt').value),n=parseBRNumber($('n').value),rawI=parseBRNumber($('i').value);return{pv,pmt,n,i:rawI===null?null:rawI/100};}
+function parseDateBR(value) {
+  if (!value) return null;
+  const [day, month, year] = value.split('/').map(Number);
+  return new Date(year, month - 1, day);
+}
+function daysBetween(start, end) {
+  return Math.round((end - start) / 86400000);
+}
+function read(){const pv=parseBRNumber($('pv').value),pmt=parseBRNumber($('pmt').value),n=parseBRNumber($('n').value),rawI=parseBRNumber($('i').value);const base=parseDateBR($('baseDate').value) ?? new Date();
+  const due=parseDateBR($('due').value);
+  const firstPeriodDays=due ? daysBetween(base,due) : 30;
+  if (firstPeriodDays <= 0) throw new Error('O próximo vencimento deve ser posterior à data-base.');
+  return{pv,pmt,n,i:rawI===null?null:rawI/100,firstPeriodDays};}
 const labels={pv:'Saldo devedor encontrado',pmt:'Parcela encontrada',n:'Prazo encontrado',i:'Taxa encontrada'};
 form.addEventListener('submit',e=>{e.preventDefault();$('error').textContent='';$('evolution').classList.add('hidden');try{for(const id of ['due','baseDate','firstDue']){if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');}const data=read();const r=solve(data);current={...data,[r.key]:r.value};$('resultLabel').textContent=labels[r.key];$('resultValue').textContent=r.key==='pv'||r.key==='pmt'?brl.format(r.value):r.key==='i'?`${r.displayedRate.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}%`:`${r.value.toLocaleString('pt-BR',{maximumFractionDigits:2})} parcelas`;$('resultExtra').textContent=r.key==='i'?`${pct(r.annual,2)} a.a. equivalente`:r.annual!==null?`${pct(r.annual,2)} a.a. equivalente`:'';$('result').classList.remove('hidden');}catch(err){$('result').classList.add('hidden');$('error').textContent=err.message;}});
 $('clear').addEventListener('click',()=>{form.reset();$('result').classList.add('hidden');$('evolution').classList.add('hidden');$('error').textContent='';current=null;});
