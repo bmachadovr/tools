@@ -19,6 +19,15 @@ function formatDate(input) {
   if (digits.length > 4) value += '/' + digits.slice(4, 8);
   input.value = value;
 }
+function addDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+function defaultNextDue(baseDate = new Date()) {
+  return addDays(baseDate, 30);
+}
+
 function validDate(value) {
   if (!value) return true;
   if (!/^\d{2}\/\d{2}\/\d{4}$/.test(value)) return false;
