@@ -90,16 +90,15 @@ function updateFieldState(id, valid){
   $(id).classList.toggle('field-invalid',$(id).value.trim()!==''&&!valid);
 }
 function validateUpdateForm(){
-  const numeric=['upPv','upPmt','upN','upI'];
+  const requiredNumeric=['upPv','upPmt','upI'];
   let ok=true;
-  for(const id of numeric){const v=parseBRNumber($(id).value);const valid=Number.isFinite(v)&&v>0;updateFieldState(id,valid);ok=ok&&valid;}
-  for(const id of ['upBaseDate','upDue','updateDate']){const valid=$(id).value!==''&&validDate($(id).value);updateFieldState(id,valid);ok=ok&&valid;}
-  if(ok){const base=parseDateBR($('upBaseDate').value),due=parseDateBR($('upDue').value),target=parseDateBR($('updateDate').value);ok=due>base&&target>=base;}
+  for(const id of requiredNumeric){const v=parseBRNumber($(id).value);const valid=Number.isFinite(v)&&v>0;updateFieldState(id,valid);ok=ok&&valid;}
+  const targetValid=$('updateDate').value!==''&&validDate($('updateDate').value);updateFieldState('updateDate',targetValid);ok=ok&&targetValid;
+  const optionalNumeric=['upN'];for(const id of optionalNumeric){const raw=$(id).value.trim(),v=parseBRNumber(raw);const valid=raw===''||(Number.isFinite(v)&&v>0);$(id).classList.toggle('field-valid',raw!==''&&valid);$(id).classList.toggle('field-invalid',!valid);ok=ok&&valid;}
+  for(const id of ['upBaseDate','upDue']){const raw=$(id).value.trim(),valid=raw===''||validDate(raw);$(id).classList.toggle('field-valid',raw!==''&&valid);$(id).classList.toggle('field-invalid',!valid);ok=ok&&valid;}
+  if(ok&&$('upBaseDate').value){const base=parseDateBR($('upBaseDate').value),target=parseDateBR($('updateDate').value);if(target<base)ok=false;if($('upDue').value&&parseDateBR($('upDue').value)<=base)ok=false;}
   $('calculateUpdateBalance').disabled=!ok;
 }
-['upPv','upPmt','upN','upI','upBaseDate','upDue','updateDate'].forEach(id=>$(id).addEventListener('input',validateUpdateForm));
-validateUpdateForm();
-
 function fillUpdateFromCurrent(){
   if(!current)return;
   $('upPv').value=(current.pv).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -120,9 +119,9 @@ $('clearUpdate').addEventListener('click',()=>{
 $('calculateUpdateBalance').addEventListener('click',()=>{
   $('updateError').textContent='';$('updatedBalanceResult').classList.add('hidden');
   try{
-    validateUpdateForm(); if($('calculateUpdateBalance').disabled)throw new Error('Preencha todos os dados do contrato com valores válidos.');
-    const principal=parseBRNumber($('upPv').value),pmt=parseBRNumber($('upPmt').value),periods=parseBRNumber($('upN').value),monthlyRate=parseBRNumber($('upI').value)/100;
-    const baseDate=parseDateBR($('upBaseDate').value),nextDue=parseDateBR($('upDue').value),targetDate=parseDateBR($('updateDate').value);
+    validateUpdateForm(); if($('calculateUpdateBalance').disabled)throw new Error('Preencha os campos essenciais com valores válidos.');
+    const principal=parseBRNumber($('upPv').value),pmt=parseBRNumber($('upPmt').value),periods=parseBRNumber($('upN').value)??600,monthlyRate=parseBRNumber($('upI').value)/100;
+    const targetDate=parseDateBR($('updateDate').value),baseDate=parseDateBR($('upBaseDate').value)??new Date(),nextDue=parseDateBR($('upDue').value)??defaultNextDue(baseDate);
     const updated=updateBalance({principal,monthlyRate,payment:pmt,periods,baseDate,nextDue,targetDate});
     $('updatedBalanceDate').textContent='Saldo em '+formatDateBR(targetDate);$('updatedBalanceValue').textContent=brl.format(updated.balance);
     $('paidPeriods').textContent=updated.paid.toLocaleString('pt-BR');$('remainingPeriods').textContent=updated.remaining.toLocaleString('pt-BR');$('updatedNextDue').textContent=formatDateBR(updated.nextDue);
