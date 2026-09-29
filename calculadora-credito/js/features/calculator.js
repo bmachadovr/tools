@@ -7,5 +7,6 @@ export function solve({ pv, pmt, n, i }) {
   if (key === 'pmt') value = payment(pv,i,n);
   if (key === 'n') value = periods(pv,pmt,i);
   if (key === 'i') value = rate(pv,pmt,n);
-  return { key, value, annual: key === 'i' ? annualEquivalent(value) : (i !== null ? annualEquivalent(i) : null) };
+  const displayedRate = key === 'i' ? Math.round((value * 100 + Number.EPSILON) * 100) / 100 : null;
+  return { key, value, displayedRate, annual: key === 'i' ? annualEquivalent(value) : (i !== null ? annualEquivalent(i) : null) };
 }
