@@ -137,11 +137,11 @@ $('calculateUpdateBalance').addEventListener('click',()=>{
   $('updateError').textContent='';$('updatedBalanceResult').classList.add('hidden');
   try{
     validateUpdateForm(); if($('calculateUpdateBalance').disabled)throw new Error('Preencha os campos essenciais com valores válidos.');
-    const principal=parseBRNumber($('upPv').value),pmt=parseBRNumber($('upPmt').value),periods=parseBRNumber($('upN').value)??600,monthlyRate=parseBRNumber($('upI').value)/100;
+    const principal=parseBRNumber($('upPv').value),pmt=parseBRNumber($('upPmt').value),informedPeriods=parseBRNumber($('upN').value),periods=informedPeriods??600,monthlyRate=parseBRNumber($('upI').value)/100;
     const targetDate=parseDateBR($('updateDate').value),baseDate=parseDateBR($('upBaseDate').value)??new Date(),nextDue=parseDateBR($('upDue').value)??defaultNextDue(baseDate);
     const updated=updateBalance({principal,monthlyRate,payment:pmt,periods,baseDate,nextDue,targetDate});
     $('updatedBalanceDate').textContent='Saldo em '+formatDateBR(targetDate);$('updatedBalanceValue').textContent=brl.format(updated.balance);
-    $('paidPeriods').textContent=updated.paid.toLocaleString('pt-BR');$('remainingPeriods').textContent=updated.remaining.toLocaleString('pt-BR');$('updatedNextDue').textContent=formatDateBR(updated.nextDue);
+    $('paidPeriods').textContent=updated.paid.toLocaleString('pt-BR');$('remainingPeriods').textContent=informedPeriods===null?'—':updated.remaining.toLocaleString('pt-BR');$('updatedNextDue').textContent=formatDateBR(updated.nextDue);
     $('updatedBalanceResult').classList.remove('hidden');
   }catch(err){$('updateError').textContent=err.message;}
 });
