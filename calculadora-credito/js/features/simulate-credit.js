@@ -31,10 +31,21 @@ export function simulateCredit({kind='new',requestedAmount,outstandingBalance=0,
   if(kind==='renewal'&&(!Number.isFinite(outstandingBalance)||outstandingBalance<=0))throw new Error('Saldo devedor deve ser maior que zero.');
   const firstPeriodDays=daysBetween(contractDate,firstDue);
   if(firstPeriodDays<=0)throw new Error('O primeiro vencimento deve ser posterior à data da contratação.');
-  const baseAmount=requestedAmount+(kind==='renewal'?outstandingBalance:0);
   const factor=iofFactor(monthlyRate,periods,firstPeriodDays);
   if(factor>=1)throw new Error('Não foi possível calcular o IOF para estes dados.');
-  const financedAmount=baseAmount/(1-factor);
-  const iof=financedAmount-baseAmount;
-  return {kind,requestedAmount,outstandingBalance,baseAmount,iof,financedAmount,payment:payment(financedAmount,monthlyRate,periods),firstPeriodDays};
+
+  // Em renovação, o saldo antigo integra a nova dívida, mas não é tratado
+  // automaticamente como uma nova base integral de IOF. Sem os dados da
+  // operação original não é possível apurar eventual tributação complementar.
+  const newMoneyWithIof=requestedAmount/(1-factor);
+  const iof=newMoneyWithIof-requestedAmount;
+  const baseAmount=requestedAmount+(kind==='renewal'?outstandingBalance:0);
+  const financedAmount=baseAmount+iof;
+
+  return {
+    kind,requestedAmount,outstandingBalance,baseAmount,iof,financedAmount,
+    payment:payment(financedAmount,monthlyRate,periods),firstPeriodDays,
+    iofBase:requestedAmount,
+    outstandingIofIncluded:false
+  };
 }
