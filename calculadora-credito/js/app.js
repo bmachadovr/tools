@@ -5,8 +5,10 @@ import { brl, pct, parseBRNumber } from './utils/currency.js';
 const $=id=>document.getElementById(id); const form=$('calcForm'); let current=null;
 
 function formatFixed2(input) {
-  const digits=input.value.replace(/\D/g,'');
-  if (!digits) { input.value=''; return; }
+  const raw = input.value.trim();
+  if (!raw) { input.value = ''; return; }
+  const digits = raw.replace(/\D/g,'');
+  if (!digits || /^0+$/.test(digits)) { input.value = ''; return; }
   input.value=(Number(digits)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 ['pv','pmt','originalPv'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
