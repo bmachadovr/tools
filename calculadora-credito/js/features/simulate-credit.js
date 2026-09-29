@@ -24,7 +24,7 @@ function iofFactor(monthlyRate,periods,firstPeriodDays){
   return IOF_ADDITIONAL_RATE+dailyTax;
 }
 
-export function simulateCredit({kind='new',requestedAmount,outstandingBalance=0,periods,monthlyRate,contractDate,firstDue}){
+export function simulateCredit({kind='new',requestedAmount,outstandingBalance=0,periods,monthlyRate,contractDate,firstDue,originalContractDate=null,originalFinalDue=null}){
   if(!Number.isFinite(requestedAmount)||requestedAmount<=0)throw new Error('Valor contratado deve ser maior que zero.');
   if(!Number.isFinite(periods)||periods<=0||!Number.isInteger(periods))throw new Error('Prazo deve ser um número inteiro maior que zero.');
   if(!Number.isFinite(monthlyRate)||monthlyRate<0)throw new Error('Taxa deve ser válida.');
@@ -38,14 +38,35 @@ export function simulateCredit({kind='new',requestedAmount,outstandingBalance=0,
   // automaticamente como uma nova base integral de IOF. Sem os dados da
   // operação original não é possível apurar eventual tributação complementar.
   const newMoneyWithIof=requestedAmount/(1-factor);
-  const iof=newMoneyWithIof-requestedAmount;
+  const newMoneyIof=newMoneyWithIof-requestedAmount;
+
+  let outstandingIof=0, outstandingIofMode='none', complementaryDays=0;
+  if(kind==='renewal'){
+    if(originalContractDate&&originalFinalDue){
+      const originalTaxableDays=Math.min(IOF_MAX_DAYS,Math.max(0,daysBetween(originalContractDate,originalFinalDue)));
+      const renewedTaxableDays=Math.min(IOF_MAX_DAYS,Math.max(0,daysBetween(originalContractDate,firstDue)+(periods-1)*30));
+      complementaryDays=Math.max(0,renewedTaxableDays-originalTaxableDays);
+      outstandingIof=outstandingBalance*IOF_DAILY_RATE*complementaryDays;
+      outstandingIofMode='informed';
+    }else{
+      // Sem dados do contrato original, usa uma estimativa neutra de 180 dias
+      // já tributados. O resultado é identificado como aproximação na interface.
+      const assumedOriginalTaxableDays=180;
+      const renewedTaxableDays=Math.min(IOF_MAX_DAYS,Math.max(0,firstPeriodDays+(periods-1)*30));
+      complementaryDays=Math.max(0,renewedTaxableDays-assumedOriginalTaxableDays);
+      outstandingIof=outstandingBalance*IOF_DAILY_RATE*complementaryDays;
+      outstandingIofMode='estimated';
+    }
+  }
+
+  const iof=newMoneyIof+outstandingIof;
   const baseAmount=requestedAmount+(kind==='renewal'?outstandingBalance:0);
   const financedAmount=baseAmount+iof;
 
   return {
-    kind,requestedAmount,outstandingBalance,baseAmount,iof,financedAmount,
-    payment:payment(financedAmount,monthlyRate,periods),firstPeriodDays,
-    iofBase:requestedAmount,
-    outstandingIofIncluded:false
+    kind,requestedAmount,outstandingBalance,baseAmount,iof,newMoneyIof,outstandingIof,
+    financedAmount,payment:payment(financedAmount,monthlyRate,periods),firstPeriodDays,
+    iofBase:requestedAmount,outstandingIofIncluded:kind==='renewal',
+    outstandingIofMode,complementaryDays
   };
 }
