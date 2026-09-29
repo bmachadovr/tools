@@ -59,7 +59,12 @@ function essentialFieldState(id) {
   return Number.isFinite(value) && value > 0 ? 'valid' : 'invalid';
 }
 function updateCalculateState() {
-  const states = ['pv','pmt','n','i'].map(essentialFieldState);
+  const ids = ['pv','pmt','n','i'];
+  const states = ids.map(essentialFieldState);
+  ids.forEach((id, index) => {
+    $(id).classList.toggle('field-valid', states[index] === 'valid');
+    $(id).classList.toggle('field-invalid', states[index] === 'invalid');
+  });
   const validCount = states.filter(state => state === 'valid').length;
   const emptyCount = states.filter(state => state === 'empty').length;
   $('calculate').disabled = !(validCount === 3 && emptyCount === 1);
