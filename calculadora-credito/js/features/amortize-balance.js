@@ -19,7 +19,7 @@ export function amortizeBalance({principal, currentPayment, remainingPeriods, mo
     periodsSaved:Math.max(0,remainingPeriods-reducedPeriods),
     newPayment,
     paymentReduction:currentPayment-newPayment,
-    interestSavingTerm:Math.max(0,originalTotal-termTotal-extraPayment),
-    interestSavingPayment:Math.max(0,originalTotal-paymentTotal-extraPayment)
+    interestSavingTerm:Math.max(0,originalTotal-termTotal),
+    interestSavingPayment:Math.max(0,originalTotal-paymentTotal)
   };
 }
