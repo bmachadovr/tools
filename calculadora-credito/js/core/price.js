@@ -17,6 +17,17 @@ export function periods(principalValue, paymentValue, rate) {
   if (paymentValue <= principalValue * rate) throw new Error('A parcela não é suficiente para amortizar a dívida nessa taxa.');
   return -Math.log(1 - principalValue * rate / paymentValue) / Math.log(1 + rate);
 }
+export function periodsWithFirstPeriod(principalValue, paymentValue, rate, firstPeriodDays = 30) {
+  validatePositive(principalValue, 'saldo'); validatePositive(paymentValue, 'parcela');
+  if (rate < 0) throw new Error('Taxa não pode ser negativa.');
+  if (!Number.isFinite(firstPeriodDays) || firstPeriodDays <= 0) throw new Error('Dias até o próximo vencimento devem ser maiores que zero.');
+  if (Math.abs(rate) < 1e-14) return principalValue / paymentValue;
+  const fraction = firstPeriodDays / 30;
+  const valueAtFirstDue = principalValue * Math.pow(1 + rate, fraction);
+  const ratio = 1 - (valueAtFirstDue * rate) / (paymentValue * (1 + rate));
+  if (ratio <= 0) throw new Error('A parcela não é suficiente para amortizar a dívida nessa taxa.');
+  return -Math.log(ratio) / Math.log(1 + rate);
+}
 export function rate(principalValue, paymentValue, periodsValue) {
   validatePositive(principalValue, 'saldo'); validatePositive(paymentValue, 'parcela'); validatePeriods(periodsValue);
   const zeroPayment = principalValue / periodsValue;
