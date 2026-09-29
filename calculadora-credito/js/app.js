@@ -80,10 +80,49 @@ $('hideEvolution').addEventListener('click',()=>$('evolution').classList.add('hi
 
 function formatDateBR(date){return date?date.toLocaleDateString('pt-BR'): '—';}
 const carousel=$('toolsCarousel'), tabs=[...document.querySelectorAll('.tool-tab')], dots=[...document.querySelectorAll('.tool-dots i')];
-function goTool(index, smooth=true){const panel=carousel.children[index];carousel.scrollTo({left:panel.offsetLeft,behavior:smooth?'smooth':'auto'});}
-function setToolState(index){tabs.forEach((t,i)=>t.classList.toggle('active',i===index));dots.forEach((d,i)=>d.classList.toggle('active',i===index));}
+const toolCount=tabs.length;
+function normalizeTool(index){return (index+toolCount)%toolCount;}
+function centerActiveTab(index,smooth=true){
+  const tab=tabs[index];
+  const left=tab.offsetLeft-(tab.parentElement.clientWidth-tab.offsetWidth)/2;
+  tab.parentElement.scrollTo({left,behavior:smooth?'smooth':'auto'});
+}
+function goTool(index,smooth=true){
+  index=normalizeTool(index);
+  const panel=carousel.children[index];
+  carousel.scrollTo({left:panel.offsetLeft,behavior:smooth?'smooth':'auto'});
+  setToolState(index,smooth);
+}
+function setToolState(index,smooth=true){
+  index=normalizeTool(index);
+  tabs.forEach((t,i)=>t.classList.toggle('active',i===index));
+  dots.forEach((d,i)=>d.classList.toggle('active',i===index));
+  centerActiveTab(index,smooth);
+}
 tabs.forEach((tab,i)=>tab.addEventListener('click',()=>goTool(i)));
-let scrollTimer; carousel.addEventListener('scroll',()=>{clearTimeout(scrollTimer);scrollTimer=setTimeout(()=>{const width=carousel.clientWidth||1;setToolState(Math.round(carousel.scrollLeft/width));},80);},{passive:true});
+
+let activeTool=0,startX=null,startY=null;
+carousel.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;startX=e.clientX;startY=e.clientY;},{passive:true});
+carousel.addEventListener('pointerup',e=>{
+  if(startX===null)return;
+  const dx=e.clientX-startX,dy=e.clientY-startY;
+  startX=startY=null;
+  if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)){
+    if(activeTool===toolCount-1&&dx<0){goTool(0);return;}
+    if(activeTool===0&&dx>0){goTool(toolCount-1);return;}
+  }
+},{passive:true});
+
+let scrollTimer;
+carousel.addEventListener('scroll',()=>{
+  clearTimeout(scrollTimer);
+  scrollTimer=setTimeout(()=>{
+    const width=carousel.clientWidth||1;
+    activeTool=Math.max(0,Math.min(toolCount-1,Math.round(carousel.scrollLeft/width)));
+    setToolState(activeTool);
+  },80);
+},{passive:true});
+setToolState(0,false);
 
 function updateFieldState(id, valid){
   $(id).classList.toggle('field-valid',valid);
