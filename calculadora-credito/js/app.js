@@ -39,7 +39,7 @@ function validDate(value) {
   const date = new Date(year, month - 1, day);
   return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
 }
-['due','baseDate','firstDue','upBaseDate','upDue','updateDate','simContractDate','simFirstDue'].forEach(id => $(id).addEventListener('input', e => formatDate(e.target)));
+['due','baseDate','firstDue','upBaseDate','upDue','updateDate','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'].forEach(id => $(id).addEventListener('input', e => formatDate(e.target)));
 
 function parseDateBR(value) {
   if (!value) return null;
@@ -192,12 +192,18 @@ function setSimulationKind(kind){
   simulationKind=kind;
   const renewal=kind==='renewal';
   $('simBalanceLabel').classList.toggle('hidden',!renewal);
+  $('renewalPrecisionFields').classList.toggle('hidden',!renewal);
+  $('simPrecisionNote').textContent=renewal
+    ? 'Para maior precisão do IOF sobre o saldo renovado, informe a data da contratação original e o vencimento final original. Sem esses dados será usada uma estimativa.'
+    : 'Se as datas não forem informadas, a contratação será considerada hoje e o primeiro vencimento em 30 dias.';
   kindButtons.forEach(button=>{
     const active=button.dataset.kind===kind;
     button.classList.toggle('active',active);
     button.setAttribute('aria-pressed',String(active));
   });
-  if(!renewal){$('simBalance').value='';$('simBalance').classList.remove('field-valid','field-invalid');}
+  if(!renewal){
+    for(const id of ['simBalance','simOriginalContractDate','simOriginalFinalDue']){$(id).value='';$(id).classList.remove('field-valid','field-invalid');}
+  }
   $('simulationResult').classList.add('hidden');
   validateSimulation();
 }
@@ -214,21 +220,23 @@ function validateSimulation(){
   const nOk=positiveSimulationField('simN');
   const rateOk=positiveSimulationField('simI');
   const balanceOk=simulationKind==='new'||positiveSimulationField('simBalance');
-  for(const id of ['simContractDate','simFirstDue']){
+  for(const id of ['simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue']){
     const raw=$(id).value.trim(),valid=raw===''||validDate(raw);
     $(id).classList.toggle('field-valid',raw!==''&&valid);
     $(id).classList.toggle('field-invalid',raw!==''&&!valid);
   }
   $('simulate').disabled=!(amountOk&&nOk&&rateOk&&balanceOk);
 }
-['simAmount','simBalance','simN','simI','simContractDate','simFirstDue'].forEach(id=>$(id).addEventListener('input',validateSimulation));
+['simAmount','simBalance','simN','simI','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'].forEach(id=>$(id).addEventListener('input',validateSimulation));
 
 $('simulateForm').addEventListener('submit',e=>{
   e.preventDefault(); $('simulateError').textContent=''; $('simulationResult').classList.add('hidden');
   try{
     validateSimulation();
     if($('simulate').disabled)throw new Error('Preencha os campos essenciais com valores válidos.');
-    for(const id of ['simContractDate','simFirstDue'])if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');
+    for(const id of ['simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'])if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');
+    const originalDateRaw=$('simOriginalContractDate').value.trim(),originalFinalRaw=$('simOriginalFinalDue').value.trim();
+    if(simulationKind==='renewal'&&((originalDateRaw&&!originalFinalRaw)||(!originalDateRaw&&originalFinalRaw)))throw new Error('Para refinar o IOF do saldo, informe as duas datas da operação original.');
     const contractDate=parseDateBR($('simContractDate').value)??new Date();
     const firstDue=parseDateBR($('simFirstDue').value)??defaultNextDue(contractDate);
     if(firstDue<=contractDate)throw new Error('O primeiro vencimento deve ser posterior à data da contratação.');
@@ -238,23 +246,29 @@ $('simulateForm').addEventListener('submit',e=>{
       outstandingBalance:simulationKind==='renewal'?parseBRNumber($('simBalance').value):0,
       periods:parseBRNumber($('simN').value),
       monthlyRate:parseBRNumber($('simI').value)/100,
-      contractDate,firstDue
+      contractDate,firstDue,
+      originalContractDate:simulationKind==='renewal'?parseDateBR($('simOriginalContractDate').value):null,
+      originalFinalDue:simulationKind==='renewal'?parseDateBR($('simOriginalFinalDue').value):null
     });
     $('simPayment').textContent=brl.format(result.payment);
     $('simFinanced').textContent=brl.format(result.financedAmount);
     $('simIof').textContent=brl.format(result.iof);
     $('simReleased').textContent=brl.format(result.requestedAmount);
+    $('simOldBalanceIof').textContent=brl.format(result.outstandingIof);
+    $('simOldBalanceIofStat').classList.toggle('hidden',simulationKind!=='renewal');
     $('simReleasedLabel').textContent=simulationKind==='renewal'?'Valor liberado':'Valor contratado';
     $('simRenewalStat').classList.toggle('hidden',simulationKind==='new');
     $('simAssumption').textContent=simulationKind==='renewal'
-      ? 'IOF estimado sobre o valor novo liberado. Eventual IOF complementar sobre o saldo renovado não está incluído e depende da tributação da operação original. Primeiro vencimento em '+formatDateBR(firstDue)+'.'
+      ? (result.outstandingIofMode==='informed'
+          ? 'IOF do saldo renovado estimado pelo período complementar até o limite de 365 dias, sem repetir o adicional de 0,38%. '+result.complementaryDays+' dias complementares considerados. Primeiro vencimento em '+formatDateBR(firstDue)+'.'
+          : 'IOF do saldo renovado aproximado assumindo 180 dias já tributados na operação original. Informe as datas da operação original em “Aumente a precisão” para refinar. Primeiro vencimento em '+formatDateBR(firstDue)+'.')
       : 'IOF estimado incluído no valor financiado. Primeiro vencimento em '+formatDateBR(firstDue)+'.';
     $('simulationResult').classList.remove('hidden');
   }catch(err){$('simulateError').textContent=err.message;}
 });
 $('clearSimulation').addEventListener('click',()=>{
   $('simulateForm').reset();
-  ['simAmount','simBalance','simN','simI','simContractDate','simFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));
+  ['simAmount','simBalance','simN','simI','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));
   $('simulateError').textContent='';$('simulationResult').classList.add('hidden');setSimulationKind('new');
 });
 setSimulationKind('new');
