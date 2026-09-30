@@ -36,4 +36,7 @@ assert.throws(()=>compareCredit({amount:0,payment:1,periods:1,monthlyRate:.01},{
 const exchange=debtExchange({currentBalance:18000,currentPayment:900,currentPeriods:24,newPayment:700,newPeriods:24,fees:200,cashBack:1000});
 near(exchange.currentRemaining,21600);near(exchange.newRemaining,17000);near(exchange.financialDifference,5600);near(exchange.paymentDifference,-200);
 assert.throws(()=>debtExchange({currentBalance:1,currentPayment:0,currentPeriods:1,newPayment:1,newPeriods:1}),/valores válidos/);
-console.log('OK', {pmt, recoveredRate:rate(pv,pmt,n), comparison, exchange});
+const converterPayment=payment(25000,.015,36);
+const converterAmount=principal(converterPayment,.015,36);
+near(converterAmount,25000,1e-6);
+console.log('OK', {pmt, recoveredRate:rate(pv,pmt,n), comparison, exchange, converterPayment, converterAmount});
