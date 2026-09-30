@@ -4,7 +4,9 @@ import { buildSchedule } from './core/schedule.js';
 import { brl, pct, parseBRNumber } from './utils/currency.js';
 import { updateBalance } from './features/update-balance.js';
 import { simulateCredit } from './features/simulate-credit.js';
-import { amortizeBalance } from './features/amortize-balance.js';\nimport { compareCredit } from './features/compare-credit.js';
+import { amortizeBalance } from './features/amortize-balance.js';
+import { compareCredit } from './features/compare-credit.js';
+import { debtExchange } from './features/debt-exchange.js';
 const $=id=>document.getElementById(id); const form=$('calcForm'); let current=null;
 
 function formatFixed2(input) {
@@ -14,7 +16,7 @@ function formatFixed2(input) {
   if (!digits || /^0+$/.test(digits)) { input.value = ''; return; }
   input.value=(Number(digits)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','exBalance','exCurrentPayment','exNewPayment','exCashBack','exFees'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
 ['i','upI','simI','amI','cmpAI','cmpBI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
 
 function formatDate(input) {
@@ -334,3 +336,37 @@ $('compareForm').addEventListener('submit',e=>{
 });
 $('clearComparison').addEventListener('click',()=>{$('compareForm').reset();['cmpAAmount','cmpAPayment','cmpAN','cmpAI','cmpBAmount','cmpBPayment','cmpBN','cmpBI'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('compareError').textContent='';$('comparisonResult').classList.add('hidden');validateComparison();});
 validateComparison();
+
+
+function validateExchange(){
+  const required=['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN'];
+  const ok=required.every(id=>{const v=parseBRNumber($(id).value),valid=Number.isFinite(v)&&v>0;updateFieldState(id,valid);return valid;});
+  for(const id of ['exCashBack','exFees']){const raw=$(id).value.trim(),v=parseBRNumber(raw),valid=raw===''||(Number.isFinite(v)&&v>=0);$(id).classList.toggle('field-valid',raw!==''&&valid);$(id).classList.toggle('field-invalid',raw!==''&&!valid);}
+  $('exchange').disabled=!ok;
+}
+['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exFees'].forEach(id=>$(id).addEventListener('input',validateExchange));
+$('exchangeForm').addEventListener('submit',e=>{
+  e.preventDefault();$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');
+  try{
+    validateExchange();if($('exchange').disabled)throw new Error('Preencha os dados essenciais com valores válidos.');
+    const r=debtExchange({
+      currentBalance:parseBRNumber($('exBalance').value),
+      currentPayment:parseBRNumber($('exCurrentPayment').value),
+      currentPeriods:parseBRNumber($('exCurrentN').value),
+      newPayment:parseBRNumber($('exNewPayment').value),
+      newPeriods:parseBRNumber($('exNewN').value),
+      cashBack:parseBRNumber($('exCashBack').value)??0,
+      fees:parseBRNumber($('exFees').value)??0
+    });
+    $('exCurrentTotal').textContent=brl.format(r.currentRemaining);$('exNewTotal').textContent=brl.format(r.newRemaining);
+    $('exPaymentDiff').textContent=signedMoney(r.paymentDifference);
+    $('exPeriodDiff').textContent=r.periodDifference===0?'Mesmo prazo':(r.periodDifference>0?'+ ':'− ')+Math.abs(r.periodDifference).toLocaleString('pt-BR')+' parcelas';
+    const positive=r.financialDifference>=0;
+    $('exFinancialResult').textContent=(positive?'Economia nominal de ':'Acréscimo nominal de ')+brl.format(Math.abs(r.financialDifference));
+    const cash=r.cashBack>0?' considerando '+brl.format(r.cashBack)+' de valor adicional liberado':'';
+    $('exSummary').textContent='A nova operação '+(r.paymentDifference<0?'reduz':'aumenta')+' a parcela em '+brl.format(Math.abs(r.paymentDifference))+cash+'.';
+    $('exchangeResult').classList.remove('hidden');
+  }catch(err){$('exchangeError').textContent=err.message;}
+});
+$('clearExchange').addEventListener('click',()=>{$('exchangeForm').reset();['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exFees'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');validateExchange();});
+validateExchange();
