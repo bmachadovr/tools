@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {payment, principal, periods, rate, rateWithFirstPeriod, annualEquivalent} from '../js/core/price.js';
 import {updateBalance} from '../js/features/update-balance.js';
-import {amortizeBalance} from '../js/features/amortize-balance.js';
+import {amortizeBalance} from '../js/features/amortize-balance.js';\nimport {compareCredit} from '../js/features/compare-credit.js';
 const near=(a,b,t=1e-8)=>assert.ok(Math.abs(a-b)<t,`${a} != ${b}`);
 const pv=50000,i=.015,n=36,pmt=payment(pv,i,n);
 near(principal(pmt,i,n),pv,1e-6); near(periods(pv,pmt,i),n,1e-8); near(rate(pv,pmt,n),i,1e-10); near(payment(12000,0,12),1000); near(annualEquivalent(.01),Math.pow(1.01,12)-1);
@@ -23,4 +23,12 @@ assert.throws(()=>updateBalance({principal:12000,monthlyRate:.01,payment:1000,pe
 const amort=amortizeBalance({principal:50000,currentPayment:pmt,remainingPeriods:36,monthlyRate:.015,extraPayment:10000});
 near(amort.newBalance,40000); near(amort.newPayment,payment(40000,.015,36),1e-8); assert.ok(amort.reducedPeriods<36); assert.ok(amort.periodsSaved>0); assert.ok(amort.paymentReduction>0); assert.ok(amort.interestSavingTerm>0); assert.ok(amort.interestSavingPayment>0);
 assert.throws(()=>amortizeBalance({principal:50000,currentPayment:pmt,remainingPeriods:36,monthlyRate:.015,extraPayment:50000}),/menor/);
-console.log('OK', {pmt, recoveredRate:rate(pv,pmt,n)});
+const comparison=compareCredit(
+  {amount:20000,payment:1000,periods:24,monthlyRate:.015},
+  {amount:20000,payment:850,periods:30,monthlyRate:.012}
+);
+near(comparison.A.totalPaid,24000); near(comparison.B.totalPaid,25500);
+near(comparison.diff.payment,-150); near(comparison.diff.periods,6); near(comparison.diff.totalPaid,1500);
+near(comparison.diff.totalCost,1500); assert.ok(comparison.pct.payment<0);
+assert.throws(()=>compareCredit({amount:0,payment:1,periods:1,monthlyRate:.01},{amount:1,payment:1,periods:1,monthlyRate:.01}),/valores válidos/);
+console.log('OK', {pmt, recoveredRate:rate(pv,pmt,n), comparison});
