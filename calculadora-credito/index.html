@@ -8,8 +8,9 @@
 <button type="button" class="tool-tab" data-tool="3">Amortizar saldo</button>
 <button type="button" class="tool-tab" data-tool="4">Comparar crédito</button>
 <button type="button" class="tool-tab" data-tool="5">Trocar dívida</button>
+<button type="button" class="tool-tab" data-tool="6">Parcela ↔ Valor</button>
 </nav>
-<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
 <div class="tools-carousel" id="toolsCarousel">
 <section class="tool-panel">
@@ -128,5 +129,17 @@
 <div class="balance-stat"><span>Diferença no prazo</span><b id="exPeriodDiff"></b></div>
 </div><p class="assumption-note" id="exSummary"></p><p class="assumption-note">O cálculo compara fluxos nominais. Informe em “Custos adicionais” tarifas ou despesas que não estejam embutidas nas parcelas da nova operação.</p></section>
 </div></section>
+<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Parcela ↔ Valor</h2><p>Descubra quanto uma parcela representa em crédito ou qual parcela corresponde a um valor.</p></div>
+<form id="converterForm" novalidate><div class="grid">
+<label>Valor do crédito <span>R$</span><input id="cvAmount" inputmode="numeric"></label>
+<label>Valor da parcela <span>R$</span><input id="cvPayment" inputmode="numeric"></label>
+<label>Prazo <input id="cvN" inputmode="numeric"></label>
+<label>Taxa mensal <span>% a.m.</span><input id="cvI" inputmode="numeric"></label>
+</div><p class="precision-help">Preencha prazo, taxa e apenas um dos campos financeiros. Deixe em branco o que deseja descobrir.</p>
+<div class="actions"><button type="submit" id="convertCredit" disabled>Calcular</button><button type="button" class="secondary" id="clearConverter">Limpar</button></div><p id="converterError" class="error" role="alert"></p></form>
+<section id="converterResult" class="result embedded hidden" aria-live="polite"><p class="result-label" id="cvResultLabel"></p><strong id="cvResultValue"></strong><div class="simulation-meta">
+<div class="balance-stat"><span>Prazo</span><b id="cvResultN"></b></div><div class="balance-stat"><span>Taxa</span><b id="cvResultI"></b></div><div class="balance-stat"><span>Desembolso total</span><b id="cvResultTotal"></b></div>
+</div><p class="assumption-note">Cálculo pelo sistema Price. IOF, seguros e tarifas não estão incluídos; para uma proposta completa, use Simular crédito.</p></section>
+</div></section>
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260930-02"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260930-03"></script></body></html>
