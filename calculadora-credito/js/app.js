@@ -1,5 +1,5 @@
 import { solve } from './features/calculator.js';
-import { payment } from './core/price.js';
+import { payment, principal } from './core/price.js';
 import { buildSchedule } from './core/schedule.js';
 import { brl, pct, parseBRNumber } from './utils/currency.js';
 import { updateBalance } from './features/update-balance.js';
@@ -16,8 +16,8 @@ function formatFixed2(input) {
   if (!digits || /^0+$/.test(digits)) { input.value = ''; return; }
   input.value=(Number(digits)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','exBalance','exCurrentPayment','exNewPayment','exCashBack','exFees'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
-['i','upI','simI','amI','cmpAI','cmpBI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','exBalance','exCurrentPayment','exNewPayment','exCashBack','exFees','cvAmount','cvPayment'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['i','upI','simI','amI','cmpAI','cmpBI','cvI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
 
 function formatDate(input) {
   const digits = input.value.replace(/\D/g, '').slice(0, 8);
@@ -370,3 +370,31 @@ $('exchangeForm').addEventListener('submit',e=>{
 });
 $('clearExchange').addEventListener('click',()=>{$('exchangeForm').reset();['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exFees'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');validateExchange();});
 validateExchange();
+
+
+function validateConverter(){
+  const amountState=essentialFieldState('cvAmount'),paymentState=essentialFieldState('cvPayment');
+  const n=parseBRNumber($('cvN').value),rate=parseBRNumber($('cvI').value);
+  updateFieldState('cvAmount',amountState==='valid');updateFieldState('cvPayment',paymentState==='valid');
+  updateFieldState('cvN',Number.isFinite(n)&&n>0);updateFieldState('cvI',Number.isFinite(rate)&&rate>0);
+  const oneFinancial=(amountState==='valid'&&paymentState==='empty')||(paymentState==='valid'&&amountState==='empty');
+  $('convertCredit').disabled=!(oneFinancial&&Number.isFinite(n)&&n>0&&Number.isFinite(rate)&&rate>0);
+}
+['cvAmount','cvPayment','cvN','cvI'].forEach(id=>$(id).addEventListener('input',validateConverter));
+$('converterForm').addEventListener('submit',e=>{
+  e.preventDefault();$('converterError').textContent='';$('converterResult').classList.add('hidden');
+  try{
+    validateConverter();if($('convertCredit').disabled)throw new Error('Informe prazo, taxa e apenas valor do crédito ou valor da parcela.');
+    const amount=parseBRNumber($('cvAmount').value),pmtValue=parseBRNumber($('cvPayment').value),n=parseBRNumber($('cvN').value),i=parseBRNumber($('cvI').value)/100;
+    const findingAmount=amount===null;
+    const result=findingAmount?principal(pmtValue,i,n):payment(amount,i,n);
+    const finalAmount=findingAmount?result:amount,finalPayment=findingAmount?pmtValue:result;
+    $('cvResultLabel').textContent=findingAmount?'Valor de crédito estimado':'Parcela estimada';
+    $('cvResultValue').textContent=brl.format(result);$('cvResultN').textContent=n.toLocaleString('pt-BR')+' parcelas';
+    $('cvResultI').textContent=(i*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'% a.m.';
+    $('cvResultTotal').textContent=brl.format(finalPayment*n);
+    $('converterResult').classList.remove('hidden');
+  }catch(err){$('converterError').textContent=err.message;}
+});
+$('clearConverter').addEventListener('click',()=>{$('converterForm').reset();['cvAmount','cvPayment','cvN','cvI'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('converterError').textContent='';$('converterResult').classList.add('hidden');validateConverter();});
+validateConverter();
