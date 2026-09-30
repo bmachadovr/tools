@@ -4,7 +4,7 @@ import { buildSchedule } from './core/schedule.js';
 import { brl, pct, parseBRNumber } from './utils/currency.js';
 import { updateBalance } from './features/update-balance.js';
 import { simulateCredit } from './features/simulate-credit.js';
-import { amortizeBalance } from './features/amortize-balance.js';
+import { amortizeBalance } from './features/amortize-balance.js';\nimport { compareCredit } from './features/compare-credit.js';
 const $=id=>document.getElementById(id); const form=$('calcForm'); let current=null;
 
 function formatFixed2(input) {
@@ -14,8 +14,8 @@ function formatFixed2(input) {
   if (!digits || /^0+$/.test(digits)) { input.value = ''; return; }
   input.value=(Number(digits)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','amPv','amPmt','amExtra'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
-['i','upI','simI','amI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['i','upI','simI','amI','cmpAI','cmpBI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
 
 function formatDate(input) {
   const digits = input.value.replace(/\D/g, '').slice(0, 8);
@@ -168,7 +168,7 @@ function fillUpdateFromCurrent(){
   if(!$('updateDate').value)$('updateDate').value=formatDateBR(new Date());
   validateUpdateForm();
 }
-$('sendToUpdate').addEventListener('click',()=>{fillUpdateFromCurrent();goTool(1);});
+$('sendToUpdate').addEventListener('click',()=>{fillUpdateFromCurrent();goTool(2);});
 
 $('clearUpdate').addEventListener('click',()=>{
   ['upPv','upPmt','upN','upI','upBaseDate','upDue','updateDate'].forEach(id=>{$(id).value='';$(id).classList.remove('field-valid','field-invalid');});
@@ -304,3 +304,33 @@ $('clearAmortization').addEventListener('click',()=>{
   $('amortizeError').textContent='';$('amortizationResult').classList.add('hidden');validateAmortization();
 });
 validateAmortization();
+
+
+function validateComparison(){
+  const ids=['cmpAAmount','cmpAPayment','cmpAN','cmpAI','cmpBAmount','cmpBPayment','cmpBN','cmpBI'];
+  const ok=ids.every(id=>{const value=parseBRNumber($(id).value);const valid=Number.isFinite(value)&&value>0;updateFieldState(id,valid);return valid;});
+  $('compare').disabled=!ok;
+}
+['cmpAAmount','cmpAPayment','cmpAN','cmpAI','cmpBAmount','cmpBPayment','cmpBN','cmpBI'].forEach(id=>$(id).addEventListener('input',validateComparison));
+function signedMoney(value){return (value>0?'+ ':'− ')+brl.format(Math.abs(value));}
+function signedPctValue(value){if(value===null||Math.abs(value)<1e-12)return 'sem variação';return (value>0?'+ ':'− ')+Math.abs(value*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';}
+$('compareForm').addEventListener('submit',e=>{
+  e.preventDefault();$('compareError').textContent='';$('comparisonResult').classList.add('hidden');
+  try{
+    validateComparison();if($('compare').disabled)throw new Error('Preencha todos os dados das duas alternativas com valores válidos.');
+    const readOption=p=>({amount:parseBRNumber($(p+'Amount').value),payment:parseBRNumber($(p+'Payment').value),periods:parseBRNumber($(p+'N').value),monthlyRate:parseBRNumber($(p+'I').value)/100});
+    const r=compareCredit(readOption('cmpA'),readOption('cmpB'));
+    $('cmpPaymentDiff').textContent=signedMoney(r.diff.payment);$('cmpPaymentPct').textContent=signedPctValue(r.pct.payment);
+    $('cmpPeriodDiff').textContent=(r.diff.periods>0?'+ ':'− ')+Math.abs(r.diff.periods).toLocaleString('pt-BR')+' parcelas';
+    if(r.diff.periods===0)$('cmpPeriodDiff').textContent='Mesmo prazo';
+    $('cmpTotalDiff').textContent=signedMoney(r.diff.totalPaid);$('cmpTotalPct').textContent=signedPctValue(r.pct.totalPaid);
+    $('cmpCostDiff').textContent=signedMoney(r.diff.totalCost);
+    const parts=[];
+    parts.push(r.diff.payment===0?'As parcelas são iguais.':r.diff.payment<0?'A alternativa B reduz a parcela em '+brl.format(-r.diff.payment)+'.':'A alternativa B aumenta a parcela em '+brl.format(r.diff.payment)+'.');
+    parts.push(r.diff.totalPaid===0?'O desembolso total é igual.':r.diff.totalPaid<0?'O desembolso total de B é '+brl.format(-r.diff.totalPaid)+' menor.':'O desembolso total de B é '+brl.format(r.diff.totalPaid)+' maior.');
+    $('cmpSummary').textContent=parts.join(' ');
+    $('comparisonResult').classList.remove('hidden');
+  }catch(err){$('compareError').textContent=err.message;}
+});
+$('clearComparison').addEventListener('click',()=>{$('compareForm').reset();['cmpAAmount','cmpAPayment','cmpAN','cmpAI','cmpBAmount','cmpBPayment','cmpBN','cmpBI'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('compareError').textContent='';$('comparisonResult').classList.add('hidden');validateComparison();});
+validateComparison();
