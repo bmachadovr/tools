@@ -5,9 +5,11 @@
 <button type="button" class="tool-tab active" data-tool="0">Simular crédito</button>
 <button type="button" class="tool-tab" data-tool="1">Recalcular crédito</button>
 <button type="button" class="tool-tab" data-tool="2">Projetar saldo</button>
-<button type="button" class="tool-tab" data-tool="3">Amortizar saldo</button>\n<button type="button" class="tool-tab" data-tool="4">Comparar crédito</button>
+<button type="button" class="tool-tab" data-tool="3">Amortizar saldo</button>
+<button type="button" class="tool-tab" data-tool="4">Comparar crédito</button>
+<button type="button" class="tool-tab" data-tool="5">Trocar dívida</button>
 </nav>
-<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i></div>
+<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i><i></i></div>
 
 <div class="tools-carousel" id="toolsCarousel">
 <section class="tool-panel">
@@ -105,4 +107,26 @@
 <div class="balance-stat"><span>Custo além do valor líquido</span><b id="cmpCostDiff"></b></div>
 </div><p class="assumption-note" id="cmpSummary"></p><p class="assumption-note">Comparação matemática dos fluxos informados. IOF, seguros e tarifas devem estar refletidos nos valores das propostas quando aplicáveis.</p></section>
 </div></section>
-</div>\n<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260930-01"></script></body></html>
+<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Trocar dívida</h2><p>Compare o que ainda seria pago no contrato atual com uma proposta para liquidá-lo e substituí-lo.</p></div>
+<form id="exchangeForm" novalidate>
+<p class="result-label">Dívida atual</p><div class="grid">
+<label>Saldo para liquidação <span>R$</span><input id="exBalance" inputmode="numeric"></label>
+<label>Parcela atual <span>R$</span><input id="exCurrentPayment" inputmode="numeric"></label>
+<label>Parcelas restantes <input id="exCurrentN" inputmode="numeric"></label>
+</div>
+<p class="result-label">Nova operação</p><div class="grid">
+<label>Nova parcela <span>R$</span><input id="exNewPayment" inputmode="numeric"></label>
+<label>Novo prazo <input id="exNewN" inputmode="numeric"></label>
+<label>Valor adicional liberado <span>R$</span><input id="exCashBack" inputmode="numeric"></label>
+<label>Custos adicionais <span>R$</span><input id="exFees" inputmode="numeric"></label>
+</div>
+<div class="actions"><button type="submit" id="exchange" disabled>Calcular troca</button><button type="button" class="secondary" id="clearExchange">Limpar</button></div><p id="exchangeError" class="error" role="alert"></p></form>
+<section id="exchangeResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Impacto da troca</p><strong id="exFinancialResult"></strong><div class="simulation-meta">
+<div class="balance-stat"><span>Restante no contrato atual</span><b id="exCurrentTotal"></b></div>
+<div class="balance-stat"><span>Total da nova operação</span><b id="exNewTotal"></b></div>
+<div class="balance-stat"><span>Diferença na parcela</span><b id="exPaymentDiff"></b></div>
+<div class="balance-stat"><span>Diferença no prazo</span><b id="exPeriodDiff"></b></div>
+</div><p class="assumption-note" id="exSummary"></p><p class="assumption-note">O cálculo compara fluxos nominais. Informe em “Custos adicionais” tarifas ou despesas que não estejam embutidas nas parcelas da nova operação.</p></section>
+</div></section>
+</div>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260930-02"></script></body></html>
