@@ -5,9 +5,9 @@
 <button type="button" class="tool-tab active" data-tool="0">Simular crédito</button>
 <button type="button" class="tool-tab" data-tool="1">Recalcular crédito</button>
 <button type="button" class="tool-tab" data-tool="2">Projetar saldo</button>
-<button type="button" class="tool-tab" data-tool="3">Amortizar saldo</button>
+<button type="button" class="tool-tab" data-tool="3">Amortizar saldo</button>\n<button type="button" class="tool-tab" data-tool="4">Comparar crédito</button>
 </nav>
-<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i></div>
+<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i></div>
 
 <div class="tools-carousel" id="toolsCarousel">
 <section class="tool-panel">
@@ -83,5 +83,26 @@
 <div class="balance-stat"><span>Economia de juros · parcela</span><b id="amInterestPayment"></b></div>
 </div><p class="assumption-note">Estimativa pelo sistema Price, sem tarifas, seguros ou outros eventos do contrato.</p></section>
 </div></section>
+<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Comparar crédito</h2><p>Coloque duas alternativas lado a lado para enxergar as diferenças de parcela, prazo, taxa e desembolso.</p></div>
+<form id="compareForm" novalidate>
+<p class="result-label">Alternativa A</p><div class="grid">
+<label>Valor líquido <span>R$</span><input id="cmpAAmount" inputmode="numeric"></label>
+<label>Valor da parcela <span>R$</span><input id="cmpAPayment" inputmode="numeric"></label>
+<label>Prazo <input id="cmpAN" inputmode="numeric"></label>
+<label>Taxa mensal <span>% a.m.</span><input id="cmpAI" inputmode="numeric"></label>
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260929-16"></script></body></html>
+<p class="result-label">Alternativa B</p><div class="grid">
+<label>Valor líquido <span>R$</span><input id="cmpBAmount" inputmode="numeric"></label>
+<label>Valor da parcela <span>R$</span><input id="cmpBPayment" inputmode="numeric"></label>
+<label>Prazo <input id="cmpBN" inputmode="numeric"></label>
+<label>Taxa mensal <span>% a.m.</span><input id="cmpBI" inputmode="numeric"></label>
+</div>
+<div class="actions"><button type="submit" id="compare" disabled>Comparar</button><button type="button" class="secondary" id="clearComparison">Limpar</button></div><p id="compareError" class="error" role="alert"></p></form>
+<section id="comparisonResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Diferenças da alternativa B em relação à A</p><div class="simulation-meta">
+<div class="balance-stat"><span>Parcela</span><b id="cmpPaymentDiff"></b><small id="cmpPaymentPct"></small></div>
+<div class="balance-stat"><span>Prazo</span><b id="cmpPeriodDiff"></b></div>
+<div class="balance-stat"><span>Desembolso total</span><b id="cmpTotalDiff"></b><small id="cmpTotalPct"></small></div>
+<div class="balance-stat"><span>Custo além do valor líquido</span><b id="cmpCostDiff"></b></div>
+</div><p class="assumption-note" id="cmpSummary"></p><p class="assumption-note">Comparação matemática dos fluxos informados. IOF, seguros e tarifas devem estar refletidos nos valores das propostas quando aplicáveis.</p></section>
+</div></section>
+</div>\n<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260930-01"></script></body></html>
