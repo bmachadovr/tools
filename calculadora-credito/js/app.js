@@ -21,6 +21,7 @@ function refreshOfferPreview(){
   const preview=$('offerPreview');if(!preview)return;
   preview.textContent=buildOfferText();
   if($('copyOffer'))$('copyOffer').disabled=!lastOfferInsights.length;
+  if($('sendWhatsApp'))$('sendWhatsApp').disabled=!lastOfferInsights.length;
 }
 function renderInsights(context,data){
   const insights=offerInsights(context,data),hub=$('insightsHubList'); if(!hub)return;
@@ -37,6 +38,11 @@ $('copyOffer')?.addEventListener('click',async()=>{
   try{await navigator.clipboard.writeText(buildOfferText());status.textContent='Oferta copiada.';}
   catch{status.textContent='Não foi possível copiar automaticamente. Selecione o texto da oferta e copie manualmente.';}
   status.classList.remove('hidden');
+});
+$('sendWhatsApp')?.addEventListener('click',()=>{
+  if(!lastOfferInsights.length)return;
+  const text=encodeURIComponent(buildOfferText());
+  window.open('https://wa.me/?text='+text,'_blank','noopener,noreferrer');
 });
 
 function formatFixed2(input) {
