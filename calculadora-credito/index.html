@@ -7,10 +7,9 @@
 <button type="button" class="tool-tab" data-tool="2">Projetar saldo</button>
 <button type="button" class="tool-tab" data-tool="3">Amortizar saldo</button>
 <button type="button" class="tool-tab" data-tool="4">Trocar dívida</button>
-<button type="button" class="tool-tab" data-tool="5">Crédito + amortização</button>
-<button type="button" class="tool-tab" data-tool="6">Argumentos da oferta</button>
+<button type="button" class="tool-tab" data-tool="5">Argumentos da oferta</button>
 </nav>
-<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i><i></i></div>
 
 <div class="tools-carousel" id="toolsCarousel">
 <section class="tool-panel">
@@ -104,7 +103,7 @@
 <div class="balance-stat"><span>Economia de juros · parcela</span><b id="amInterestPayment"></b></div>
 </div><p class="assumption-note">Estimativa pelo sistema Price, sem tarifas, seguros ou outros eventos do contrato.</p></section>
 </div></section>
-<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Trocar dívida</h2><p>Compare o que ainda seria pago no contrato atual com uma proposta para liquidá-lo e substituí-lo.</p></div>
+<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Trocar dívida</h2><p>Compare uma nova operação com o empréstimo atual. O sistema identifica automaticamente se haverá liquidação ou amortização parcial.</p></div>
 <form id="exchangeForm" novalidate>
 <div class="portability-card">
 <h3>Empréstimo atual</h3>
@@ -119,7 +118,8 @@
 <div class="grid">
 <label>Nova parcela <span>R$</span><input id="exNewPayment" inputmode="numeric"></label>
 <label>Novo prazo <input id="exNewN" inputmode="numeric"></label>
-<label>Valor adicional liberado <span>R$</span><input id="exCashBack" inputmode="numeric"></label>
+<label>Valor da nova operação <span>R$</span><input id="exNewAmount" inputmode="numeric"></label>
+<label>Valor a amortizar <span>R$ · opcional</span><input id="exAmortizeAmount" inputmode="numeric"></label>
 </div>
 </div>
 <details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Informe taxas e datas quando disponíveis para qualificar a comparação econômica da troca. O IOF da nova operação é estimado automaticamente.</p><div class="grid advanced">
@@ -132,42 +132,18 @@
 </div></details>
 <div class="actions"><button type="submit" id="exchange" disabled>Calcular troca</button><button type="button" class="secondary" id="clearExchange">Limpar</button></div><p id="exchangeError" class="error" role="alert"></p></form>
 <section id="exchangeResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Impacto da troca</p><strong id="exFinancialResult"></strong><div class="simulation-meta">
+<div class="balance-stat"><span>Tipo de operação</span><b id="exOperationType"></b></div>
+<div class="balance-stat"><span>Valor destinado à dívida</span><b id="exAppliedAmount"></b></div>
+<div class="balance-stat"><span>Valor livre para o cliente</span><b id="exCashAvailable"></b></div>
+<div class="balance-stat"><span>Saldo remanescente</span><b id="exRemainingBalance"></b></div>
 <div class="balance-stat"><span>Restante no contrato atual</span><b id="exCurrentTotal"></b></div>
 <div class="balance-stat"><span>Total da nova operação</span><b id="exNewTotal"></b></div><div class="balance-stat"><span>IOF estimado</span><b id="exCalculatedIof"></b></div>
 <div class="balance-stat"><span>Diferença na parcela</span><b id="exPaymentDiff"></b></div>
 <div class="balance-stat"><span>Diferença no prazo</span><b id="exPeriodDiff"></b></div>
 </div><p class="assumption-note" id="exSummary"></p><p class="assumption-note">O cálculo compara fluxos nominais. O IOF é estimado automaticamente quando a taxa da nova operação é informada.</p></section>
 </div></section>
-<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Crédito + amortização</h2><p>Veja o impacto de contratar um novo crédito para amortizar o saldo de outra operação.</p></div>
-<form id="creditAmortForm" novalidate>
-<p class="result-label">Operação a amortizar</p><div class="grid">
-<label>Saldo devedor <span>R$</span><input id="caBalance" inputmode="numeric"></label>
-<label>Parcela atual <span>R$</span><input id="caCurrentPayment" inputmode="numeric"></label>
-<label>Parcelas restantes <input id="caCurrentN" inputmode="numeric"></label>
-<label>Taxa atual <span>% a.m.</span><input id="caCurrentI" inputmode="numeric"></label>
-</div>
-<p class="result-label">Novo crédito</p><div class="grid">
-<label>Valor a contratar <span>R$</span><input id="caNewAmount" inputmode="numeric"></label>
-<label>Prazo do novo crédito <input id="caNewN" inputmode="numeric"></label>
-<label>Taxa do novo crédito <span>% a.m.</span><input id="caNewI" inputmode="numeric"></label>
-</div>
-<details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">As datas refinam o período até os próximos vencimentos e o IOF do novo crédito.</p><div class="grid advanced">
-<label>Data do saldo atual <input id="caBaseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<label>Próximo vencimento atual <input id="caCurrentDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<label>Data da nova contratação <input id="caContractDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<label>Primeiro vencimento novo <input id="caFirstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<p class="coming">Sem as datas, serão considerados períodos de 30 dias.</p>
-</div></details>
-<div class="actions"><button type="submit" id="creditAmortize" disabled>Calcular impacto</button><button type="button" class="secondary" id="clearCreditAmort">Limpar</button></div><p id="creditAmortError" class="error" role="alert"></p></form>
-<section id="creditAmortResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Impacto financeiro</p><div class="simulation-meta">
-<div class="balance-stat"><span>Parcela do novo crédito</span><b id="caNewPayment"></b></div>
-<div class="balance-stat"><span>IOF estimado</span><b id="caIof"></b></div>
-<div class="balance-stat"><span>Economia · reduzindo prazo</span><b id="caEconomyTerm"></b><small id="caTermDetail"></small></div>
-<div class="balance-stat"><span>Economia · reduzindo parcela</span><b id="caEconomyPayment"></b><small id="caPaymentDetail"></small></div>
-</div><p class="assumption-note" id="caSummary"></p></section>
-</div></section>
 <section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Argumentos da oferta</h2><p>Os argumentos comerciais aparecem automaticamente nos resultados das ferramentas. Aqui você pode consultar o último conjunto gerado.</p></div>
 <section id="insightsHub" class="result embedded"><p class="result-label">Argumentos calculados</p><div id="insightsHubList" class="simulation-meta"><div class="balance-stat"><span>Aguardando cálculo</span><b>Use uma das ferramentas para gerar argumentos objetivos.</b></div></div><p class="assumption-note">Os textos são gerados por regras matemáticas, sem IA. Cada argumento deriva de números exibidos na própria simulação.</p></section>
 </div></section>
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-12"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-13"></script></body></html>
