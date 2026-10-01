@@ -427,9 +427,8 @@ $('exchangeForm').addEventListener('submit',e=>{
     $('exCurrentTotal').textContent=brl.format(r.adjustedCurrentRemaining);$('exNewTotal').textContent=brl.format(r.newRemaining);
     const adjustedCard=$('exAdjustedPaymentCard');
     if(r.operationType==='amortization'&&r.adjustedCurrentPayment!==null){
-      adjustedCard.classList.remove('hidden');$('exAdjustedCurrentPayment').textContent=brl.format(r.adjustedCurrentPayment);
-    }else if(r.operationType==='amortization'){
-      adjustedCard.classList.remove('hidden');$('exAdjustedCurrentPayment').textContent='Informe a taxa atual';
+      adjustedCard.classList.remove('hidden');
+      $('exAdjustedCurrentPayment').textContent=brl.format(r.adjustedCurrentPayment)+(r.adjustedPaymentMethod==='proportional'?' · estimada':'');
     }else adjustedCard.classList.add('hidden');
     $('exIofNotice').textContent=r.newIof===null?'IOF não calculado: informe a taxa da nova operação para estimá-lo.':'IOF estimado da nova operação: '+brl.format(r.newIof)+'.';
     const paymentReference=r.adjustedCurrentPayment??parseBRNumber($('exCurrentPayment').value);
