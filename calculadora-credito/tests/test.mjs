@@ -24,6 +24,8 @@ near(sameDay.balance,12000,1e-8); assert.equal(sameDay.paid,0);
 assert.throws(()=>updateBalance({principal:12000,monthlyRate:.01,payment:1000,periods:12,baseDate:base,nextDue:due,targetDate:new Date(2025,11,31)}),/anterior/);
 const amort=amortizeBalance({principal:50000,currentPayment:pmt,remainingPeriods:36,monthlyRate:.015,extraPayment:10000});
 near(amort.newBalance,40000); near(amort.newPayment,payment(40000,.015,36),1e-8); assert.ok(amort.reducedPeriods<36); assert.ok(amort.periodsSaved>0); assert.ok(amort.paymentReduction>0); assert.ok(amort.interestSavingTerm>0); assert.ok(amort.interestSavingPayment>0);
+const amort45=amortizeBalance({principal:50000,currentPayment:pmt,remainingPeriods:36,monthlyRate:.015,extraPayment:10000,firstPeriodDays:45});
+assert.ok(amort45.newPayment>amort.newPayment, 'Primeiro período maior deve elevar a parcela mantendo o prazo.');
 assert.throws(()=>amortizeBalance({principal:50000,currentPayment:pmt,remainingPeriods:36,monthlyRate:.015,extraPayment:50000}),/menor/);
 const comparison=compareCredit(
   {amount:20000,payment:1000,periods:24,monthlyRate:.015},
@@ -32,9 +34,13 @@ const comparison=compareCredit(
 near(comparison.A.totalPaid,24000); near(comparison.B.totalPaid,25500);
 near(comparison.diff.payment,-150); near(comparison.diff.periods,6); near(comparison.diff.totalPaid,1500);
 near(comparison.diff.totalCost,1500); assert.ok(comparison.pct.payment<0);
+const comparisonIof=compareCredit({amount:10000,payment:500,periods:24,monthlyRate:.01,iof:100},{amount:10000,payment:500,periods:24,monthlyRate:.01,iof:150});
+near(comparisonIof.diff.iof,50); near(comparisonIof.diff.financedAmount,50);
 assert.throws(()=>compareCredit({amount:0,payment:1,periods:1,monthlyRate:.01},{amount:1,payment:1,periods:1,monthlyRate:.01}),/valores válidos/);
 const exchange=debtExchange({currentBalance:18000,currentPayment:900,currentPeriods:24,newPayment:700,newPeriods:24,fees:200,cashBack:1000});
 near(exchange.currentRemaining,21600);near(exchange.newRemaining,17000);near(exchange.financialDifference,5600);near(exchange.paymentDifference,-200);
+const exchangeAdvanced=debtExchange({currentBalance:18000,currentPayment:900,currentPeriods:24,newPayment:700,newPeriods:24,fees:200,cashBack:1000,currentRate:.02,newRate:.015,newIof:120,currentFirstPeriodDays:20,newFirstPeriodDays:40});
+near(exchangeAdvanced.newIof,120); near(exchangeAdvanced.currentRate,.02); near(exchangeAdvanced.newRate,.015);
 assert.throws(()=>debtExchange({currentBalance:1,currentPayment:0,currentPeriods:1,newPayment:1,newPeriods:1}),/valores válidos/);
 const converterPayment=payment(25000,.015,36);
 const converterAmount=principal(converterPayment,.015,36);
