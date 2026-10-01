@@ -24,7 +24,7 @@ function formatFixed2(input) {
   if (!digits || /^0+$/.test(digits)) { input.value = ''; return; }
   input.value=(Number(digits)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','simPmt','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','cmpAIOF','cmpBIOF','exBalance','exCurrentPayment','exNewPayment','exCashBack','cvAmount','cvPayment','caBalance','caCurrentPayment','caNewAmount'].forEach(id=>$(id)?.addEventListener('input',e=>formatFixed2(e.target)));
+['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','simPmt','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','cmpAIOF','cmpBIOF','exBalance','exCurrentPayment','exNewPayment','exNewAmount','exAmortizeAmount','cvAmount','cvPayment','caBalance','caCurrentPayment','caNewAmount'].forEach(id=>$(id)?.addEventListener('input',e=>formatFixed2(e.target)));
 ['i','portI','upI','amI','cmpAI','cmpBI','exCurrentI','exNewI','cvI','caCurrentI','caNewI'].forEach(id=>$(id)?.addEventListener('input',e=>formatFixed2(e.target)));
 $('simI').addEventListener('input',e=>{formatFixed2(e.target);validateSimulation();});
 
@@ -392,79 +392,49 @@ validateComparison();
 
 
 function validateExchange(){
-  const required=['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN'];
+  const required=['exBalance','exCurrentPayment','exCurrentN','exNewAmount','exNewPayment','exNewN'];
   const ok=required.every(id=>{const v=parseBRNumber($(id).value),valid=Number.isFinite(v)&&v>0;updateFieldState(id,valid);return valid;});
-  for(const id of ['exCashBack']){const raw=$(id).value.trim(),v=parseBRNumber(raw),valid=raw===''||(Number.isFinite(v)&&v>=0);$(id).classList.toggle('field-valid',raw!==''&&valid);$(id).classList.toggle('field-invalid',raw!==''&&!valid);}
-  $('exchange').disabled=!ok;
+  const raw=$('exAmortizeAmount').value.trim(),amount=parseBRNumber(raw),newAmount=parseBRNumber($('exNewAmount').value);
+  const optionalOk=raw===''||(Number.isFinite(amount)&&amount>0&&Number.isFinite(newAmount)&&amount<=newAmount);
+  $('exAmortizeAmount').classList.toggle('field-valid',raw!==''&&optionalOk);$('exAmortizeAmount').classList.toggle('field-invalid',raw!==''&&!optionalOk);
+  $('exchange').disabled=!(ok&&optionalOk);
 }
-['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exCurrentI','exNewI','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).addEventListener('input',validateExchange));
+['exBalance','exCurrentPayment','exCurrentN','exNewAmount','exNewPayment','exNewN','exAmortizeAmount','exCurrentI','exNewI','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).addEventListener('input',validateExchange));
 $('exchangeForm').addEventListener('submit',e=>{
   e.preventDefault();$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');
   try{
-    validateExchange();if($('exchange').disabled)throw new Error('Preencha os dados essenciais com valores válidos.');
+    validateExchange();if($('exchange').disabled)throw new Error('Preencha os dados essenciais com valores válidos. O valor a amortizar, quando informado, não pode superar a nova operação.');
+    for(const id of ['exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'])if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');
+    const base=parseDateBR($('exBaseDate').value),currentDue=parseDateBR($('exCurrentDue').value);
+    const contractDate=parseDateBR($('exNewContractDate').value)??new Date(),firstDue=parseDateBR($('exNewFirstDue').value)??defaultNextDue(contractDate);
+    if(base&&currentDue&&currentDue<=base)throw new Error('O próximo vencimento atual deve ser posterior à data do saldo.');
+    if(firstDue<=contractDate)throw new Error('O primeiro vencimento novo deve ser posterior à data da contratação.');
     const r=debtExchange({
       currentBalance:parseBRNumber($('exBalance').value),
       currentPayment:parseBRNumber($('exCurrentPayment').value),
       currentPeriods:parseBRNumber($('exCurrentN').value),
+      newAmount:parseBRNumber($('exNewAmount').value),
       newPayment:parseBRNumber($('exNewPayment').value),
       newPeriods:parseBRNumber($('exNewN').value),
-      cashBack:parseBRNumber($('exCashBack').value)??0,
+      amortizeAmount:parseBRNumber($('exAmortizeAmount').value),
       currentRate:(parseBRNumber($('exCurrentI').value)??0)/100,
       newRate:(parseBRNumber($('exNewI').value)??0)/100,
-      currentFirstPeriodDays:parseDateBR($('exBaseDate').value)&&parseDateBR($('exCurrentDue').value)?daysBetween(parseDateBR($('exBaseDate').value),parseDateBR($('exCurrentDue').value)):30,
-      newFirstPeriodDays:parseDateBR($('exNewContractDate').value)&&parseDateBR($('exNewFirstDue').value)?daysBetween(parseDateBR($('exNewContractDate').value),parseDateBR($('exNewFirstDue').value)):30,
-      newContractDate:parseDateBR($('exNewContractDate').value)??new Date(),
-      newFirstDue:parseDateBR($('exNewFirstDue').value)??defaultNextDue(parseDateBR($('exNewContractDate').value)??new Date())
+      currentFirstPeriodDays:base&&currentDue?daysBetween(base,currentDue):30,
+      newFirstPeriodDays:daysBetween(contractDate,firstDue),
+      newContractDate:contractDate,newFirstDue:firstDue
     });
+    $('exOperationType').textContent=r.operationType==='liquidation'?'Liquidação':'Amortização parcial';
+    $('exAppliedAmount').textContent=brl.format(r.appliedAmount);$('exCashAvailable').textContent=brl.format(r.cashAvailable);$('exRemainingBalance').textContent=brl.format(r.remainingBalance);
     $('exCurrentTotal').textContent=brl.format(r.currentRemaining);$('exNewTotal').textContent=brl.format(r.newRemaining);$('exCalculatedIof').textContent=r.newIof===null?'Informe a taxa':brl.format(r.newIof);
     $('exPaymentDiff').textContent=signedMoney(r.paymentDifference);
     $('exPeriodDiff').textContent=r.periodDifference===0?'Mesmo prazo':(r.periodDifference>0?'+ ':'− ')+Math.abs(r.periodDifference).toLocaleString('pt-BR')+' parcelas';
     const positive=r.financialDifference>=0;
     $('exFinancialResult').textContent=(positive?'Economia nominal de ':'Acréscimo nominal de ')+brl.format(Math.abs(r.financialDifference));
-    const cash=r.cashBack>0?' considerando '+brl.format(r.cashBack)+' de valor adicional liberado':'';
-    $('exSummary').textContent='A nova operação '+(r.paymentDifference<0?'reduz':'aumenta')+' a parcela em '+brl.format(Math.abs(r.paymentDifference))+cash+'.';
-    $('exchangeResult').classList.remove('hidden');
-    renderInsights('exchange',r);
+    $('exSummary').textContent=r.operationType==='liquidation'
+      ? 'A nova operação liquida integralmente o empréstimo atual'+(r.cashAvailable>0?' e deixa '+brl.format(r.cashAvailable)+' livres para o cliente.':'.')
+      : 'A nova operação amortiza '+brl.format(r.appliedAmount)+' do empréstimo atual, mantém saldo de '+brl.format(r.remainingBalance)+' e deixa '+brl.format(r.cashAvailable)+' livres para o cliente.';
+    $('exchangeResult').classList.remove('hidden');renderInsights('exchange',r);
   }catch(err){$('exchangeError').textContent=err.message;}
 });
-$('clearExchange').addEventListener('click',()=>{$('exchangeForm').reset();['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exCurrentI','exNewI','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');validateExchange();});
+$('clearExchange').addEventListener('click',()=>{$('exchangeForm').reset();['exBalance','exCurrentPayment','exCurrentN','exNewAmount','exNewPayment','exNewN','exAmortizeAmount','exCurrentI','exNewI','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');validateExchange();});
 validateExchange();
-
-
-function validateCreditAmort(){
-  const ids=['caBalance','caCurrentPayment','caCurrentN','caCurrentI','caNewAmount','caNewN','caNewI'];
-  const ok=ids.every(id=>{const v=parseBRNumber($(id).value),valid=Number.isFinite(v)&&v>0;updateFieldState(id,valid);return valid;});
-  const balance=parseBRNumber($('caBalance').value),amount=parseBRNumber($('caNewAmount').value);
-  const amountOk=Number.isFinite(amount)&&Number.isFinite(balance)&&amount>0&&amount<balance;
-  if($('caNewAmount').value.trim()!=='')updateFieldState('caNewAmount',amountOk);
-  $('creditAmortize').disabled=!(ok&&amountOk);
-}
-['caBalance','caCurrentPayment','caCurrentN','caCurrentI','caNewAmount','caNewN','caNewI','caBaseDate','caCurrentDue','caContractDate','caFirstDue'].forEach(id=>$(id).addEventListener('input',validateCreditAmort));
-$('creditAmortForm').addEventListener('submit',e=>{
-  e.preventDefault();$('creditAmortError').textContent='';$('creditAmortResult').classList.add('hidden');
-  try{
-    validateCreditAmort();if($('creditAmortize').disabled)throw new Error('Preencha os dados essenciais com valores válidos. O novo crédito deve ser menor que o saldo a amortizar.');
-    for(const id of ['caBaseDate','caCurrentDue','caContractDate','caFirstDue'])if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');
-    const base=parseDateBR($('caBaseDate').value),currentDue=parseDateBR($('caCurrentDue').value);
-    const contractDate=parseDateBR($('caContractDate').value)??new Date(),firstDue=parseDateBR($('caFirstDue').value)??defaultNextDue(contractDate);
-    const targetFirstPeriodDays=base&&currentDue?daysBetween(base,currentDue):30;
-    if(targetFirstPeriodDays<=0||firstDue<=contractDate)throw new Error('Os próximos vencimentos devem ser posteriores às respectivas datas-base.');
-    const r=creditToAmortize({
-      targetBalance:parseBRNumber($('caBalance').value),targetPayment:parseBRNumber($('caCurrentPayment').value),
-      targetPeriods:parseBRNumber($('caCurrentN').value),targetRate:parseBRNumber($('caCurrentI').value)/100,
-      newCreditAmount:parseBRNumber($('caNewAmount').value),newCreditPeriods:parseBRNumber($('caNewN').value),
-      newCreditRate:parseBRNumber($('caNewI').value)/100,contractDate,firstDue,targetFirstPeriodDays
-    });
-    $('caNewPayment').textContent=brl.format(r.credit.payment);$('caIof').textContent=brl.format(r.credit.iof);
-    $('caEconomyTerm').textContent=(r.economyTerm>=0?'Economia de ':'Acréscimo de ')+brl.format(Math.abs(r.economyTerm));
-    $('caEconomyPayment').textContent=(r.economyPayment>=0?'Economia de ':'Acréscimo de ')+brl.format(Math.abs(r.economyPayment));
-    $('caTermDetail').textContent='saldo amortizado para '+brl.format(r.amort.newBalance)+' e prazo estimado em '+Math.ceil(r.amort.reducedPeriods)+' parcelas';
-    $('caPaymentDetail').textContent='nova parcela da dívida amortizada: '+brl.format(r.amort.newPayment);
-    const best=r.economyTerm>=r.economyPayment?r.economyTerm:r.economyPayment;
-    $('caSummary').textContent='O cálculo compara o fluxo restante da dívida atual com a soma do novo crédito e do saldo após a amortização. '+(best>=0?'Há cenário com redução nominal de desembolso.':'Nos cenários calculados, o custo do novo crédito supera a economia gerada pela amortização.');
-    $('creditAmortResult').classList.remove('hidden');
-    renderInsights('creditAmortization',r);
-  }catch(err){$('creditAmortError').textContent=err.message;}
-});
-$('clearCreditAmort').addEventListener('click',()=>{$('creditAmortForm').reset();['caBalance','caCurrentPayment','caCurrentN','caCurrentI','caNewAmount','caNewN','caNewI','caBaseDate','caCurrentDue','caContractDate','caFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('creditAmortError').textContent='';$('creditAmortResult').classList.add('hidden');validateCreditAmort();});
-validateCreditAmort();
