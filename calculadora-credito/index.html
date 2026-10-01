@@ -1,4 +1,4 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f7f5"><title>Calculadora de Crédito</title><link rel="stylesheet" href="css/app.css?v=20261001-06"></head>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f7f5"><title>Calculadora de Crédito</title><link rel="stylesheet" href="css/app.css?v=20261001-07"></head>
 <body><main class="wrap"><header><p class="eyebrow">FINANÇAS</p><h1>Calculadora de Crédito</h1><p class="lead">Escolha a ferramenta que precisa. Os dados podem ser reaproveitados entre elas.</p></header>
 
 <nav class="tool-tabs" aria-label="Ferramentas">
@@ -7,7 +7,7 @@
 <button type="button" class="tool-tab" data-tool="2">Simular troca de dívida</button>
 <button type="button" class="tool-tab" data-tool="3">Simular amortização</button>
 <button type="button" class="tool-tab" data-tool="4">Simular saldo futuro</button>
-<button type="button" class="tool-tab" data-tool="5">Argumentos da oferta</button>
+<button type="button" class="tool-tab" data-tool="5">Gerar oferta</button>
 </nav>
 <div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i><i></i></div>
 
@@ -153,9 +153,11 @@
 <p id="updateError" class="error" role="alert"></p>
 <div id="updatedBalanceResult" class="balance-summary hidden"><p class="result-label" id="updatedBalanceDate"></p><strong id="updatedBalanceValue"></strong><p class="balance-caption">Saldo devedor estimado</p><div class="balance-meta"><div class="balance-stat"><b id="paidPeriods"></b><span>parcelas transcorridas</span></div><div class="balance-stat"><b id="remainingPeriods"></b><span>parcelas restantes</span></div><div class="balance-stat"><span>Próximo vencimento</span><b id="updatedNextDue"></b></div></div><p class="assumption-note">Valores em atraso foram desconsiderados.</p></div>
 </div></section>
-<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Argumentos da oferta</h2><p>Os argumentos comerciais aparecem automaticamente nos resultados das ferramentas. Aqui você pode consultar o último conjunto gerado.</p></div>
-<div class="portability-card"><h3>Argumentos calculados</h3><section id="insightsHub" class="result embedded"><div id="insightsHubList" class="simulation-meta"><div class="balance-stat"><span>Aguardando cálculo</span><b>Use uma das ferramentas para gerar argumentos objetivos.</b></div></div><p class="assumption-note">Os textos são gerados por regras matemáticas, sem IA. Cada argumento deriva de números exibidos na própria simulação.</p></section></div>
+<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Gerar oferta</h2><p>Transforme o último cálculo em uma oferta objetiva, pronta para apresentar ou enviar ao cliente.</p></div>
+<div class="portability-card"><h3>Personalização</h3><div class="grid"><label>Nome do cliente <span>opcional</span><input id="offerClientName" autocomplete="off"></label></div></div>
+<div class="portability-card"><h3>Destaques calculados</h3><section id="insightsHub" class="result embedded"><div id="insightsHubList" class="simulation-meta"><div class="balance-stat"><span>Aguardando cálculo</span><b>Use uma das ferramentas para gerar uma oferta.</b></div></div><p class="assumption-note">Os destaques são gerados por regras matemáticas, sem IA, a partir dos números da última simulação.</p></section></div>
+<div class="portability-card"><h3>Oferta pronta</h3><div id="offerPreview" class="offer-preview">Faça uma simulação para gerar a oferta.</div><div class="actions"><button type="button" id="copyOffer" disabled>Copiar oferta</button></div><p id="copyOfferStatus" class="assumption-note hidden"></p></div>
 </div></section>
 
 </div>
-<footer><p>Simulação matemática baseada exclusivamente nos dados informados, não é válida como proposta.<br>O saldo oficial pode variar conforme as condições e eventos do contrato.</p><p>Desenvolvido por: bmachado.dev - 2026<br>Reprodução comercial não autorizada.</p></footer></main><script type="module" src="js/app.js?v=20261001-34"></script></body></html>
+<footer><p>Simulação matemática baseada exclusivamente nos dados informados, não é válida como proposta.<br>O saldo oficial pode variar conforme as condições e eventos do contrato.</p><p>Desenvolvido por: bmachado.dev - 2026<br>Reprodução comercial não autorizada.</p></footer></main><script type="module" src="js/app.js?v=20261001-35"></script></body></html>
