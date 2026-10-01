@@ -18,7 +18,7 @@
 
 .credit-kind{display:inline-flex;gap:5px;padding:4px;background:#efefec;border-radius:11px;margin:0 0 18px}
 .kind-option{min-height:38px;background:transparent;color:#666;padding:7px 16px}
-.kind-option.active{background:#fff;color:#171717;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.kind-option.active,.kind-option[aria-pressed="true"]{background:#fff;color:#171717;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .simulation-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
 @media(max-width:620px){.credit-kind{display:flex}.kind-option{flex:1}.simulation-meta{grid-template-columns:1fr 1fr}.simulation-meta .balance-stat:last-child{grid-column:1/-1}}
 
