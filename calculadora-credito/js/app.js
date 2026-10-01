@@ -8,7 +8,14 @@ import { amortizeBalance } from './features/amortize-balance.js';
 import { compareCredit } from './features/compare-credit.js';
 import { debtExchange } from './features/debt-exchange.js';
 import { creditToAmortize } from './features/credit-to-amortize.js';
+import { offerInsights } from './features/offer-insights.js';
 const $=id=>document.getElementById(id); const form=$('calcForm'); let current=null;
+function renderInsights(context,data){
+  const insights=offerInsights(context,data),hub=$('insightsHubList'); if(!hub)return;
+  hub.innerHTML='';
+  for(const item of insights){const box=document.createElement('div');box.className='balance-stat';const span=document.createElement('span');span.textContent=item.title;const b=document.createElement('b');b.textContent=item.text;box.append(span,b);hub.appendChild(box);}
+  if(!insights.length)hub.innerHTML='<div class="balance-stat"><span>Sem argumento adicional</span><b>Os dados calculados não produziram um destaque comercial relevante.</b></div>';
+}
 
 function formatFixed2(input) {
   const raw = input.value.trim();
@@ -268,6 +275,7 @@ $('simulateForm').addEventListener('submit',e=>{
           : 'IOF do saldo renovado aproximado assumindo 180 dias já tributados na operação original. Informe as datas da operação original em “Aumente a precisão” para refinar. Primeiro vencimento em '+formatDateBR(firstDue)+'.')
       : 'IOF estimado incluído no valor financiado. Primeiro vencimento em '+formatDateBR(firstDue)+'.';
     $('simulationResult').classList.remove('hidden');
+    renderInsights('simulation',{...result,kind:simulationKind,outstandingBalance:simulationKind==='renewal'?parseBRNumber($('simBalance').value):0});
   }catch(err){$('simulateError').textContent=err.message;}
 });
 $('clearSimulation').addEventListener('click',()=>{
@@ -338,6 +346,7 @@ $('compareForm').addEventListener('submit',e=>{
     parts.push(r.diff.totalPaid===0?'O desembolso total é igual.':r.diff.totalPaid<0?'O desembolso total de B é '+brl.format(-r.diff.totalPaid)+' menor.':'O desembolso total de B é '+brl.format(r.diff.totalPaid)+' maior.');
     $('cmpSummary').textContent=parts.join(' ');
     $('comparisonResult').classList.remove('hidden');
+    renderInsights('comparison',r);
   }catch(err){$('compareError').textContent=err.message;}
 });
 $('clearComparison').addEventListener('click',()=>{$('compareForm').reset();['cmpAAmount','cmpAPayment','cmpAN','cmpAI','cmpBAmount','cmpBPayment','cmpBN','cmpBI','cmpAIOF','cmpBIOF','cmpAContractDate','cmpAFirstDue','cmpBContractDate','cmpBFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('compareError').textContent='';$('comparisonResult').classList.add('hidden');validateComparison();});
@@ -377,6 +386,7 @@ $('exchangeForm').addEventListener('submit',e=>{
     const cash=r.cashBack>0?' considerando '+brl.format(r.cashBack)+' de valor adicional liberado':'';
     $('exSummary').textContent='A nova operação '+(r.paymentDifference<0?'reduz':'aumenta')+' a parcela em '+brl.format(Math.abs(r.paymentDifference))+cash+'.';
     $('exchangeResult').classList.remove('hidden');
+    renderInsights('exchange',r);
   }catch(err){$('exchangeError').textContent=err.message;}
 });
 $('clearExchange').addEventListener('click',()=>{$('exchangeForm').reset();['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exFees','exCurrentI','exNewI','exNewIof','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');validateExchange();});
@@ -420,6 +430,7 @@ $('converterForm').addEventListener('submit',e=>{
     $('cvResultI').textContent=(i*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'% a.m.';
     $('cvResultTotal').textContent=brl.format(finalPayment*n);
     $('converterResult').classList.remove('hidden');
+    renderInsights('converter',{findingAmount,result,payment:finalPayment,periods:n});
   }catch(err){$('converterError').textContent=err.message;}
 });
 $('clearConverter').addEventListener('click',()=>{$('converterForm').reset();['cvAmount','cvPayment','cvN','cvI','cvContractDate','cvFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('converterError').textContent='';$('converterResult').classList.add('hidden');validateConverter();});
@@ -458,6 +469,7 @@ $('creditAmortForm').addEventListener('submit',e=>{
     const best=r.economyTerm>=r.economyPayment?r.economyTerm:r.economyPayment;
     $('caSummary').textContent='O cálculo compara o fluxo restante da dívida atual com a soma do novo crédito e do saldo após a amortização. '+(best>=0?'Há cenário com redução nominal de desembolso.':'Nos cenários calculados, o custo do novo crédito supera a economia gerada pela amortização.');
     $('creditAmortResult').classList.remove('hidden');
+    renderInsights('creditAmortization',r);
   }catch(err){$('creditAmortError').textContent=err.message;}
 });
 $('clearCreditAmort').addEventListener('click',()=>{$('creditAmortForm').reset();['caBalance','caCurrentPayment','caCurrentN','caCurrentI','caNewAmount','caNewN','caNewI','caBaseDate','caCurrentDue','caContractDate','caFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('creditAmortError').textContent='';$('creditAmortResult').classList.add('hidden');validateCreditAmort();});
