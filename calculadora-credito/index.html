@@ -3,7 +3,7 @@
 
 <nav class="tool-tabs" aria-label="Ferramentas">
 <button type="button" class="tool-tab active" data-tool="0">Simular crédito</button>
-<button type="button" class="tool-tab" data-tool="1">Recalcular crédito</button>
+<button type="button" class="tool-tab" data-tool="1">Simular portabilidade</button>
 <button type="button" class="tool-tab" data-tool="2">Projetar saldo</button>
 <button type="button" class="tool-tab" data-tool="3">Amortizar saldo</button>
 <button type="button" class="tool-tab" data-tool="4">Comparar crédito</button>
@@ -44,18 +44,27 @@
 </div></section>
 
 <section class="tool-panel">
-<div class="card tool-card"><div class="tool-heading"><h2>Recalcular crédito</h2><p>Informe três dados financeiros e deixe em branco o que deseja descobrir.</p></div><form id="calcForm" novalidate><div class="grid">
+<div class="card tool-card"><div class="tool-heading"><h2>Simular portabilidade</h2><p>Informe os dados do contrato atual e a taxa oferecida pela instituição destino. Saldo, prazo e demais condições são mantidos para comparar apenas o efeito da nova taxa.</p></div>
+<form id="calcForm" novalidate>
+<div class="portability-card">
+<h3>Instituição origem</h3>
+<div class="grid">
 <label>Saldo devedor <span>R$</span><input id="pv" inputmode="numeric"></label>
 <label>Valor da parcela <span>R$</span><input id="pmt" inputmode="numeric"></label>
 <label>Parcelas restantes <input id="n" inputmode="decimal"></label>
 <label>Taxa mensal <span>% a.m.</span><input id="i" inputmode="numeric"></label>
 </div>
 <details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Informe os dados que você tiver do contrato para substituir as premissas automáticas e obter uma estimativa mais precisa.</p><div class="grid advanced"><label>Data do saldo devedor <input id="baseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label><label>Próximo vencimento <input id="due" inputmode="numeric" maxlength="10" autocomplete="off"></label><label>Primeiro vencimento <input id="firstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label><label>Valor originalmente financiado <span>R$</span><input id="originalPv" inputmode="numeric"></label><label>Quantidade original de parcelas <input id="originalN" inputmode="numeric"></label><p class="coming">Se o próximo vencimento for necessário e não estiver informado, será considerada carência padrão de 30 dias.</p></div></details>
-<div class="actions"><button type="submit" id="calculate" disabled>Calcular</button><button type="button" class="secondary" id="clear">Limpar</button></div><p id="error" class="error" role="alert"></p></form>
-<section id="result" class="result embedded hidden" aria-live="polite"><p class="result-label" id="resultLabel"></p><strong id="resultValue"></strong><p id="resultExtra"></p><div class="next"><button type="button" id="sendToUpdate">Usar em Projetar saldo</button><button type="button" id="showEvolution">Ver evolução</button></div></section>
-<section id="evolution" class="embedded hidden"><div class="section-head"><h3>Evolução estimada</h3><button type="button" class="secondary small" id="hideEvolution">Fechar</button></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Saldo inicial</th><th>Juros</th><th>Amortização</th><th>Parcela</th><th>Saldo final</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>
+</div>
+<div class="portability-card">
+<h3>Instituição destino</h3>
+<div class="grid"><label>Taxa mensal <span>% a.m.</span><input id="portI" inputmode="numeric"></label></div>
+<p class="precision-help portability-copy">O saldo devedor, o prazo restante e as datas serão os mesmos da instituição origem.</p>
+</div>
+<div class="actions"><button type="submit" id="calculate" disabled>Simular portabilidade</button><button type="button" class="secondary" id="clear">Limpar</button></div><p id="error" class="error" role="alert"></p></form>
+<section id="result" class="result embedded hidden" aria-live="polite"><p class="result-label">Parcela na instituição destino</p><strong id="resultValue"></strong><div class="simulation-meta"><div class="balance-stat"><span>Parcela na origem</span><b id="portOriginPayment"></b></div><div class="balance-stat"><span>Taxa na origem</span><b id="portOriginRate"></b></div><div class="balance-stat"><span>Taxa no destino</span><b id="portDestinationRate"></b></div></div><p id="resultExtra" class="assumption-note"></p><div class="next"><button type="button" id="sendToUpdate">Usar origem em Projetar saldo</button><button type="button" id="showEvolution">Ver evolução da origem</button></div><p id="resultLabel" class="hidden"></p></section>
+<section id="evolution" class="embedded hidden"><div class="section-head"><h3>Evolução estimada da origem</h3><button type="button" class="secondary small" id="hideEvolution">Fechar</button></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Saldo inicial</th><th>Juros</th><th>Amortização</th><th>Parcela</th><th>Saldo final</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>
 </div></section>
-
 <section class="tool-panel">
 <div class="card tool-card"><div class="tool-heading"><h2>Projetar saldo</h2><p>Informe os dados conhecidos do contrato e escolha a data para atualização.</p></div><div class="grid">
 <label>Saldo devedor <span>R$</span><input id="upPv" inputmode="numeric"></label>
@@ -202,4 +211,4 @@
 <section id="insightsHub" class="result embedded"><p class="result-label">Argumentos calculados</p><div id="insightsHubList" class="simulation-meta"><div class="balance-stat"><span>Aguardando cálculo</span><b>Use uma das ferramentas para gerar argumentos objetivos.</b></div></div><p class="assumption-note">Os textos são gerados por regras matemáticas, sem IA. Cada argumento deriva de números exibidos na própria simulação.</p></section>
 </div></section>
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-02"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-03"></script></body></html>
