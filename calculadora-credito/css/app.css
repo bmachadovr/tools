@@ -35,3 +35,5 @@
 
 .exchange-consolidation{display:grid!important;grid-template-columns:1fr!important;gap:12px;margin-top:18px}
 .exchange-consolidation .balance-stat{width:100%}
+
+.required-rate-alert{color:#b42318;font-weight:700}
