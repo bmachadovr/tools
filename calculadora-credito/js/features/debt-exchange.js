@@ -1,4 +1,5 @@
 import { simulateCredit } from './simulate-credit.js';
+import { amortizeBalance } from './amortize-balance.js';
 
 export function debtExchange({currentBalance,currentPayment,currentPeriods,newAmount,newPayment,newPeriods,amortizeAmount=null,currentRate=null,newRate=null,currentFirstPeriodDays=30,newFirstPeriodDays=30,newContractDate=null,newFirstDue=null}){
   const values=[currentBalance,currentPayment,currentPeriods,newAmount,newPayment,newPeriods];
@@ -11,6 +12,14 @@ export function debtExchange({currentBalance,currentPayment,currentPeriods,newAm
   const remainingBalance=Math.max(0,currentBalance-appliedAmount);
   const cashAvailable=Math.max(0,newAmount-appliedAmount);
   const currentRemaining=currentPayment*currentPeriods;
+  let adjustedCurrentPayment=null;
+  if(operationType==='amortization'&&Number.isFinite(currentRate)&&currentRate>0){
+    adjustedCurrentPayment=amortizeBalance({
+      principal:currentBalance,currentPayment,remainingPeriods:currentPeriods,
+      monthlyRate:currentRate,extraPayment:appliedAmount,firstPeriodDays:currentFirstPeriodDays
+    }).newPayment;
+  }
+  const adjustedCurrentRemaining=adjustedCurrentPayment===null?currentRemaining:adjustedCurrentPayment*currentPeriods;
   let newIof=null;
 
   if(Number.isFinite(newRate)&&newRate>0){
@@ -26,7 +35,7 @@ export function debtExchange({currentBalance,currentPayment,currentPeriods,newAm
 
   return {
     operationType,appliedAmount,remainingBalance,cashAvailable,
-    currentRemaining,newRemaining,financialDifference,currentCost,newCost,newIof,
+    currentRemaining,adjustedCurrentRemaining,adjustedCurrentPayment,newRemaining,financialDifference,currentCost,newCost,newIof,
     paymentDifference:newPayment-currentPayment,periodDifference:newPeriods-currentPeriods,
     currentRate,newRate,currentFirstPeriodDays,newFirstPeriodDays,
     effectiveDifference:financialDifference
