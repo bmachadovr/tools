@@ -4,7 +4,7 @@ import { buildSchedule } from './core/schedule.js';
 import { brl, pct, parseBRNumber } from './utils/currency.js';
 import { updateBalance } from './features/update-balance.js';
 import { simulateCredit } from './features/simulate-credit.js';
-import { amortizeBalance } from './features/amortize-balance.js';
+import { amortizeBalance } from './features/amortize-balance.js?v=20261001-01';
 import { compareCredit } from './features/compare-credit.js';
 import { debtExchange } from './features/debt-exchange.js';
 import { creditToAmortize } from './features/credit-to-amortize.js';
