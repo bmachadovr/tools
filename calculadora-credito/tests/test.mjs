@@ -6,6 +6,7 @@ import {compareCredit} from '../js/features/compare-credit.js';
 import {debtExchange} from '../js/features/debt-exchange.js';
 import {creditToAmortize} from '../js/features/credit-to-amortize.js';
 import {offerInsights} from '../js/features/offer-insights.js';
+import {simulateCredit} from '../js/features/simulate-credit.js';
 const near=(a,b,t=1e-8)=>assert.ok(Math.abs(a-b)<t,`${a} != ${b}`);
 const pv=50000,i=.015,n=36,pmt=payment(pv,i,n);
 near(principal(pmt,i,n),pv,1e-6); near(periods(pv,pmt,i),n,1e-8); near(rate(pv,pmt,n),i,1e-10); near(payment(12000,0,12),1000); near(annualEquivalent(.01),Math.pow(1.01,12)-1);
@@ -18,6 +19,10 @@ assert.ok(Math.abs(recovered-contractRate)<1e-7, 'Taxa recuperada divergiu além
 const realCase=rateWithFirstPeriod(11265.12,383.66,87,21);
 near(realCase,.03220067051966365,1e-12);
 assert.equal(Math.round(realCase*10000)/100,3.22);
+// Caso real validado contra simulação do Banco do Brasil em 01/10/2026.
+const bbCredit=simulateCredit({kind:'new',requestedAmount:10000,periods:96,monthlyRate:.018,contractDate:new Date(2026,9,1),firstDue:new Date(2026,10,5)});
+near(bbCredit.iof,314.06,0.001);
+near(bbCredit.payment,227.05,0.001);
 const base=new Date(2026,0,1), due=new Date(2026,0,31);
 const upd=updateBalance({principal:12000,monthlyRate:.01,payment:payment(12000,.01,12),periods:12,baseDate:base,nextDue:due,targetDate:new Date(2026,0,31)});
 assert.equal(upd.paid,1); assert.equal(upd.remaining,11); near(upd.balance,11053.815459589805,1e-6);
