@@ -1,7 +1,7 @@
 import { simulateCredit } from './simulate-credit.js';
 import { amortizeBalance } from './amortize-balance.js';
 
-export function debtExchange({currentBalance,currentPayment,currentPeriods,newAmount,newPayment,newPeriods,amortizeAmount=null,currentRate=null,newRate=null,currentFirstPeriodDays=30,newFirstPeriodDays=30,newContractDate=null,newFirstDue=null}){
+export function debtExchange({currentBalance,currentPayment,currentPeriods,newAmount,newPayment,newPeriods,amortizeAmount=null,currentRate=null,newRate=null,currentFirstPeriodDays=30,newFirstPeriodDays=30,newContractDate=null,newFirstDue=null,amortizationMode='payment'}){
   const values=[currentBalance,currentPayment,currentPeriods,newAmount,newPayment,newPeriods];
   if(!values.every(v=>Number.isFinite(v)&&v>0)) throw new Error('Preencha os dados essenciais com valores válidos.');
   if(amortizeAmount!==null&&(!Number.isFinite(amortizeAmount)||amortizeAmount<=0)) throw new Error('O valor a amortizar deve ser maior que zero.');
@@ -13,20 +13,28 @@ export function debtExchange({currentBalance,currentPayment,currentPeriods,newAm
   const cashAvailable=Math.max(0,newAmount-appliedAmount);
   const currentRemaining=currentPayment*currentPeriods;
   let adjustedCurrentPayment=null;
+  let adjustedCurrentPeriods=currentPeriods;
   let adjustedPaymentMethod=null;
   if(operationType==='amortization'){
     if(Number.isFinite(currentRate)&&currentRate>0){
-      adjustedCurrentPayment=amortizeBalance({
+      const amortized=amortizeBalance({
         principal:currentBalance,currentPayment,remainingPeriods:currentPeriods,
         monthlyRate:currentRate,extraPayment:appliedAmount,firstPeriodDays:currentFirstPeriodDays
-      }).newPayment;
-      adjustedPaymentMethod='financial';
+      });
+      if(amortizationMode==='term'){
+        adjustedCurrentPayment=currentPayment;
+        adjustedCurrentPeriods=Math.max(1,Math.ceil(amortized.reducedPeriods));
+        adjustedPaymentMethod='financial-term';
+      }else{
+        adjustedCurrentPayment=amortized.newPayment;
+        adjustedPaymentMethod='financial-payment';
+      }
     }else{
       adjustedCurrentPayment=currentPayment*(remainingBalance/currentBalance);
-      adjustedPaymentMethod='proportional';
+      adjustedPaymentMethod='proportional-payment';
     }
   }
-  const adjustedCurrentRemaining=adjustedCurrentPayment===null?currentRemaining:adjustedCurrentPayment*currentPeriods;
+  const adjustedCurrentRemaining=adjustedCurrentPayment===null?currentRemaining:adjustedCurrentPayment*adjustedCurrentPeriods;
   let newIof=null;
 
   if(Number.isFinite(newRate)&&newRate>0){
@@ -42,7 +50,7 @@ export function debtExchange({currentBalance,currentPayment,currentPeriods,newAm
 
   return {
     operationType,appliedAmount,remainingBalance,cashAvailable,
-    currentRemaining,adjustedCurrentRemaining,adjustedCurrentPayment,adjustedPaymentMethod,newRemaining,financialDifference,currentCost,newCost,newIof,
+    currentRemaining,adjustedCurrentRemaining,adjustedCurrentPayment,adjustedCurrentPeriods,adjustedPaymentMethod,newRemaining,financialDifference,currentCost,newCost,newIof,
     paymentDifference:newPayment-currentPayment,periodDifference:newPeriods-currentPeriods,
     currentRate,newRate,currentFirstPeriodDays,newFirstPeriodDays,
     effectiveDifference:financialDifference
