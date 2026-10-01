@@ -361,6 +361,8 @@ validateAmortization();
 
 
 
+function signedMoney(value){return (value>0?'+ ':'− ')+brl.format(Math.abs(value));}
+
 function validateExchange(){
   const moneyIds=['exBalance','exCurrentPayment','exNewAmount','exNewPayment'];
   const moneyStates=moneyIds.map(id=>{
