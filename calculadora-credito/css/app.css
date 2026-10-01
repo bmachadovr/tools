@@ -32,3 +32,6 @@
 #exchangeResult>.simulation-meta{grid-template-columns:repeat(2,minmax(0,1fr))}
 .exchange-consolidation{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 .exchange-consolidation .balance-stat:last-child,#exchangeResult>.simulation-meta .balance-stat:last-child{grid-column:auto}
+
+.exchange-consolidation{display:grid!important;grid-template-columns:1fr!important;gap:12px;margin-top:18px}
+.exchange-consolidation .balance-stat{width:100%}
