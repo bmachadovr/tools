@@ -13,11 +13,18 @@ export function debtExchange({currentBalance,currentPayment,currentPeriods,newAm
   const cashAvailable=Math.max(0,newAmount-appliedAmount);
   const currentRemaining=currentPayment*currentPeriods;
   let adjustedCurrentPayment=null;
-  if(operationType==='amortization'&&Number.isFinite(currentRate)&&currentRate>0){
-    adjustedCurrentPayment=amortizeBalance({
-      principal:currentBalance,currentPayment,remainingPeriods:currentPeriods,
-      monthlyRate:currentRate,extraPayment:appliedAmount,firstPeriodDays:currentFirstPeriodDays
-    }).newPayment;
+  let adjustedPaymentMethod=null;
+  if(operationType==='amortization'){
+    if(Number.isFinite(currentRate)&&currentRate>0){
+      adjustedCurrentPayment=amortizeBalance({
+        principal:currentBalance,currentPayment,remainingPeriods:currentPeriods,
+        monthlyRate:currentRate,extraPayment:appliedAmount,firstPeriodDays:currentFirstPeriodDays
+      }).newPayment;
+      adjustedPaymentMethod='financial';
+    }else{
+      adjustedCurrentPayment=currentPayment*(remainingBalance/currentBalance);
+      adjustedPaymentMethod='proportional';
+    }
   }
   const adjustedCurrentRemaining=adjustedCurrentPayment===null?currentRemaining:adjustedCurrentPayment*currentPeriods;
   let newIof=null;
@@ -35,7 +42,7 @@ export function debtExchange({currentBalance,currentPayment,currentPeriods,newAm
 
   return {
     operationType,appliedAmount,remainingBalance,cashAvailable,
-    currentRemaining,adjustedCurrentRemaining,adjustedCurrentPayment,newRemaining,financialDifference,currentCost,newCost,newIof,
+    currentRemaining,adjustedCurrentRemaining,adjustedCurrentPayment,adjustedPaymentMethod,newRemaining,financialDifference,currentCost,newCost,newIof,
     paymentDifference:newPayment-currentPayment,periodDifference:newPeriods-currentPeriods,
     currentRate,newRate,currentFirstPeriodDays,newFirstPeriodDays,
     effectiveDifference:financialDifference
