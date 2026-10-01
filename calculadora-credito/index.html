@@ -78,7 +78,11 @@
 <label>Parcelas restantes <input id="amN" inputmode="numeric"></label>
 <label>Taxa mensal <span>% a.m.</span><input id="amI" inputmode="numeric"></label>
 <label>Valor a amortizar <span>R$</span><input id="amExtra" inputmode="numeric"></label>
-</div><div class="actions"><button type="submit" id="amortize" disabled>Calcular amortização</button><button type="button" class="secondary" id="clearAmortization">Limpar</button></div><p id="amortizeError" class="error" role="alert"></p></form>
+</div><details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Use as datas do saldo e do próximo vencimento para considerar o período quebrado até a próxima parcela.</p><div class="grid advanced">
+<label>Data do saldo devedor <input id="amBaseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Próximo vencimento <input id="amDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<p class="coming">Sem as datas, será considerado um período padrão de 30 dias.</p>
+</div></details><div class="actions"><button type="submit" id="amortize" disabled>Calcular amortização</button><button type="button" class="secondary" id="clearAmortization">Limpar</button></div><p id="amortizeError" class="error" role="alert"></p></form>
 <section id="amortizationResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Novo saldo devedor</p><strong id="amNewBalance"></strong><div class="simulation-meta">
 <div class="balance-stat"><span>Reduzindo o prazo</span><b id="amNewN"></b><small id="amSavedN"></small></div>
 <div class="balance-stat"><span>Mantendo o prazo</span><b id="amNewPmt"></b><small id="amSavedPmt"></small></div>
@@ -100,6 +104,14 @@
 <label>Prazo <input id="cmpBN" inputmode="numeric"></label>
 <label>Taxa mensal <span>% a.m.</span><input id="cmpBI" inputmode="numeric"></label>
 </div>
+<details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Se disponíveis, informe o IOF e as datas de cada proposta para registrar as condições reais da comparação.</p><div class="grid advanced">
+<label>IOF · alternativa A <span>R$</span><input id="cmpAIOF" inputmode="numeric"></label>
+<label>Contratação · A <input id="cmpAContractDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Primeiro vencimento · A <input id="cmpAFirstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>IOF · alternativa B <span>R$</span><input id="cmpBIOF" inputmode="numeric"></label>
+<label>Contratação · B <input id="cmpBContractDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Primeiro vencimento · B <input id="cmpBFirstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+</div></details>
 <div class="actions"><button type="submit" id="compare" disabled>Comparar</button><button type="button" class="secondary" id="clearComparison">Limpar</button></div><p id="compareError" class="error" role="alert"></p></form>
 <section id="comparisonResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Diferenças da alternativa B em relação à A</p><div class="simulation-meta">
 <div class="balance-stat"><span>Parcela</span><b id="cmpPaymentDiff"></b><small id="cmpPaymentPct"></small></div>
@@ -121,6 +133,15 @@
 <label>Valor adicional liberado <span>R$</span><input id="exCashBack" inputmode="numeric"></label>
 <label>Custos adicionais <span>R$</span><input id="exFees" inputmode="numeric"></label>
 </div>
+<details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Informe taxas, datas e IOF quando disponíveis para qualificar a comparação econômica da troca.</p><div class="grid advanced">
+<label>Taxa atual <span>% a.m.</span><input id="exCurrentI" inputmode="numeric"></label>
+<label>Data do saldo atual <input id="exBaseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Próximo vencimento atual <input id="exCurrentDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Taxa da nova operação <span>% a.m.</span><input id="exNewI" inputmode="numeric"></label>
+<label>Data da nova contratação <input id="exNewContractDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Primeiro vencimento novo <input id="exNewFirstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>IOF da nova operação <span>R$</span><input id="exNewIof" inputmode="numeric"></label>
+</div></details>
 <div class="actions"><button type="submit" id="exchange" disabled>Calcular troca</button><button type="button" class="secondary" id="clearExchange">Limpar</button></div><p id="exchangeError" class="error" role="alert"></p></form>
 <section id="exchangeResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Impacto da troca</p><strong id="exFinancialResult"></strong><div class="simulation-meta">
 <div class="balance-stat"><span>Restante no contrato atual</span><b id="exCurrentTotal"></b></div>
@@ -136,10 +157,16 @@
 <label>Prazo <input id="cvN" inputmode="numeric"></label>
 <label>Taxa mensal <span>% a.m.</span><input id="cvI" inputmode="numeric"></label>
 </div><p class="precision-help">Preencha prazo, taxa e apenas um dos campos financeiros. Deixe em branco o que deseja descobrir.</p>
+<details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">As datas ajustam o primeiro período. Ative o IOF para estimar o valor efetivamente liberado ou a parcela com tributação.</p><div class="grid advanced">
+<label>Data da contratação <input id="cvContractDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Primeiro vencimento <input id="cvFirstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label><span>Incluir IOF estimado</span><input id="cvIncludeIof" type="checkbox"></label>
+<p class="coming">Sem as datas, será considerado primeiro vencimento em 30 dias.</p>
+</div></details>
 <div class="actions"><button type="submit" id="convertCredit" disabled>Calcular</button><button type="button" class="secondary" id="clearConverter">Limpar</button></div><p id="converterError" class="error" role="alert"></p></form>
 <section id="converterResult" class="result embedded hidden" aria-live="polite"><p class="result-label" id="cvResultLabel"></p><strong id="cvResultValue"></strong><div class="simulation-meta">
 <div class="balance-stat"><span>Prazo</span><b id="cvResultN"></b></div><div class="balance-stat"><span>Taxa</span><b id="cvResultI"></b></div><div class="balance-stat"><span>Desembolso total</span><b id="cvResultTotal"></b></div>
 </div><p class="assumption-note">Cálculo pelo sistema Price. IOF, seguros e tarifas não estão incluídos; para uma proposta completa, use Simular crédito.</p></section>
 </div></section>
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260930-03"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260930-04"></script></body></html>
