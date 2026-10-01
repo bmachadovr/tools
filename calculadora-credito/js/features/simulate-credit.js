@@ -29,28 +29,32 @@ function paymentWithFirstPeriod(principalValue,monthlyRate,periods,firstPeriodDa
   return principalValue/pvFactor;
 }
 
-function iofFactor(monthlyRate,periods,contractDate,firstDue){
+function roundMoney(value){return Math.round((value+Number.EPSILON)*100)/100;}
+
+function calculateNewMoneyIof(requestedAmount,monthlyRate,periods,contractDate,firstDue){
   const financialDays=financeFirstPeriodDays(contractDate,firstDue);
   const fraction=financialDays/30;
-  const discountFactors=[];
-  let factorSum=0;
-  for(let k=1;k<=periods;k++){
-    const df=Math.pow(1+monthlyRate,-(fraction+k-1));
-    discountFactors.push(df);factorSum+=df;
-  }
+  let financed=requestedAmount;
 
-  // Em operação com principal definido e pagamentos parcelados, a base diária
-  // é o principal de cada parcela. Para uma prestação fixa, esse principal é
-  // representado pelo valor presente de cada prestação. A incidência diária
-  // usa os dias corridos reais até cada vencimento, limitada a 365 dias.
-  let weightedTaxDays=0;
-  for(let k=1;k<=periods;k++){
-    const due=addMonthsClamped(firstDue,k-1);
-    const elapsed=Math.min(IOF_MAX_DAYS,Math.max(0,daysBetween(contractDate,due)));
-    const principalShare=discountFactors[k-1]/factorSum;
-    weightedTaxDays+=principalShare*elapsed;
+  // O BB trabalha com valores monetários em centavos durante a apuração.
+  // Como o próprio IOF é financiado, resolvemos a base por iteração até o
+  // valor do imposto estabilizar em centavos.
+  for(let iteration=0;iteration<30;iteration++){
+    const installment=roundMoney(paymentWithFirstPeriod(financed,monthlyRate,periods,financialDays));
+    let dailyTax=0;
+    for(let k=1;k<=periods;k++){
+      const principalInstallment=roundMoney(installment*Math.pow(1+monthlyRate,-(fraction+k-1)));
+      const due=addMonthsClamped(firstDue,k-1);
+      const elapsed=Math.min(IOF_MAX_DAYS,Math.max(0,daysBetween(contractDate,due)));
+      dailyTax+=principalInstallment*IOF_DAILY_RATE*elapsed;
+    }
+    const tax=roundMoney(roundMoney(financed*IOF_ADDITIONAL_RATE)+roundMoney(dailyTax));
+    const nextFinanced=roundMoney(requestedAmount+tax);
+    if(nextFinanced===roundMoney(financed))return {iof:tax,financedAmount:nextFinanced};
+    financed=nextFinanced;
   }
-  return IOF_ADDITIONAL_RATE+IOF_DAILY_RATE*weightedTaxDays;
+  const iof=roundMoney(financed-requestedAmount);
+  return {iof,financedAmount:financed};
 }
 
 export function simulateCredit({kind='new',requestedAmount,outstandingBalance=0,periods,monthlyRate,contractDate,firstDue,originalContractDate=null,originalFinalDue=null}){
@@ -61,11 +65,8 @@ export function simulateCredit({kind='new',requestedAmount,outstandingBalance=0,
   const firstPeriodDays=daysBetween(contractDate,firstDue);
   if(firstPeriodDays<=0)throw new Error('O primeiro vencimento deve ser posterior à data da contratação.');
   const financialFirstPeriodDays=financeFirstPeriodDays(contractDate,firstDue);
-  const factor=iofFactor(monthlyRate,periods,contractDate,firstDue);
-  if(factor>=1)throw new Error('Não foi possível calcular o IOF para estes dados.');
-
-  const newMoneyWithIof=requestedAmount/(1-factor);
-  const newMoneyIof=newMoneyWithIof-requestedAmount;
+  const newMoneyTax=calculateNewMoneyIof(requestedAmount,monthlyRate,periods,contractDate,firstDue);
+  const newMoneyIof=newMoneyTax.iof;
 
   let outstandingIof=0, outstandingIofMode='none', complementaryDays=0;
   if(kind==='renewal'){
@@ -88,11 +89,11 @@ export function simulateCredit({kind='new',requestedAmount,outstandingBalance=0,
 
   const iof=newMoneyIof+outstandingIof;
   const baseAmount=requestedAmount+(kind==='renewal'?outstandingBalance:0);
-  const financedAmount=baseAmount+iof;
+  const financedAmount=roundMoney(baseAmount+iof);
 
   return {
     kind,requestedAmount,outstandingBalance,baseAmount,iof,newMoneyIof,outstandingIof,
-    financedAmount,payment:paymentWithFirstPeriod(financedAmount,monthlyRate,periods,financialFirstPeriodDays),
+    financedAmount,payment:roundMoney(paymentWithFirstPeriod(financedAmount,monthlyRate,periods,financialFirstPeriodDays)),
     firstPeriodDays,financialFirstPeriodDays,
     iofBase:requestedAmount,outstandingIofIncluded:kind==='renewal',
     outstandingIofMode,complementaryDays
