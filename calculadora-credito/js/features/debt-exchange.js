@@ -44,13 +44,13 @@ export function debtExchange({currentBalance,currentPayment,currentPeriods,newAm
   }
 
   const newRemaining=newPayment*newPeriods;
-  const financialDifference=currentRemaining-newRemaining+cashAvailable;
+  const financialDifference=currentRemaining-(newRemaining+adjustedCurrentRemaining);
   const currentCost=currentRemaining-currentBalance;
   const newCost=newRemaining-newAmount;
 
   return {
     operationType,appliedAmount,remainingBalance,cashAvailable,
-    currentRemaining,adjustedCurrentRemaining,adjustedCurrentPayment,adjustedCurrentPeriods,adjustedPaymentMethod,newRemaining,financialDifference,currentCost,newCost,newIof,
+    currentRemaining,adjustedCurrentRemaining,adjustedCurrentPayment,adjustedCurrentPeriods,adjustedPaymentMethod,newPayment,newPeriods,newRemaining,financialDifference,currentCost,newCost,newIof,
     paymentDifference:newPayment-currentPayment,periodDifference:newPeriods-currentPeriods,
     currentRate,newRate,currentFirstPeriodDays,newFirstPeriodDays,
     effectiveDifference:financialDifference
