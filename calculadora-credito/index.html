@@ -4,9 +4,9 @@
 <nav class="tool-tabs" aria-label="Ferramentas">
 <button type="button" class="tool-tab active" data-tool="0">Simular crédito</button>
 <button type="button" class="tool-tab" data-tool="1">Simular portabilidade</button>
-<button type="button" class="tool-tab" data-tool="2">Projetar saldo</button>
-<button type="button" class="tool-tab" data-tool="3">Amortizar saldo</button>
-<button type="button" class="tool-tab" data-tool="4">Trocar dívida</button>
+<button type="button" class="tool-tab" data-tool="2">Simular troca de dívida</button>
+<button type="button" class="tool-tab" data-tool="3">Simular amortização</button>
+<button type="button" class="tool-tab" data-tool="4">Simular saldo futuro</button>
 <button type="button" class="tool-tab" data-tool="5">Argumentos da oferta</button>
 </nav>
 <div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -43,7 +43,6 @@
 </form>
 <section id="simulationResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Parcela estimada</p><strong id="simPayment"></strong><div class="simulation-meta"><div class="balance-stat"><span>Valor financiado</span><b id="simFinanced"></b></div><div class="balance-stat"><span>IOF estimado</span><b id="simIof"></b></div><div class="balance-stat" id="simRenewalStat"><span id="simReleasedLabel">Valor liberado</span><b id="simReleased"></b></div><div class="balance-stat hidden" id="simOldBalanceIofStat"><span>IOF sobre saldo renovado</span><b id="simOldBalanceIof"></b></div></div><p class="assumption-note" id="simAssumption"></p></section>
 </div></section>
-
 <section class="tool-panel">
 <div class="card tool-card"><div class="tool-heading"><h2>Simular portabilidade</h2><p>Informe os dados do contrato atual e a taxa oferecida pela instituição destino. Saldo, prazo e demais condições são mantidos para comparar apenas o efeito da nova taxa.</p></div>
 <form id="calcForm" novalidate>
@@ -69,44 +68,7 @@
 <div class="actions"><button type="submit" id="calculate" disabled>Simular portabilidade</button><button type="button" class="secondary" id="clear">Limpar</button></div><p id="error" class="error" role="alert"></p></form>
 <section id="result" class="result embedded hidden" aria-live="polite"><p class="result-label">Parcela na instituição destino</p><strong id="resultValue"></strong><div class="simulation-meta"><div class="balance-stat"><span>Parcela na origem</span><b id="portOriginPayment"></b></div><div class="balance-stat"><span>Saldo portado na efetivação</span><b id="portUpdatedBalance"></b></div><div class="balance-stat"><span>Taxa na origem</span><b id="portOriginRate"></b></div><div class="balance-stat"><span>Taxa no destino</span><b id="portDestinationRate"></b></div><div class="balance-stat"><span>Carência até a 1ª parcela</span><b id="portGraceDays"></b></div><div class="balance-stat"><span>IOF</span><b>Não incide</b></div></div><p id="resultExtra" class="assumption-note"></p><div class="next"><button type="button" id="sendToUpdate">Usar origem em Projetar saldo</button><button type="button" id="showEvolution">Ver evolução da origem</button></div><p id="resultLabel" class="hidden"></p></section>
 <section id="evolution" class="embedded hidden"><div class="section-head"><h3>Evolução estimada da origem</h3><button type="button" class="secondary small" id="hideEvolution">Fechar</button></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Saldo inicial</th><th>Juros</th><th>Amortização</th><th>Parcela</th><th>Saldo final</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>
-</div></section>
-<section class="tool-panel">
-<div class="card tool-card"><div class="tool-heading"><h2>Projetar saldo</h2><p>Informe os dados conhecidos do contrato e escolha a data para atualização.</p></div><div class="portability-card"><h3>Dados do contrato</h3><div class="grid">
-<label>Saldo devedor <span>R$</span><input id="upPv" inputmode="numeric"></label>
-<label>Valor da parcela <span>R$</span><input id="upPmt" inputmode="numeric"></label>
-<label>Taxa mensal <span>% a.m.</span><input id="upI" inputmode="numeric"></label>
-<label>Data para atualização <input id="updateDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-</div></div>
-<details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Informe os dados que você tiver do contrato para substituir as premissas automáticas e obter uma estimativa mais precisa.</p><div class="grid advanced">
-<label>Data do saldo devedor <input id="upBaseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<label>Próximo vencimento <input id="upDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<label>Parcelas restantes <input id="upN" inputmode="decimal"></label>
-<p class="coming">Se o próximo vencimento não estiver informado, será considerada carência padrão de 30 dias.</p>
-</div></details><div class="actions"><button type="button" id="calculateUpdateBalance" disabled>Projetar saldo</button><button type="button" class="secondary" id="clearUpdate">Limpar</button></div>
-<p id="updateError" class="error" role="alert"></p>
-<div id="updatedBalanceResult" class="balance-summary hidden"><p class="result-label" id="updatedBalanceDate"></p><strong id="updatedBalanceValue"></strong><p class="balance-caption">Saldo devedor estimado</p><div class="balance-meta"><div class="balance-stat"><b id="paidPeriods"></b><span>parcelas transcorridas</span></div><div class="balance-stat"><b id="remainingPeriods"></b><span>parcelas restantes</span></div><div class="balance-stat"><span>Próximo vencimento</span><b id="updatedNextDue"></b></div></div><p class="assumption-note">Valores em atraso foram desconsiderados.</p></div>
-</div></section>
-
-<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Amortizar saldo</h2><p>Compare o efeito de uma amortização extraordinária reduzindo o prazo ou o valor da parcela.</p></div>
-<form id="amortizeForm" novalidate><div class="portability-card"><h3>Dados da operação</h3><div class="grid">
-<label>Saldo devedor <span>R$</span><input id="amPv" inputmode="numeric"></label>
-<label>Valor da parcela <span>R$</span><input id="amPmt" inputmode="numeric"></label>
-<label>Parcelas restantes <input id="amN" inputmode="numeric"></label>
-<label>Taxa mensal <span>% a.m.</span><input id="amI" inputmode="numeric"></label>
-<label>Valor a amortizar <span>R$</span><input id="amExtra" inputmode="numeric"></label>
-</div></div><details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Use as datas do saldo e do próximo vencimento para considerar o período quebrado até a próxima parcela.</p><div class="grid advanced">
-<label>Data do saldo devedor <input id="amBaseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<label>Próximo vencimento <input id="amDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<p class="coming">Sem as datas, será considerado um período padrão de 30 dias.</p>
-</div></details><div class="actions"><button type="submit" id="amortize" disabled>Calcular amortização</button><button type="button" class="secondary" id="clearAmortization">Limpar</button></div><p id="amortizeError" class="error" role="alert"></p></form>
-<section id="amortizationResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Novo saldo devedor</p><strong id="amNewBalance"></strong><div class="simulation-meta">
-<div class="balance-stat"><span>Reduzindo o prazo</span><b id="amNewN"></b><small id="amSavedN"></small></div>
-<div class="balance-stat"><span>Mantendo o prazo</span><b id="amNewPmt"></b><small id="amSavedPmt"></small></div>
-<div class="balance-stat"><span>Economia de juros · prazo</span><b id="amInterestTerm"></b></div>
-<div class="balance-stat"><span>Economia de juros · parcela</span><b id="amInterestPayment"></b></div>
-</div><p class="assumption-note">Estimativa pelo sistema Price, sem tarifas, seguros ou outros eventos do contrato.</p></section>
-</div></section>
-<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Trocar dívida</h2><p>Compare uma nova operação com o empréstimo atual. O sistema identifica automaticamente se haverá liquidação ou amortização parcial.</p></div>
+<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Simular troca de dívida</h2><p>Compare uma nova operação com o empréstimo atual. O sistema identifica automaticamente se haverá liquidação ou amortização parcial.</p></div>
 <form id="exchangeForm" novalidate>
 <div class="portability-card">
 <h3>Empréstimo atual</h3>
@@ -145,8 +107,44 @@
 <div class="balance-stat"><span>Diferença no prazo</span><b id="exPeriodDiff"></b></div>
 </div><p class="assumption-note" id="exSummary"></p><p class="assumption-note">O cálculo compara fluxos nominais. O IOF é estimado automaticamente quando a taxa da nova operação é informada.</p></section>
 </div></section>
+<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Simular amortização</h2><p>Compare o efeito de uma amortização extraordinária reduzindo o prazo ou o valor da parcela.</p></div>
+<form id="amortizeForm" novalidate><div class="portability-card"><h3>Dados da operação</h3><div class="grid">
+<label>Saldo devedor <span>R$</span><input id="amPv" inputmode="numeric"></label>
+<label>Valor da parcela <span>R$</span><input id="amPmt" inputmode="numeric"></label>
+<label>Parcelas restantes <input id="amN" inputmode="numeric"></label>
+<label>Taxa mensal <span>% a.m.</span><input id="amI" inputmode="numeric"></label>
+<label>Valor a amortizar <span>R$</span><input id="amExtra" inputmode="numeric"></label>
+</div></div><details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Use as datas do saldo e do próximo vencimento para considerar o período quebrado até a próxima parcela.</p><div class="grid advanced">
+<label>Data do saldo devedor <input id="amBaseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Próximo vencimento <input id="amDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<p class="coming">Sem as datas, será considerado um período padrão de 30 dias.</p>
+</div></details><div class="actions"><button type="submit" id="amortize" disabled>Calcular amortização</button><button type="button" class="secondary" id="clearAmortization">Limpar</button></div><p id="amortizeError" class="error" role="alert"></p></form>
+<section id="amortizationResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Novo saldo devedor</p><strong id="amNewBalance"></strong><div class="simulation-meta">
+<div class="balance-stat"><span>Reduzindo o prazo</span><b id="amNewN"></b><small id="amSavedN"></small></div>
+<div class="balance-stat"><span>Mantendo o prazo</span><b id="amNewPmt"></b><small id="amSavedPmt"></small></div>
+<div class="balance-stat"><span>Economia de juros · prazo</span><b id="amInterestTerm"></b></div>
+<div class="balance-stat"><span>Economia de juros · parcela</span><b id="amInterestPayment"></b></div>
+</div><p class="assumption-note">Estimativa pelo sistema Price, sem tarifas, seguros ou outros eventos do contrato.</p></section>
+</div></section>
+<section class="tool-panel">
+<div class="card tool-card"><div class="tool-heading"><h2>Simular saldo futuro</h2><p>Informe os dados conhecidos do contrato e escolha a data para atualização.</p></div><div class="portability-card"><h3>Dados do contrato</h3><div class="grid">
+<label>Saldo devedor <span>R$</span><input id="upPv" inputmode="numeric"></label>
+<label>Valor da parcela <span>R$</span><input id="upPmt" inputmode="numeric"></label>
+<label>Taxa mensal <span>% a.m.</span><input id="upI" inputmode="numeric"></label>
+<label>Data para atualização <input id="updateDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+</div></div>
+<details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Informe os dados que você tiver do contrato para substituir as premissas automáticas e obter uma estimativa mais precisa.</p><div class="grid advanced">
+<label>Data do saldo devedor <input id="upBaseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Próximo vencimento <input id="upDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Parcelas restantes <input id="upN" inputmode="decimal"></label>
+<p class="coming">Se o próximo vencimento não estiver informado, será considerada carência padrão de 30 dias.</p>
+</div></details><div class="actions"><button type="button" id="calculateUpdateBalance" disabled>Projetar saldo</button><button type="button" class="secondary" id="clearUpdate">Limpar</button></div>
+<p id="updateError" class="error" role="alert"></p>
+<div id="updatedBalanceResult" class="balance-summary hidden"><p class="result-label" id="updatedBalanceDate"></p><strong id="updatedBalanceValue"></strong><p class="balance-caption">Saldo devedor estimado</p><div class="balance-meta"><div class="balance-stat"><b id="paidPeriods"></b><span>parcelas transcorridas</span></div><div class="balance-stat"><b id="remainingPeriods"></b><span>parcelas restantes</span></div><div class="balance-stat"><span>Próximo vencimento</span><b id="updatedNextDue"></b></div></div><p class="assumption-note">Valores em atraso foram desconsiderados.</p></div>
+</div></section>
 <section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Argumentos da oferta</h2><p>Os argumentos comerciais aparecem automaticamente nos resultados das ferramentas. Aqui você pode consultar o último conjunto gerado.</p></div>
 <div class="portability-card"><h3>Argumentos calculados</h3><section id="insightsHub" class="result embedded"><div id="insightsHubList" class="simulation-meta"><div class="balance-stat"><span>Aguardando cálculo</span><b>Use uma das ferramentas para gerar argumentos objetivos.</b></div></div><p class="assumption-note">Os textos são gerados por regras matemáticas, sem IA. Cada argumento deriva de números exibidos na própria simulação.</p></section></div>
 </div></section>
+
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-13"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-14"></script></body></html>
