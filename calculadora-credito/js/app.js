@@ -179,11 +179,7 @@ function formatDateBR(date){return date?date.toLocaleDateString('pt-BR'): '—';
 const carousel=$('toolsCarousel'), tabs=[...document.querySelectorAll('.tool-tab')], dots=[...document.querySelectorAll('.tool-dots i')];
 const toolCount=tabs.length;
 function normalizeTool(index){return (index+toolCount)%toolCount;}
-function centerActiveTab(index,smooth=true){
-  const tab=tabs[index];
-  const left=tab.offsetLeft-(tab.parentElement.clientWidth-tab.offsetWidth)/2;
-  tab.parentElement.scrollTo({left,behavior:smooth?'smooth':'auto'});
-}
+function centerActiveTab(){}
 function goTool(index,smooth=true){
   index=normalizeTool(index);
   const panel=carousel.children[index];
@@ -196,7 +192,18 @@ function setToolState(index,smooth=true){
   dots.forEach((d,i)=>d.classList.toggle('active',i===index));
   centerActiveTab(index,smooth);
 }
-tabs.forEach((tab,i)=>tab.addEventListener('click',()=>goTool(i)));
+const menuTrigger=$('menuTrigger'),toolMenu=$('toolMenu'),menuBackdrop=$('menuBackdrop'),menuClose=$('menuClose');
+function setMenu(open){
+  toolMenu.classList.toggle('open',open);
+  menuBackdrop.hidden=!open;
+  toolMenu.setAttribute('aria-hidden',String(!open));
+  menuTrigger.setAttribute('aria-expanded',String(open));
+}
+menuTrigger?.addEventListener('click',()=>setMenu(!toolMenu.classList.contains('open')));
+menuClose?.addEventListener('click',()=>setMenu(false));
+menuBackdrop?.addEventListener('click',()=>setMenu(false));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')setMenu(false);});
+tabs.forEach((tab,i)=>tab.addEventListener('click',()=>{goTool(i);setMenu(false);}));
 document.querySelectorAll('.offer-link').forEach(button=>button.addEventListener('click',()=>goTool(toolCount-1)));
 
 let activeTool=0,startX=null,startY=null;
