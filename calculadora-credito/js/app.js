@@ -15,7 +15,7 @@ function buildOfferText(){
   if(!lastOfferInsights.length)return 'Faça uma simulação para gerar a oferta.';
   const name=$('offerClientName')?.value.trim();
   const opening=name?'Olá, '+name+'! Preparei uma simulação para você:':'Olá! Preparei uma simulação para você:';
-  return [opening,'',...lastOfferInsights.map(item=>'• '+item.text),'','Valores estimados conforme os dados informados. Esta simulação não constitui proposta.'].join('\n');
+  return [opening,'',...lastOfferInsights.map(item=>'• '+item.text),'','Valores estimados, esta simulação não constitui proposta.'].join('\n');
 }
 function refreshOfferPreview(){
   const preview=$('offerPreview');if(!preview)return;
@@ -173,6 +173,7 @@ function setToolState(index,smooth=true){
   centerActiveTab(index,smooth);
 }
 tabs.forEach((tab,i)=>tab.addEventListener('click',()=>goTool(i)));
+document.querySelectorAll('.offer-link').forEach(button=>button.addEventListener('click',()=>goTool(toolCount-1)));
 
 let activeTool=0,startX=null,startY=null;
 carousel.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;startX=e.clientX;startY=e.clientY;},{passive:true});
@@ -340,7 +341,7 @@ $('simulateForm').addEventListener('submit',e=>{
     $('simPayment').textContent=brl.format(result.payment);$('simFinanced').textContent=brl.format(result.financedAmount);$('simIof').textContent=brl.format(result.iof);$('simReleased').textContent=brl.format(result.requestedAmount);$('simOldBalanceIof').textContent=brl.format(result.outstandingIof);
     $('simOldBalanceIofStat').classList.toggle('hidden',simulationKind!=='renewal');$('simReleasedLabel').textContent=simulationKind==='renewal'?'Valor liberado':'Valor contratado';$('simRenewalStat').classList.toggle('hidden',simulationKind==='new');
     $('simAssumption').textContent=simulationKind==='renewal'?(result.outstandingIofMode==='estimated-informed'?'IOF sobre o saldo renovado é uma estimativa refinada pelas datas da operação original e pode divergir do valor real. '+result.complementaryDays+' dias complementares considerados. Primeiro vencimento em '+formatDateBR(firstDue)+'.':'IOF sobre o saldo renovado é uma estimativa. Informe as datas da operação original em “Aumente a precisão” para refinar. Primeiro vencimento em '+formatDateBR(firstDue)+'.'):'IOF estimado incluído no valor financiado. Primeiro vencimento em '+formatDateBR(firstDue)+'.';
-    $('simulationResult').classList.remove('hidden');renderInsights('simulation',{...result,kind:simulationKind,outstandingBalance:simulationKind==='renewal'?parseBRNumber($('simBalance').value):0});validateSimulation();
+    $('simulationResult').classList.remove('hidden');renderInsights('simulation',{...result,periods:result.periods??n,kind:simulationKind,outstandingBalance:simulationKind==='renewal'?parseBRNumber($('simBalance').value):0});validateSimulation();
   }catch(err){$('simulateError').textContent=err.message;}
 });
 $('clearSimulation').addEventListener('click',()=>{$('simulateForm').reset();['simAmount','simBalance','simN','simPmt','simI','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('simulateError').textContent='';$('simulationResult').classList.add('hidden');setSimulationKind('new');});
