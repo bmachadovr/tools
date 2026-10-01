@@ -431,50 +431,6 @@ $('clearExchange').addEventListener('click',()=>{$('exchangeForm').reset();['exB
 validateExchange();
 
 
-function validateConverter(){
-  const amountState=essentialFieldState('cvAmount'),paymentState=essentialFieldState('cvPayment');
-  const n=parseBRNumber($('cvN').value),rate=parseBRNumber($('cvI').value);
-  updateFieldState('cvAmount',amountState==='valid');updateFieldState('cvPayment',paymentState==='valid');
-  updateFieldState('cvN',Number.isFinite(n)&&n>0);updateFieldState('cvI',Number.isFinite(rate)&&rate>0);
-  const oneFinancial=(amountState==='valid'&&paymentState==='empty')||(paymentState==='valid'&&amountState==='empty');
-  $('convertCredit').disabled=!(oneFinancial&&Number.isFinite(n)&&n>0&&Number.isFinite(rate)&&rate>0);
-}
-['cvAmount','cvPayment','cvN','cvI','cvContractDate','cvFirstDue','cvIncludeIof'].forEach(id=>$(id).addEventListener('input',validateConverter));
-$('converterForm').addEventListener('submit',e=>{
-  e.preventDefault();$('converterError').textContent='';$('converterResult').classList.add('hidden');
-  try{
-    validateConverter();if($('convertCredit').disabled)throw new Error('Informe prazo, taxa e apenas valor do crédito ou valor da parcela.');
-    for(const id of ['cvContractDate','cvFirstDue'])if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');
-    const amount=parseBRNumber($('cvAmount').value),pmtValue=parseBRNumber($('cvPayment').value),n=parseBRNumber($('cvN').value),i=parseBRNumber($('cvI').value)/100;
-    const contractDate=parseDateBR($('cvContractDate').value)??new Date(),firstDue=parseDateBR($('cvFirstDue').value)??defaultNextDue(contractDate);
-    const firstDays=daysBetween(contractDate,firstDue); if(firstDays<=0)throw new Error('O primeiro vencimento deve ser posterior à data da contratação.');
-    const findingAmount=amount===null,includeIof=$('cvIncludeIof').checked;
-    const fraction=firstDays/30,annuity=(1-Math.pow(1+i,-n))/i*(1+i)/Math.pow(1+i,fraction);
-    let result,finalAmount,finalPayment;
-    if(includeIof){
-      if(findingAmount){
-        let lo=0,hi=pmtValue*n;
-        for(let k=0;k<80;k++){const mid=(lo+hi)/2;const sim=simulateCredit({kind:'new',requestedAmount:mid,periods:n,monthlyRate:i,contractDate,firstDue});if(sim.payment>pmtValue)hi=mid;else lo=mid;}
-        result=(lo+hi)/2;finalAmount=result;finalPayment=pmtValue;
-      }else{
-        const sim=simulateCredit({kind:'new',requestedAmount:amount,periods:n,monthlyRate:i,contractDate,firstDue});
-        result=sim.payment;finalAmount=amount;finalPayment=result;
-      }
-    }else{
-      result=findingAmount?pmtValue*annuity:amount/annuity;finalAmount=findingAmount?result:amount;finalPayment=findingAmount?pmtValue:result;
-    }
-    $('cvResultLabel').textContent=findingAmount?'Valor de crédito estimado':'Parcela estimada';
-    $('cvResultValue').textContent=brl.format(result);$('cvResultN').textContent=n.toLocaleString('pt-BR')+' parcelas';
-    $('cvResultI').textContent=(i*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'% a.m.';
-    $('cvResultTotal').textContent=brl.format(finalPayment*n);
-    $('converterResult').classList.remove('hidden');
-    renderInsights('converter',{findingAmount,result,payment:finalPayment,periods:n});
-  }catch(err){$('converterError').textContent=err.message;}
-});
-$('clearConverter').addEventListener('click',()=>{$('converterForm').reset();['cvAmount','cvPayment','cvN','cvI','cvContractDate','cvFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('converterError').textContent='';$('converterResult').classList.add('hidden');validateConverter();});
-validateConverter();
-
-
 function validateCreditAmort(){
   const ids=['caBalance','caCurrentPayment','caCurrentN','caCurrentI','caNewAmount','caNewN','caNewI'];
   const ok=ids.every(id=>{const v=parseBRNumber($(id).value),valid=Number.isFinite(v)&&v>0;updateFieldState(id,valid);return valid;});
