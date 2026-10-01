@@ -7,11 +7,10 @@
 <button type="button" class="tool-tab" data-tool="2">Projetar saldo</button>
 <button type="button" class="tool-tab" data-tool="3">Amortizar saldo</button>
 <button type="button" class="tool-tab" data-tool="4">Trocar dívida</button>
-<button type="button" class="tool-tab" data-tool="5">Parcela ↔ Valor</button>
-<button type="button" class="tool-tab" data-tool="6">Crédito + amortização</button>
-<button type="button" class="tool-tab" data-tool="7">Argumentos da oferta</button>
+<button type="button" class="tool-tab" data-tool="5">Crédito + amortização</button>
+<button type="button" class="tool-tab" data-tool="6">Argumentos da oferta</button>
 </nav>
-<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
 <div class="tools-carousel" id="toolsCarousel">
 <section class="tool-panel">
@@ -135,24 +134,6 @@
 <div class="balance-stat"><span>Diferença no prazo</span><b id="exPeriodDiff"></b></div>
 </div><p class="assumption-note" id="exSummary"></p><p class="assumption-note">O cálculo compara fluxos nominais. Informe em “Custos adicionais” tarifas ou despesas que não estejam embutidas nas parcelas da nova operação.</p></section>
 </div></section>
-<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Parcela ↔ Valor</h2><p>Descubra quanto uma parcela representa em crédito ou qual parcela corresponde a um valor.</p></div>
-<form id="converterForm" novalidate><div class="grid">
-<label>Valor do crédito <span>R$</span><input id="cvAmount" inputmode="numeric"></label>
-<label>Valor da parcela <span>R$</span><input id="cvPayment" inputmode="numeric"></label>
-<label>Prazo <input id="cvN" inputmode="numeric"></label>
-<label>Taxa mensal <span>% a.m.</span><input id="cvI" inputmode="numeric"></label>
-</div><p class="precision-help">Preencha prazo, taxa e apenas um dos campos financeiros. Deixe em branco o que deseja descobrir.</p>
-<details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">As datas ajustam o primeiro período. Ative o IOF para estimar o valor efetivamente liberado ou a parcela com tributação.</p><div class="grid advanced">
-<label>Data da contratação <input id="cvContractDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<label>Primeiro vencimento <input id="cvFirstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<label><span>Incluir IOF estimado</span><input id="cvIncludeIof" type="checkbox"></label>
-<p class="coming">Sem as datas, será considerado primeiro vencimento em 30 dias.</p>
-</div></details>
-<div class="actions"><button type="submit" id="convertCredit" disabled>Calcular</button><button type="button" class="secondary" id="clearConverter">Limpar</button></div><p id="converterError" class="error" role="alert"></p></form>
-<section id="converterResult" class="result embedded hidden" aria-live="polite"><p class="result-label" id="cvResultLabel"></p><strong id="cvResultValue"></strong><div class="simulation-meta">
-<div class="balance-stat"><span>Prazo</span><b id="cvResultN"></b></div><div class="balance-stat"><span>Taxa</span><b id="cvResultI"></b></div><div class="balance-stat"><span>Desembolso total</span><b id="cvResultTotal"></b></div>
-</div><p class="assumption-note">Cálculo pelo sistema Price. IOF, seguros e tarifas não estão incluídos; para uma proposta completa, use Simular crédito.</p></section>
-</div></section>
 <section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Crédito + amortização</h2><p>Veja o impacto de contratar um novo crédito para amortizar o saldo de outra operação.</p></div>
 <form id="creditAmortForm" novalidate>
 <p class="result-label">Operação a amortizar</p><div class="grid">
@@ -185,4 +166,4 @@
 <section id="insightsHub" class="result embedded"><p class="result-label">Argumentos calculados</p><div id="insightsHubList" class="simulation-meta"><div class="balance-stat"><span>Aguardando cálculo</span><b>Use uma das ferramentas para gerar argumentos objetivos.</b></div></div><p class="assumption-note">Os textos são gerados por regras matemáticas, sem IA. Cada argumento deriva de números exibidos na própria simulação.</p></section>
 </div></section>
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-10"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-11"></script></body></html>
