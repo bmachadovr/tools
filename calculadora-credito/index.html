@@ -15,6 +15,8 @@
 <section class="tool-panel">
 <div class="card tool-card"><div class="tool-heading"><h2>Simular crédito</h2><p>Informe a taxa mensal e dois entre valor contratado, prazo e parcela mensal. O campo restante será calculado automaticamente, com o IOF incluído na simulação.</p></div>
 <form id="simulateForm" novalidate>
+<div class="portability-card">
+<h3>Dados da operação</h3>
 <div class="credit-kind" role="group" aria-label="Tipo de contratação">
 <button type="button" class="kind-option active" data-kind="new" aria-pressed="true">Novo</button>
 <button type="button" class="kind-option" data-kind="renewal" aria-pressed="false">Renovação</button>
@@ -25,6 +27,7 @@
 <label>Prazo <input id="simN" inputmode="numeric"></label>
 <label>Parcela mensal <span>R$</span><input id="simPmt" inputmode="numeric"></label>
 <label>Taxa mensal <span>% a.m.</span><input id="simI" inputmode="numeric"></label>
+</div>
 </div>
 <details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Informe as datas da contratação para calcular com maior precisão o período até a primeira parcela e o IOF.</p><div class="grid advanced">
 <label>Data da contratação <input id="simContractDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
@@ -68,12 +71,12 @@
 <section id="evolution" class="embedded hidden"><div class="section-head"><h3>Evolução estimada da origem</h3><button type="button" class="secondary small" id="hideEvolution">Fechar</button></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Saldo inicial</th><th>Juros</th><th>Amortização</th><th>Parcela</th><th>Saldo final</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>
 </div></section>
 <section class="tool-panel">
-<div class="card tool-card"><div class="tool-heading"><h2>Projetar saldo</h2><p>Informe os dados conhecidos do contrato e escolha a data para atualização.</p></div><div class="grid">
+<div class="card tool-card"><div class="tool-heading"><h2>Projetar saldo</h2><p>Informe os dados conhecidos do contrato e escolha a data para atualização.</p></div><div class="portability-card"><h3>Dados do contrato</h3><div class="grid">
 <label>Saldo devedor <span>R$</span><input id="upPv" inputmode="numeric"></label>
 <label>Valor da parcela <span>R$</span><input id="upPmt" inputmode="numeric"></label>
 <label>Taxa mensal <span>% a.m.</span><input id="upI" inputmode="numeric"></label>
 <label>Data para atualização <input id="updateDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-</div>
+</div></div>
 <details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Informe os dados que você tiver do contrato para substituir as premissas automáticas e obter uma estimativa mais precisa.</p><div class="grid advanced">
 <label>Data do saldo devedor <input id="upBaseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
 <label>Próximo vencimento <input id="upDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
@@ -85,13 +88,13 @@
 </div></section>
 
 <section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Amortizar saldo</h2><p>Compare o efeito de uma amortização extraordinária reduzindo o prazo ou o valor da parcela.</p></div>
-<form id="amortizeForm" novalidate><div class="grid">
+<form id="amortizeForm" novalidate><div class="portability-card"><h3>Dados da operação</h3><div class="grid">
 <label>Saldo devedor <span>R$</span><input id="amPv" inputmode="numeric"></label>
 <label>Valor da parcela <span>R$</span><input id="amPmt" inputmode="numeric"></label>
 <label>Parcelas restantes <input id="amN" inputmode="numeric"></label>
 <label>Taxa mensal <span>% a.m.</span><input id="amI" inputmode="numeric"></label>
 <label>Valor a amortizar <span>R$</span><input id="amExtra" inputmode="numeric"></label>
-</div><details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Use as datas do saldo e do próximo vencimento para considerar o período quebrado até a próxima parcela.</p><div class="grid advanced">
+</div></div><details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Use as datas do saldo e do próximo vencimento para considerar o período quebrado até a próxima parcela.</p><div class="grid advanced">
 <label>Data do saldo devedor <input id="amBaseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
 <label>Próximo vencimento <input id="amDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
 <p class="coming">Sem as datas, será considerado um período padrão de 30 dias.</p>
@@ -143,7 +146,7 @@
 </div><p class="assumption-note" id="exSummary"></p><p class="assumption-note">O cálculo compara fluxos nominais. O IOF é estimado automaticamente quando a taxa da nova operação é informada.</p></section>
 </div></section>
 <section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Argumentos da oferta</h2><p>Os argumentos comerciais aparecem automaticamente nos resultados das ferramentas. Aqui você pode consultar o último conjunto gerado.</p></div>
-<section id="insightsHub" class="result embedded"><p class="result-label">Argumentos calculados</p><div id="insightsHubList" class="simulation-meta"><div class="balance-stat"><span>Aguardando cálculo</span><b>Use uma das ferramentas para gerar argumentos objetivos.</b></div></div><p class="assumption-note">Os textos são gerados por regras matemáticas, sem IA. Cada argumento deriva de números exibidos na própria simulação.</p></section>
+<div class="portability-card"><h3>Argumentos calculados</h3><section id="insightsHub" class="result embedded"><div id="insightsHubList" class="simulation-meta"><div class="balance-stat"><span>Aguardando cálculo</span><b>Use uma das ferramentas para gerar argumentos objetivos.</b></div></div><p class="assumption-note">Os textos são gerados por regras matemáticas, sem IA. Cada argumento deriva de números exibidos na própria simulação.</p></section></div>
 </div></section>
 </div>
 <footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-13"></script></body></html>
