@@ -73,3 +73,15 @@ button.secondary,.next button{background:var(--surface-muted);color:var(--text)}
 .theme-option{min-height:32px;padding:5px 10px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:.74rem;border-radius:999px}
 .theme-option.active{background:var(--primary);color:var(--primary-text);border-color:var(--primary)}
 @media(max-width:620px){.theme-switcher{margin-bottom:14px}.theme-option{flex:0 0 auto}}
+
+/* Compact header + theme selector */
+.wrap{padding-top:22px}
+header{margin-bottom:16px;position:relative}
+body[data-theme="color"] header{border-top-width:4px;padding-top:12px}
+.theme-switcher{justify-content:flex-end;gap:0;margin:-2px 0 8px}
+.theme-option{min-height:0;padding:2px 6px;border:0;background:transparent!important;color:var(--muted)!important;font-size:.66rem;font-weight:650;border-radius:0;line-height:1.4}
+.theme-option+.theme-option{border-left:1px solid var(--border)}
+.theme-option.active{color:var(--accent)!important;text-decoration:underline;text-underline-offset:3px}
+header .eyebrow{margin-bottom:5px}
+header .lead{margin-top:9px;margin-bottom:0}
+@media(max-width:620px){.wrap{padding-top:14px}.theme-switcher{margin:0 0 6px}body[data-theme="color"] header{padding-top:8px}header{margin-bottom:12px}}
