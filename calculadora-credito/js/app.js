@@ -24,7 +24,7 @@ function formatFixed2(input) {
   if (!digits || /^0+$/.test(digits)) { input.value = ''; return; }
   input.value=(Number(digits)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','simPmt','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','cmpAIOF','cmpBIOF','exBalance','exCurrentPayment','exNewPayment','exCashBack','exFees','exNewIof','cvAmount','cvPayment','caBalance','caCurrentPayment','caNewAmount'].forEach(id=>$(id)?.addEventListener('input',e=>formatFixed2(e.target)));
+['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','simPmt','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','cmpAIOF','cmpBIOF','exBalance','exCurrentPayment','exNewPayment','exCashBack','cvAmount','cvPayment','caBalance','caCurrentPayment','caNewAmount'].forEach(id=>$(id)?.addEventListener('input',e=>formatFixed2(e.target)));
 ['i','portI','upI','amI','cmpAI','cmpBI','exCurrentI','exNewI','cvI','caCurrentI','caNewI'].forEach(id=>$(id)?.addEventListener('input',e=>formatFixed2(e.target)));
 $('simI').addEventListener('input',e=>{formatFixed2(e.target);validateSimulation();});
 
@@ -394,10 +394,10 @@ validateComparison();
 function validateExchange(){
   const required=['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN'];
   const ok=required.every(id=>{const v=parseBRNumber($(id).value),valid=Number.isFinite(v)&&v>0;updateFieldState(id,valid);return valid;});
-  for(const id of ['exCashBack','exFees','exNewIof']){const raw=$(id).value.trim(),v=parseBRNumber(raw),valid=raw===''||(Number.isFinite(v)&&v>=0);$(id).classList.toggle('field-valid',raw!==''&&valid);$(id).classList.toggle('field-invalid',raw!==''&&!valid);}
+  for(const id of ['exCashBack']){const raw=$(id).value.trim(),v=parseBRNumber(raw),valid=raw===''||(Number.isFinite(v)&&v>=0);$(id).classList.toggle('field-valid',raw!==''&&valid);$(id).classList.toggle('field-invalid',raw!==''&&!valid);}
   $('exchange').disabled=!ok;
 }
-['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exFees','exCurrentI','exNewI','exNewIof','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).addEventListener('input',validateExchange));
+['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exCurrentI','exNewI','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).addEventListener('input',validateExchange));
 $('exchangeForm').addEventListener('submit',e=>{
   e.preventDefault();$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');
   try{
@@ -409,14 +409,14 @@ $('exchangeForm').addEventListener('submit',e=>{
       newPayment:parseBRNumber($('exNewPayment').value),
       newPeriods:parseBRNumber($('exNewN').value),
       cashBack:parseBRNumber($('exCashBack').value)??0,
-      fees:parseBRNumber($('exFees').value)??0,
       currentRate:(parseBRNumber($('exCurrentI').value)??0)/100,
       newRate:(parseBRNumber($('exNewI').value)??0)/100,
       currentFirstPeriodDays:parseDateBR($('exBaseDate').value)&&parseDateBR($('exCurrentDue').value)?daysBetween(parseDateBR($('exBaseDate').value),parseDateBR($('exCurrentDue').value)):30,
       newFirstPeriodDays:parseDateBR($('exNewContractDate').value)&&parseDateBR($('exNewFirstDue').value)?daysBetween(parseDateBR($('exNewContractDate').value),parseDateBR($('exNewFirstDue').value)):30,
-      newIof:parseBRNumber($('exNewIof').value)??0
+      newContractDate:parseDateBR($('exNewContractDate').value)??new Date(),
+      newFirstDue:parseDateBR($('exNewFirstDue').value)??defaultNextDue(parseDateBR($('exNewContractDate').value)??new Date())
     });
-    $('exCurrentTotal').textContent=brl.format(r.currentRemaining);$('exNewTotal').textContent=brl.format(r.newRemaining);
+    $('exCurrentTotal').textContent=brl.format(r.currentRemaining);$('exNewTotal').textContent=brl.format(r.newRemaining);$('exCalculatedIof').textContent=r.newIof===null?'Informe a taxa':brl.format(r.newIof);
     $('exPaymentDiff').textContent=signedMoney(r.paymentDifference);
     $('exPeriodDiff').textContent=r.periodDifference===0?'Mesmo prazo':(r.periodDifference>0?'+ ':'− ')+Math.abs(r.periodDifference).toLocaleString('pt-BR')+' parcelas';
     const positive=r.financialDifference>=0;
@@ -427,7 +427,7 @@ $('exchangeForm').addEventListener('submit',e=>{
     renderInsights('exchange',r);
   }catch(err){$('exchangeError').textContent=err.message;}
 });
-$('clearExchange').addEventListener('click',()=>{$('exchangeForm').reset();['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exFees','exCurrentI','exNewI','exNewIof','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');validateExchange();});
+$('clearExchange').addEventListener('click',()=>{$('exchangeForm').reset();['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exCurrentI','exNewI','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');validateExchange();});
 validateExchange();
 
 
