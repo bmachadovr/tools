@@ -312,9 +312,9 @@ $('simulateForm').addEventListener('submit',e=>{
     const amount=parseBRNumber($('simAmount').value),n=parseBRNumber($('simN').value),pmt=parseBRNumber($('simPmt').value),rate=parseBRNumber($('simI').value)/100;
     if(n!==null&&!Number.isInteger(n))throw new Error('O prazo deve ser um número inteiro de parcelas.');
     const solved=solveSimulationMissing({amount,n,pmt,rate,contractDate,firstDue,originalContractDate,originalFinalDue}),result=solved.result;
-    if(solved.solved==='amount')$('simAmount').value=result.requestedAmount.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-    if(solved.solved==='n')$('simN').value=String(result.firstPeriodDays>=0?Math.round((result.financedAmount&&result.payment)?(()=>{for(let x=1;x<=420;x++){try{const r=simulateCreditInputs(result.requestedAmount,x,rate,contractDate,firstDue,originalContractDate,originalFinalDue);if(Math.abs(r.payment-result.payment)<0.01)return x;}catch{}}return n;})():n):n);
-    $('simPmt').value=result.payment.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    // O campo deixado em branco é a incógnita da simulação e deve permanecer vazio.
+    // O valor calculado é exibido somente no card de resultado, preservando os dados
+    // informados pelo usuário para permitir novas simulações sem precisar apagar campos.
     $('simPayment').textContent=brl.format(result.payment);$('simFinanced').textContent=brl.format(result.financedAmount);$('simIof').textContent=brl.format(result.iof);$('simReleased').textContent=brl.format(result.requestedAmount);$('simOldBalanceIof').textContent=brl.format(result.outstandingIof);
     $('simOldBalanceIofStat').classList.toggle('hidden',simulationKind!=='renewal');$('simReleasedLabel').textContent=simulationKind==='renewal'?'Valor liberado':'Valor contratado';$('simRenewalStat').classList.toggle('hidden',simulationKind==='new');
     $('simAssumption').textContent=simulationKind==='renewal'?(result.outstandingIofMode==='informed'?'IOF do saldo renovado estimado pelo período complementar até o limite de 365 dias, sem repetir o adicional de 0,38%. '+result.complementaryDays+' dias complementares considerados. Primeiro vencimento em '+formatDateBR(firstDue)+'.':'IOF do saldo renovado aproximado assumindo 180 dias já tributados na operação original. Informe as datas da operação original em “Aumente a precisão” para refinar. Primeiro vencimento em '+formatDateBR(firstDue)+'.'):'IOF estimado incluído no valor financiado. Primeiro vencimento em '+formatDateBR(firstDue)+'.';
