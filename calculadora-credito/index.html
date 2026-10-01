@@ -1,4 +1,4 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f7f5"><title>Calculadora de Crédito</title><link rel="stylesheet" href="css/app.css?v=20261001-07"></head>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f7f5"><title>Calculadora de Crédito</title><link rel="stylesheet" href="css/app.css?v=20261001-08"></head>
 <body><main class="wrap"><header><p class="eyebrow">FINANÇAS</p><h1>Calculadora de Crédito</h1><p class="lead">Escolha a ferramenta que precisa. Os dados podem ser reaproveitados entre elas.</p></header>
 
 <nav class="tool-tabs" aria-label="Ferramentas">
@@ -41,7 +41,7 @@
 <div class="actions"><button type="submit" id="simulate" disabled>Simular</button><button type="button" class="secondary" id="clearSimulation">Limpar</button></div>
 <p id="simulateError" class="error" role="alert"></p>
 </form>
-<section id="simulationResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Parcela estimada</p><strong id="simPayment"></strong><div class="simulation-meta"><div class="balance-stat"><span>Valor financiado</span><b id="simFinanced"></b></div><div class="balance-stat"><span>IOF estimado</span><b id="simIof"></b></div><div class="balance-stat" id="simRenewalStat"><span id="simReleasedLabel">Valor liberado</span><b id="simReleased"></b></div><div class="balance-stat hidden" id="simOldBalanceIofStat"><span>IOF sobre saldo renovado</span><b id="simOldBalanceIof"></b></div></div><p class="assumption-note" id="simAssumption"></p></section>
+<section id="simulationResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Parcela estimada</p><strong id="simPayment"></strong><div class="simulation-meta"><div class="balance-stat"><span>Valor financiado</span><b id="simFinanced"></b></div><div class="balance-stat"><span>IOF estimado</span><b id="simIof"></b></div><div class="balance-stat" id="simRenewalStat"><span id="simReleasedLabel">Valor liberado</span><b id="simReleased"></b></div><div class="balance-stat hidden" id="simOldBalanceIofStat"><span>IOF sobre saldo renovado</span><b id="simOldBalanceIof"></b></div></div><p class="assumption-note" id="simAssumption"></p><div class="next"><button type="button" class="secondary offer-link">Gerar oferta</button></div></section>
 </div></section>
 <section class="tool-panel">
 <div class="card tool-card"><div class="tool-heading"><h2>Simular portabilidade</h2><p>Informe os dados do contrato atual e a taxa oferecida pela instituição destino. Saldo, prazo e demais condições são mantidos para comparar apenas o efeito da nova taxa.</p></div>
@@ -66,7 +66,7 @@
 </div></details>
 </div>
 <div class="actions"><button type="submit" id="calculate" disabled>Simular portabilidade</button><button type="button" class="secondary" id="clear">Limpar</button></div><p id="error" class="error" role="alert"></p></form>
-<section id="result" class="result embedded hidden" aria-live="polite"><p class="result-label">Parcela na instituição destino</p><strong id="resultValue"></strong><div class="simulation-meta"><div class="balance-stat"><span>Parcela na origem</span><b id="portOriginPayment"></b></div><div class="balance-stat"><span>Saldo portado na efetivação</span><b id="portUpdatedBalance"></b></div><div class="balance-stat"><span>Taxa na origem</span><b id="portOriginRate"></b></div><div class="balance-stat"><span>Taxa no destino</span><b id="portDestinationRate"></b></div><div class="balance-stat"><span>Carência até a 1ª parcela</span><b id="portGraceDays"></b></div><div class="balance-stat"><span>IOF</span><b>Não incide</b></div></div><p id="resultExtra" class="assumption-note"></p><div class="next"><button type="button" id="sendToUpdate">Usar origem em Projetar saldo</button><button type="button" id="showEvolution">Ver evolução da origem</button></div><p id="resultLabel" class="hidden"></p></section>
+<section id="result" class="result embedded hidden" aria-live="polite"><p class="result-label">Parcela na instituição destino</p><strong id="resultValue"></strong><div class="simulation-meta"><div class="balance-stat"><span>Parcela na origem</span><b id="portOriginPayment"></b></div><div class="balance-stat"><span>Saldo portado na efetivação</span><b id="portUpdatedBalance"></b></div><div class="balance-stat"><span>Taxa na origem</span><b id="portOriginRate"></b></div><div class="balance-stat"><span>Taxa no destino</span><b id="portDestinationRate"></b></div><div class="balance-stat"><span>Carência até a 1ª parcela</span><b id="portGraceDays"></b></div><div class="balance-stat"><span>IOF</span><b>Não incide</b></div></div><p id="resultExtra" class="assumption-note"></p><div class="next"><button type="button" id="sendToUpdate">Usar origem em Projetar saldo</button><button type="button" id="showEvolution">Ver evolução da origem</button></div><p id="resultLabel" class="hidden"></p><div class="next"><button type="button" class="secondary offer-link">Gerar oferta</button></div></section>
 <section id="evolution" class="embedded hidden"><div class="section-head"><h3>Evolução estimada da origem</h3><button type="button" class="secondary small" id="hideEvolution">Fechar</button></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Saldo inicial</th><th>Juros</th><th>Amortização</th><th>Parcela</th><th>Saldo final</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>
 </div></section>
 <section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Simular troca de dívida</h2><p>Compare uma nova operação com o empréstimo atual. O sistema identifica automaticamente se haverá liquidação ou amortização parcial.</p></div>
@@ -116,7 +116,7 @@
 <div class="balance-stat"><span>Total a pagar na nova operação</span><b id="exNewTotal"></b></div>
 <div class="balance-stat"><span>Novo endividamento total</span><b id="exCombinedTotal"></b></div>
 </div></div>
-<p class="assumption-note" id="exIofNotice"></p><p class="assumption-note" id="exSummary"></p><p class="assumption-note">O cálculo compara fluxos nominais.</p></section>
+<p class="assumption-note" id="exIofNotice"></p><p class="assumption-note" id="exSummary"></p><p class="assumption-note">O cálculo compara fluxos nominais.</p><div class="next"><button type="button" class="secondary offer-link">Gerar oferta</button></div></section>
 </div></section>
 <section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Simular amortização</h2><p>Compare o efeito de uma amortização extraordinária reduzindo o prazo ou o valor da parcela.</p></div>
 <form id="amortizeForm" novalidate><div class="portability-card"><h3>Dados da operação</h3><div class="grid">
@@ -135,7 +135,7 @@
 <div class="balance-stat"><span>Mantendo o prazo</span><b id="amNewPmt"></b><small id="amSavedPmt"></small></div>
 <div class="balance-stat amortization-interest-stat"><span>Economia de juros · prazo</span><b id="amInterestTerm"></b></div>
 <div class="balance-stat amortization-interest-stat"><span>Economia de juros · parcela</span><b id="amInterestPayment"></b></div>
-</div><p class="assumption-note">Estimativa pelo sistema Price, sem tarifas, seguros ou outros eventos do contrato.</p></section>
+</div><p class="assumption-note">Estimativa pelo sistema Price, sem tarifas, seguros ou outros eventos do contrato.</p><div class="next"><button type="button" class="secondary offer-link">Gerar oferta</button></div></section>
 </div></section>
 <section class="tool-panel">
 <div class="card tool-card"><div class="tool-heading"><h2>Simular saldo futuro</h2><p>Informe os dados conhecidos do contrato e escolha a data para atualização.</p></div><div class="portability-card"><h3>Dados do contrato</h3><div class="grid">
@@ -151,7 +151,7 @@
 <p class="coming">Se o próximo vencimento não estiver informado, será considerada carência padrão de 30 dias.</p>
 </div></details><div class="actions"><button type="button" id="calculateUpdateBalance" disabled>Projetar saldo</button><button type="button" class="secondary" id="clearUpdate">Limpar</button></div>
 <p id="updateError" class="error" role="alert"></p>
-<div id="updatedBalanceResult" class="balance-summary hidden"><p class="result-label" id="updatedBalanceDate"></p><strong id="updatedBalanceValue"></strong><p class="balance-caption">Saldo devedor estimado</p><div class="balance-meta"><div class="balance-stat"><b id="paidPeriods"></b><span>parcelas transcorridas</span></div><div class="balance-stat"><b id="remainingPeriods"></b><span>parcelas restantes</span></div><div class="balance-stat"><span>Próximo vencimento</span><b id="updatedNextDue"></b></div></div><p class="assumption-note">Valores em atraso foram desconsiderados.</p></div>
+<div id="updatedBalanceResult" class="balance-summary hidden"><p class="result-label" id="updatedBalanceDate"></p><strong id="updatedBalanceValue"></strong><p class="balance-caption">Saldo devedor estimado</p><div class="balance-meta"><div class="balance-stat"><b id="paidPeriods"></b><span>parcelas transcorridas</span></div><div class="balance-stat"><b id="remainingPeriods"></b><span>parcelas restantes</span></div><div class="balance-stat"><span>Próximo vencimento</span><b id="updatedNextDue"></b></div></div><p class="assumption-note">Valores em atraso foram desconsiderados.</p><div class="next"><button type="button" class="secondary offer-link">Gerar oferta</button></div></div>
 </div></section>
 <section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Gerar oferta</h2><p>Transforme o último cálculo em uma oferta objetiva, pronta para apresentar ou enviar ao cliente.</p></div>
 <div class="portability-card"><h3>Personalização</h3><div class="grid"><label>Nome do cliente <span>opcional</span><input id="offerClientName" autocomplete="off"></label></div></div>
@@ -160,4 +160,4 @@
 </div></section>
 
 </div>
-<footer><p>Simulação matemática baseada exclusivamente nos dados informados, não é válida como proposta.<br>O saldo oficial pode variar conforme as condições e eventos do contrato.</p><p>Desenvolvido por: bmachado.dev - 2026<br>Reprodução comercial não autorizada.</p></footer></main><script type="module" src="js/app.js?v=20261001-35"></script></body></html>
+<footer><p>Simulação matemática baseada exclusivamente nos dados informados, não é válida como proposta.<br>O saldo oficial pode variar conforme as condições e eventos do contrato.</p><p>Desenvolvido por: bmachado.dev - 2026<br>Reprodução comercial não autorizada.</p></footer></main><script type="module" src="js/app.js?v=20261001-36"></script></body></html>
