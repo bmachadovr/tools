@@ -37,3 +37,5 @@
 .exchange-consolidation .balance-stat{width:100%}
 
 .required-rate-alert{color:#b42318;font-weight:700}
+
+@media(max-width:620px){#amortizationResult .simulation-meta{grid-template-columns:repeat(2,minmax(0,1fr))}#amortizationResult .simulation-meta .balance-stat:last-child{grid-column:auto}}
