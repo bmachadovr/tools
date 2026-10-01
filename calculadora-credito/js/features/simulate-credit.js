@@ -71,11 +71,14 @@ export function simulateCredit({kind='new',requestedAmount,outstandingBalance=0,
   let outstandingIof=0, outstandingIofMode='none', complementaryDays=0;
   if(kind==='renewal'){
     if(originalContractDate&&originalFinalDue){
-      const originalTaxableDays=Math.min(IOF_MAX_DAYS,Math.max(0,daysBetween(originalContractDate,contractDate)));
-      const finalRenewedDue=addMonthsClamped(firstDue,periods-1);
-      const renewedTaxableDays=Math.min(IOF_MAX_DAYS,Math.max(0,daysBetween(originalContractDate,finalRenewedDue)));
-      complementaryDays=Math.max(0,renewedTaxableDays-originalTaxableDays);
-      outstandingIof=outstandingBalance*IOF_DAILY_RATE*complementaryDays;
+      const elapsedOriginalDays=Math.min(IOF_MAX_DAYS,Math.max(0,daysBetween(originalContractDate,contractDate)));
+      const remainingTaxableDays=Math.max(0,IOF_MAX_DAYS-elapsedOriginalDays);
+      complementaryDays=Math.min(remainingTaxableDays,firstPeriodDays);
+      // Sem o cronograma original completo, estimamos apenas a fração do saldo
+      // ainda exposta ao IOF. Essa fração cai linearmente até o limite de 365 dias.
+      const taxableBalanceShare=remainingTaxableDays/IOF_MAX_DAYS;
+      const averageTaxableBalance=outstandingBalance*taxableBalanceShare/2;
+      outstandingIof=roundMoney(averageTaxableBalance*IOF_DAILY_RATE*complementaryDays);
       outstandingIofMode='estimated-informed';
     }else{
       const assumedOriginalTaxableDays=180;
