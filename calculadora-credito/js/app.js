@@ -302,7 +302,7 @@ function solveSimulationMissing({amount,n,pmt,rate,contractDate,firstDue,origina
 $('simulateForm').addEventListener('submit',e=>{
   e.preventDefault();$('simulateError').textContent='';$('simulationResult').classList.add('hidden');
   try{
-    validateSimulation();if($('simulate').disabled)throw new Error('Informe a taxa mensal e exatamente dois entre valor contratado, prazo e parcela mensal.');
+    validateSimulation();if($('simulate').disabled)throw new Error(simulationKind==='renewal'?'Na renovação, informe a taxa mensal, o saldo devedor atual e exatamente dois entre valor contratado, prazo e parcela mensal.':'Informe a taxa mensal e exatamente dois entre valor contratado, prazo e parcela mensal.');
     for(const id of ['simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'])if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');
     const originalDateRaw=$('simOriginalContractDate').value.trim(),originalFinalRaw=$('simOriginalFinalDue').value.trim();
     if(simulationKind==='renewal'&&((originalDateRaw&&!originalFinalRaw)||(!originalDateRaw&&originalFinalRaw)))throw new Error('Para refinar o IOF do saldo, informe as duas datas da operação original.');
