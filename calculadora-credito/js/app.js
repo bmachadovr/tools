@@ -292,8 +292,8 @@ function solveSimulationMissing({amount,n,pmt,rate,contractDate,firstDue,origina
   }
   if(n===null){
     let best=null;
-    for(let periods=1;periods<=600;periods++){const candidate=simulateCreditInputs(amount,periods,rate,contractDate,firstDue,originalContractDate,originalFinalDue);const diff=Math.abs(candidate.payment-pmt);if(!best||diff<best.diff)best={result:candidate,diff};}
-    if(!best||best.diff>Math.max(0.05,pmt*0.005))throw new Error('A parcela informada não corresponde a um prazo inteiro entre 1 e 600 meses.');
+    for(let periods=1;periods<=420;periods++){const candidate=simulateCreditInputs(amount,periods,rate,contractDate,firstDue,originalContractDate,originalFinalDue);const diff=Math.abs(candidate.payment-pmt);if(!best||diff<best.diff)best={result:candidate,diff};}
+    if(!best||best.diff>Math.max(0.05,pmt*0.005))throw new Error('Os dados informados não resultam em um prazo válido entre 1 e 420 meses.');
     return {result:best.result,solved:'n'};
   }
   throw new Error('Deixe exatamente um entre valor contratado, prazo e parcela mensal em branco.');
@@ -313,7 +313,7 @@ $('simulateForm').addEventListener('submit',e=>{
     if(n!==null&&!Number.isInteger(n))throw new Error('O prazo deve ser um número inteiro de parcelas.');
     const solved=solveSimulationMissing({amount,n,pmt,rate,contractDate,firstDue,originalContractDate,originalFinalDue}),result=solved.result;
     if(solved.solved==='amount')$('simAmount').value=result.requestedAmount.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-    if(solved.solved==='n')$('simN').value=String(result.firstPeriodDays>=0?Math.round((result.financedAmount&&result.payment)?(()=>{for(let x=1;x<=600;x++){try{const r=simulateCreditInputs(result.requestedAmount,x,rate,contractDate,firstDue,originalContractDate,originalFinalDue);if(Math.abs(r.payment-result.payment)<0.01)return x;}catch{}}return n;})():n):n);
+    if(solved.solved==='n')$('simN').value=String(result.firstPeriodDays>=0?Math.round((result.financedAmount&&result.payment)?(()=>{for(let x=1;x<=420;x++){try{const r=simulateCreditInputs(result.requestedAmount,x,rate,contractDate,firstDue,originalContractDate,originalFinalDue);if(Math.abs(r.payment-result.payment)<0.01)return x;}catch{}}return n;})():n):n);
     $('simPmt').value=result.payment.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
     $('simPayment').textContent=brl.format(result.payment);$('simFinanced').textContent=brl.format(result.financedAmount);$('simIof').textContent=brl.format(result.iof);$('simReleased').textContent=brl.format(result.requestedAmount);$('simOldBalanceIof').textContent=brl.format(result.outstandingIof);
     $('simOldBalanceIofStat').classList.toggle('hidden',simulationKind!=='renewal');$('simReleasedLabel').textContent=simulationKind==='renewal'?'Valor liberado':'Valor contratado';$('simRenewalStat').classList.toggle('hidden',simulationKind==='new');
