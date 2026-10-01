@@ -59,10 +59,14 @@
 <div class="portability-card">
 <h3>Instituição destino</h3>
 <div class="grid"><label>Taxa mensal <span>% a.m.</span><input id="portI" inputmode="numeric"></label></div>
-<p class="precision-help portability-copy">O saldo devedor, o prazo restante e as datas serão os mesmos da instituição origem.</p>
+<details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">As datas permitem atualizar o saldo até a efetivação da portabilidade e projetar os juros do período de carência até a primeira parcela.</p><div class="grid advanced">
+<label>Data de efetivação <input id="portEffectiveDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Data da primeira parcela <input id="portFirstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<p class="coming">Na portabilidade não há incidência de IOF. Sem as datas, o saldo informado será usado sem atualização e será considerado primeiro vencimento em 30 dias.</p>
+</div></details>
 </div>
 <div class="actions"><button type="submit" id="calculate" disabled>Simular portabilidade</button><button type="button" class="secondary" id="clear">Limpar</button></div><p id="error" class="error" role="alert"></p></form>
-<section id="result" class="result embedded hidden" aria-live="polite"><p class="result-label">Parcela na instituição destino</p><strong id="resultValue"></strong><div class="simulation-meta"><div class="balance-stat"><span>Parcela na origem</span><b id="portOriginPayment"></b></div><div class="balance-stat"><span>Taxa na origem</span><b id="portOriginRate"></b></div><div class="balance-stat"><span>Taxa no destino</span><b id="portDestinationRate"></b></div></div><p id="resultExtra" class="assumption-note"></p><div class="next"><button type="button" id="sendToUpdate">Usar origem em Projetar saldo</button><button type="button" id="showEvolution">Ver evolução da origem</button></div><p id="resultLabel" class="hidden"></p></section>
+<section id="result" class="result embedded hidden" aria-live="polite"><p class="result-label">Parcela na instituição destino</p><strong id="resultValue"></strong><div class="simulation-meta"><div class="balance-stat"><span>Parcela na origem</span><b id="portOriginPayment"></b></div><div class="balance-stat"><span>Saldo portado na efetivação</span><b id="portUpdatedBalance"></b></div><div class="balance-stat"><span>Taxa na origem</span><b id="portOriginRate"></b></div><div class="balance-stat"><span>Taxa no destino</span><b id="portDestinationRate"></b></div><div class="balance-stat"><span>Carência até a 1ª parcela</span><b id="portGraceDays"></b></div><div class="balance-stat"><span>IOF</span><b>Não incide</b></div></div><p id="resultExtra" class="assumption-note"></p><div class="next"><button type="button" id="sendToUpdate">Usar origem em Projetar saldo</button><button type="button" id="showEvolution">Ver evolução da origem</button></div><p id="resultLabel" class="hidden"></p></section>
 <section id="evolution" class="embedded hidden"><div class="section-head"><h3>Evolução estimada da origem</h3><button type="button" class="secondary small" id="hideEvolution">Fechar</button></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Saldo inicial</th><th>Juros</th><th>Amortização</th><th>Parcela</th><th>Saldo final</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>
 </div></section>
 <section class="tool-panel">
@@ -211,4 +215,4 @@
 <section id="insightsHub" class="result embedded"><p class="result-label">Argumentos calculados</p><div id="insightsHubList" class="simulation-meta"><div class="balance-stat"><span>Aguardando cálculo</span><b>Use uma das ferramentas para gerar argumentos objetivos.</b></div></div><p class="assumption-note">Os textos são gerados por regras matemáticas, sem IA. Cada argumento deriva de números exibidos na própria simulação.</p></section>
 </div></section>
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-03"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-04"></script></body></html>
