@@ -71,12 +71,12 @@ export function simulateCredit({kind='new',requestedAmount,outstandingBalance=0,
   let outstandingIof=0, outstandingIofMode='none', complementaryDays=0;
   if(kind==='renewal'){
     if(originalContractDate&&originalFinalDue){
-      const originalTaxableDays=Math.min(IOF_MAX_DAYS,Math.max(0,daysBetween(originalContractDate,originalFinalDue)));
+      const originalTaxableDays=Math.min(IOF_MAX_DAYS,Math.max(0,daysBetween(originalContractDate,contractDate)));
       const finalRenewedDue=addMonthsClamped(firstDue,periods-1);
       const renewedTaxableDays=Math.min(IOF_MAX_DAYS,Math.max(0,daysBetween(originalContractDate,finalRenewedDue)));
       complementaryDays=Math.max(0,renewedTaxableDays-originalTaxableDays);
       outstandingIof=outstandingBalance*IOF_DAILY_RATE*complementaryDays;
-      outstandingIofMode='informed';
+      outstandingIofMode='estimated-informed';
     }else{
       const assumedOriginalTaxableDays=180;
       const finalRenewedDue=addMonthsClamped(firstDue,periods-1);
@@ -87,7 +87,7 @@ export function simulateCredit({kind='new',requestedAmount,outstandingBalance=0,
     }
   }
 
-  const iof=newMoneyIof+outstandingIof;
+  const iof=roundMoney(newMoneyIof+outstandingIof);
   const baseAmount=requestedAmount+(kind==='renewal'?outstandingBalance:0);
   const financedAmount=roundMoney(baseAmount+iof);
 
