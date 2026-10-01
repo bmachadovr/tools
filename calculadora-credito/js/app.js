@@ -25,7 +25,8 @@ function formatFixed2(input) {
   input.value=(Number(digits)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 ['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','simPmt','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','cmpAIOF','cmpBIOF','exBalance','exCurrentPayment','exNewPayment','exCashBack','exFees','exNewIof','cvAmount','cvPayment','caBalance','caCurrentPayment','caNewAmount'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
-['i','portI','upI','simI','amI','cmpAI','cmpBI','exCurrentI','exNewI','cvI','caCurrentI','caNewI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['i','portI','upI','amI','cmpAI','cmpBI','exCurrentI','exNewI','cvI','caCurrentI','caNewI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+$('simI').addEventListener('input',e=>{formatFixed2(e.target);validateSimulation();});
 
 function formatDate(input) {
   const digits = input.value.replace(/\D/g, '').slice(0, 8);
@@ -266,12 +267,14 @@ function simulationFieldState(id){
 }
 function validateSimulation(){
   const states=['simAmount','simN','simPmt'].map(simulationFieldState);
-  const rate=simulationFieldState('simI'),balanceOk=simulationKind==='new'||simulationFieldState('simBalance')==='valid';
+  const rateValue=parseBRNumber($('simI').value),rateOk=Number.isFinite(rateValue)&&rateValue>0;
+  updateFieldState('simI',rateOk);
+  const balanceOk=simulationKind==='new'||simulationFieldState('simBalance')==='valid';
   for(const id of ['simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue']){
     const raw=$(id).value.trim(),valid=raw===''||validDate(raw);
     $(id).classList.toggle('field-valid',raw!==''&&valid);$(id).classList.toggle('field-invalid',raw!==''&&!valid);
   }
-  $('simulate').disabled=!(rate==='valid'&&balanceOk&&states.filter(x=>x==='valid').length===2&&states.filter(x=>x==='empty').length===1);
+  $('simulate').disabled=!(rateOk&&balanceOk&&states.filter(x=>x==='valid').length===2&&states.filter(x=>x==='empty').length===1);
 }
 ['simAmount','simBalance','simN','simPmt','simI','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'].forEach(id=>$(id).addEventListener('input',validateSimulation));
 
