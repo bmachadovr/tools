@@ -50,7 +50,7 @@ function validDate(value) {
   const date = new Date(year, month - 1, day);
   return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
 }
-['due','baseDate','firstDue','upBaseDate','upDue','updateDate','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue','amBaseDate','amDue','cmpAContractDate','cmpAFirstDue','cmpBContractDate','cmpBFirstDue','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue','cvContractDate','cvFirstDue','caBaseDate','caCurrentDue','caContractDate','caFirstDue'].forEach(id => $(id).addEventListener('input', e => formatDate(e.target)));
+['due','baseDate','firstDue','upBaseDate','upDue','updateDate','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue','amBaseDate','amDue','portEffectiveDate','portFirstDue','cmpAContractDate','cmpAFirstDue','cmpBContractDate','cmpBFirstDue','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue','cvContractDate','cvFirstDue','caBaseDate','caCurrentDue','caContractDate','caFirstDue'].forEach(id => $(id).addEventListener('input', e => formatDate(e.target)));
 
 function parseDateBR(value) {
   if (!value) return null;
@@ -86,6 +86,7 @@ function updateCalculateState() {
   $('calculate').disabled = !(validCount === 3 && emptyCount === 1 && destinationValid);
 }
 ['pv','pmt','n','i','portI'].forEach(id => $(id).addEventListener('input', updateCalculateState));
+['portEffectiveDate','portFirstDue'].forEach(id=>$(id).addEventListener('input',()=>{$('result').classList.add('hidden');}));
 updateCalculateState();
 function paymentWithFirstPeriod(principalValue,rateValue,periodsValue,firstPeriodDays=30){
   if(firstPeriodDays===30)return payment(principalValue,rateValue,periodsValue);
@@ -100,16 +101,30 @@ form.addEventListener('submit',e=>{e.preventDefault();$('error').textContent='';
   current={...data,[r.key]:r.value};
   const originPayment=current.pmt??paymentWithFirstPeriod(current.pv,current.i,current.n,current.firstPeriodDays);
   const destinationRate=parseBRNumber($('portI').value)/100;
-  const destinationPayment=paymentWithFirstPeriod(current.pv,destinationRate,current.n,current.firstPeriodDays);
+  for(const id of ['portEffectiveDate','portFirstDue'])if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');
+  const informedEffective=parseDateBR($('portEffectiveDate').value),informedDestinationDue=parseDateBR($('portFirstDue').value);
+  if((informedEffective&&!informedDestinationDue)||(!informedEffective&&informedDestinationDue))throw new Error('Para usar as datas do destino, informe a data de efetivação e a data da primeira parcela.');
+  const balanceBaseDate=parseDateBR($('baseDate').value);
+  if(informedEffective&&!balanceBaseDate)throw new Error('Para atualizar o saldo até a efetivação, informe também a Data do saldo devedor na Instituição origem.');
+  if(informedEffective<=balanceBaseDate)throw new Error('A data de efetivação deve ser posterior à data do saldo devedor.');
+  if(informedDestinationDue<=informedEffective)throw new Error('A primeira parcela deve ser posterior à data de efetivação.');
+  const balanceUpdateDays=informedEffective?daysBetween(balanceBaseDate,informedEffective):0;
+  const updatedBalance=informedEffective?current.pv*Math.pow(1+current.i,balanceUpdateDays/30):current.pv;
+  const destinationFirstPeriodDays=informedEffective?daysBetween(informedEffective,informedDestinationDue):30;
+  const destinationPayment=paymentWithFirstPeriod(updatedBalance,destinationRate,current.n,destinationFirstPeriodDays);
   $('resultValue').textContent=brl.format(destinationPayment);
   $('portOriginPayment').textContent=brl.format(originPayment);
+  $('portUpdatedBalance').textContent=brl.format(updatedBalance);
   $('portOriginRate').textContent=(current.i*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'% a.m.';
   $('portDestinationRate').textContent=(destinationRate*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'% a.m.';
+  $('portGraceDays').textContent=destinationFirstPeriodDays.toLocaleString('pt-BR')+' dias';
   const difference=destinationPayment-originPayment;
-  $('resultExtra').textContent=Math.abs(difference)<0.005?'A parcela estimada permanece igual.':difference<0?'Redução estimada de '+brl.format(-difference)+' por parcela, mantendo saldo, prazo e datas da origem.':'Aumento estimado de '+brl.format(difference)+' por parcela, mantendo saldo, prazo e datas da origem.';
+  const updateText=informedEffective?' Saldo atualizado por '+balanceUpdateDays.toLocaleString('pt-BR')+' dias até a efetivação.':' Saldo informado usado sem atualização até a efetivação.';
+  const paymentText=Math.abs(difference)<0.005?'A parcela estimada permanece igual.':difference<0?'Redução estimada de '+brl.format(-difference)+' por parcela.':'Aumento estimado de '+brl.format(difference)+' por parcela.';
+  $('resultExtra').textContent=paymentText+updateText+' Carência de '+destinationFirstPeriodDays.toLocaleString('pt-BR')+' dias projetada na parcela do destino. Portabilidade sem incidência de IOF.';
   $('result').classList.remove('hidden');
 }catch(err){$('result').classList.add('hidden');$('error').textContent=err.message;}});
-$('clear').addEventListener('click',()=>{form.reset();['pv','pmt','n','i','portI'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('result').classList.add('hidden');$('evolution').classList.add('hidden');$('error').textContent='';current=null;updateCalculateState();});
+$('clear').addEventListener('click',()=>{form.reset();['pv','pmt','n','i','portI','portEffectiveDate','portFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('result').classList.add('hidden');$('evolution').classList.add('hidden');$('error').textContent='';current=null;updateCalculateState();});
 $('showEvolution').addEventListener('click',()=>{if(!current)return;try{const pmt=current.pmt??payment(current.pv,current.i,current.n);const schedule=buildSchedule(current.pv,current.i,pmt,Math.min(600,Math.ceil(current.n)+2));const body=$('scheduleBody');body.innerHTML='';for(const r of schedule.rows){const tr=document.createElement('tr');[r.n,brl.format(r.opening),brl.format(r.interest),brl.format(r.amortization),brl.format(r.payment),brl.format(r.closing)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});body.appendChild(tr)}$('evolution').classList.remove('hidden');$('evolution').scrollIntoView({behavior:'smooth',block:'start'});}catch(err){$('error').textContent=err.message;}});
 $('hideEvolution').addEventListener('click',()=>$('evolution').classList.add('hidden'));
 
