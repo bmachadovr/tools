@@ -120,25 +120,23 @@
 <label>Nova parcela <span>R$</span><input id="exNewPayment" inputmode="numeric"></label>
 <label>Novo prazo <input id="exNewN" inputmode="numeric"></label>
 <label>Valor adicional liberado <span>R$</span><input id="exCashBack" inputmode="numeric"></label>
-<label>Custos adicionais <span>R$</span><input id="exFees" inputmode="numeric"></label>
 </div>
 </div>
-<details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Informe taxas, datas e IOF quando disponíveis para qualificar a comparação econômica da troca.</p><div class="grid advanced">
+<details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Informe taxas e datas quando disponíveis para qualificar a comparação econômica da troca. O IOF da nova operação é estimado automaticamente.</p><div class="grid advanced">
 <label>Taxa atual <span>% a.m.</span><input id="exCurrentI" inputmode="numeric"></label>
 <label>Data do saldo atual <input id="exBaseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
 <label>Próximo vencimento atual <input id="exCurrentDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
 <label>Taxa da nova operação <span>% a.m.</span><input id="exNewI" inputmode="numeric"></label>
 <label>Data da nova contratação <input id="exNewContractDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
 <label>Primeiro vencimento novo <input id="exNewFirstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<label>IOF da nova operação <span>R$</span><input id="exNewIof" inputmode="numeric"></label>
 </div></details>
 <div class="actions"><button type="submit" id="exchange" disabled>Calcular troca</button><button type="button" class="secondary" id="clearExchange">Limpar</button></div><p id="exchangeError" class="error" role="alert"></p></form>
 <section id="exchangeResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Impacto da troca</p><strong id="exFinancialResult"></strong><div class="simulation-meta">
 <div class="balance-stat"><span>Restante no contrato atual</span><b id="exCurrentTotal"></b></div>
-<div class="balance-stat"><span>Total da nova operação</span><b id="exNewTotal"></b></div>
+<div class="balance-stat"><span>Total da nova operação</span><b id="exNewTotal"></b></div><div class="balance-stat"><span>IOF estimado</span><b id="exCalculatedIof"></b></div>
 <div class="balance-stat"><span>Diferença na parcela</span><b id="exPaymentDiff"></b></div>
 <div class="balance-stat"><span>Diferença no prazo</span><b id="exPeriodDiff"></b></div>
-</div><p class="assumption-note" id="exSummary"></p><p class="assumption-note">O cálculo compara fluxos nominais. Informe em “Custos adicionais” tarifas ou despesas que não estejam embutidas nas parcelas da nova operação.</p></section>
+</div><p class="assumption-note" id="exSummary"></p><p class="assumption-note">O cálculo compara fluxos nominais. O IOF é estimado automaticamente quando a taxa da nova operação é informada.</p></section>
 </div></section>
 <section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Crédito + amortização</h2><p>Veja o impacto de contratar um novo crédito para amortizar o saldo de outra operação.</p></div>
 <form id="creditAmortForm" novalidate>
@@ -172,4 +170,4 @@
 <section id="insightsHub" class="result embedded"><p class="result-label">Argumentos calculados</p><div id="insightsHubList" class="simulation-meta"><div class="balance-stat"><span>Aguardando cálculo</span><b>Use uma das ferramentas para gerar argumentos objetivos.</b></div></div><p class="assumption-note">Os textos são gerados por regras matemáticas, sem IA. Cada argumento deriva de números exibidos na própria simulação.</p></section>
 </div></section>
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-11"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-12"></script></body></html>
