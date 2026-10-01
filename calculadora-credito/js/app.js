@@ -363,6 +363,18 @@ validateAmortization();
 
 function signedMoney(value){return (value>0?'+ ':'− ')+brl.format(Math.abs(value));}
 
+let exchangeAmortizationMode='payment';
+document.querySelectorAll('.exchange-mode-option').forEach(button=>button.addEventListener('click',()=>{
+  exchangeAmortizationMode=button.dataset.exchangeMode;
+  document.querySelectorAll('.exchange-mode-option').forEach(option=>{
+    const active=option===button;option.classList.toggle('active',active);option.setAttribute('aria-pressed',String(active));
+  });
+  $('exchangeModeHelp').textContent=exchangeAmortizationMode==='term'
+    ? 'Mantém o valor da parcela atual e reduz a quantidade de parcelas. Para este cálculo, informe a taxa atual.'
+    : 'Mantém o prazo restante e reduz o valor das parcelas.';
+  $('exchangeResult').classList.add('hidden');validateExchange();
+}));
+
 function validateExchange(){
   const moneyIds=['exBalance','exCurrentPayment','exNewAmount','exNewPayment'];
   const moneyStates=moneyIds.map(id=>{
@@ -396,7 +408,8 @@ function validateExchange(){
   const optionalOk=raw===''||(Number.isFinite(amount)&&amount>0&&Number.isFinite(newAmount)&&amount<=newAmount);
   $('exAmortizeAmount').classList.toggle('field-valid',raw!==''&&optionalOk);
   $('exAmortizeAmount').classList.toggle('field-invalid',raw!==''&&!optionalOk);
-  $('exchange').disabled=!(moneyOk&&periodsOk&&ratesOk&&datesOk&&optionalOk);
+  const termModeOk=exchangeAmortizationMode!=='term'||(Number.isFinite(parseBRNumber($('exCurrentI').value))&&parseBRNumber($('exCurrentI').value)>0);
+  $('exchange').disabled=!(moneyOk&&periodsOk&&ratesOk&&datesOk&&optionalOk&&termModeOk);
 }
 ['exBalance','exCurrentPayment','exCurrentN','exNewAmount','exNewPayment','exNewN','exAmortizeAmount','exCurrentI','exNewI','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).addEventListener('input',validateExchange));
 $('exchangeForm').addEventListener('submit',e=>{
@@ -420,7 +433,8 @@ $('exchangeForm').addEventListener('submit',e=>{
       newRate:(parseBRNumber($('exNewI').value)??0)/100,
       currentFirstPeriodDays:base&&currentDue?daysBetween(base,currentDue):30,
       newFirstPeriodDays:daysBetween(contractDate,firstDue),
-      newContractDate:contractDate,newFirstDue:firstDue
+      newContractDate:contractDate,newFirstDue:firstDue,
+      amortizationMode:exchangeAmortizationMode
     });
     $('exOperationType').textContent=r.operationType==='liquidation'?'Liquidação':'Amortização parcial';
     $('exAppliedAmount').textContent=brl.format(r.appliedAmount);$('exCashAvailable').textContent=brl.format(r.cashAvailable);$('exRemainingBalance').textContent=brl.format(r.remainingBalance);
@@ -428,11 +442,19 @@ $('exchangeForm').addEventListener('submit',e=>{
     const adjustedCard=$('exAdjustedPaymentCard');
     if(r.operationType==='amortization'&&r.adjustedCurrentPayment!==null){
       adjustedCard.classList.remove('hidden');
-      $('exAdjustedCurrentPayment').textContent=brl.format(r.adjustedCurrentPayment)+(r.adjustedPaymentMethod==='proportional'?' · estimada':'');
+      if(exchangeAmortizationMode==='term'){
+        $('exAdjustedMetricLabel').textContent='Novo prazo do contrato atual';
+        $('exAdjustedCurrentPayment').textContent=r.adjustedCurrentPeriods.toLocaleString('pt-BR')+' parcelas';
+        $('exDifferenceMetricLabel').textContent='Redução no prazo atual';
+        $('exPaymentDiff').textContent=Math.max(0,parseBRNumber($('exCurrentN').value)-r.adjustedCurrentPeriods).toLocaleString('pt-BR')+' parcelas';
+      }else{
+        $('exAdjustedMetricLabel').textContent='Nova parcela do contrato atual';
+        $('exAdjustedCurrentPayment').textContent=brl.format(r.adjustedCurrentPayment)+(r.adjustedPaymentMethod==='proportional-payment'?' · estimada':'');
+        $('exDifferenceMetricLabel').textContent='Diferença na parcela';
+        $('exPaymentDiff').textContent=signedMoney(r.newPayment-r.adjustedCurrentPayment);
+      }
     }else adjustedCard.classList.add('hidden');
     $('exIofNotice').textContent=r.newIof===null?'IOF não calculado: informe a taxa da nova operação para estimá-lo.':'IOF estimado da nova operação: '+brl.format(r.newIof)+'.';
-    const paymentReference=r.adjustedCurrentPayment??parseBRNumber($('exCurrentPayment').value);
-    $('exPaymentDiff').textContent=signedMoney(r.newPayment-paymentReference);
     $('exPeriodDiff').textContent=r.periodDifference===0?'Mesmo prazo':(r.periodDifference>0?'+ ':'− ')+Math.abs(r.periodDifference).toLocaleString('pt-BR')+' parcelas';
     const positive=r.financialDifference>=0;
     $('exFinancialResult').textContent=(positive?'Economia nominal de ':'Acréscimo nominal de ')+brl.format(Math.abs(r.financialDifference));
