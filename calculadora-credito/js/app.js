@@ -231,7 +231,7 @@ $('calculateUpdateBalance').addEventListener('click',()=>{
     const targetDate=parseDateBR($('updateDate').value),baseDate=parseDateBR($('upBaseDate').value)??new Date(),nextDue=parseDateBR($('upDue').value)??defaultNextDue(baseDate);
     const updated=updateBalance({principal,monthlyRate,payment:pmt,periods,baseDate,nextDue,targetDate});
     $('updatedBalanceDate').textContent='Saldo em '+formatDateBR(targetDate);$('updatedBalanceValue').textContent=brl.format(updated.balance);
-    $('paidPeriods').textContent=updated.paid.toLocaleString('pt-BR');$('remainingPeriods').textContent=informedPeriods===null?'—':updated.remaining.toLocaleString('pt-BR');$('updatedNextDue').textContent=formatDateBR(updated.nextDue);
+    $('paidPeriods').textContent=updated.paid.toLocaleString('pt-BR');$('remainingPeriods').textContent=informedPeriods===null?'—':updated.remaining.toLocaleString('pt-BR');$('updatedNextDue').innerHTML=formatDateBR(updated.nextDue)+($('upDue').value.trim()===''?'<span class="estimate-label"> estimado</span>':'');
     $('updatedBalanceResult').classList.remove('hidden');
   }catch(err){$('updateError').textContent=err.message;}
 });
