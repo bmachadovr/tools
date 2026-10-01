@@ -424,8 +424,16 @@ $('exchangeForm').addEventListener('submit',e=>{
     });
     $('exOperationType').textContent=r.operationType==='liquidation'?'Liquidação':'Amortização parcial';
     $('exAppliedAmount').textContent=brl.format(r.appliedAmount);$('exCashAvailable').textContent=brl.format(r.cashAvailable);$('exRemainingBalance').textContent=brl.format(r.remainingBalance);
-    $('exCurrentTotal').textContent=brl.format(r.currentRemaining);$('exNewTotal').textContent=brl.format(r.newRemaining);$('exCalculatedIof').textContent=r.newIof===null?'Informe a taxa':brl.format(r.newIof);
-    $('exPaymentDiff').textContent=signedMoney(r.paymentDifference);
+    $('exCurrentTotal').textContent=brl.format(r.adjustedCurrentRemaining);$('exNewTotal').textContent=brl.format(r.newRemaining);
+    const adjustedCard=$('exAdjustedPaymentCard');
+    if(r.operationType==='amortization'&&r.adjustedCurrentPayment!==null){
+      adjustedCard.classList.remove('hidden');$('exAdjustedCurrentPayment').textContent=brl.format(r.adjustedCurrentPayment);
+    }else if(r.operationType==='amortization'){
+      adjustedCard.classList.remove('hidden');$('exAdjustedCurrentPayment').textContent='Informe a taxa atual';
+    }else adjustedCard.classList.add('hidden');
+    $('exIofNotice').textContent=r.newIof===null?'IOF não calculado: informe a taxa da nova operação para estimá-lo.':'IOF estimado da nova operação: '+brl.format(r.newIof)+'.';
+    const paymentReference=r.adjustedCurrentPayment??parseBRNumber($('exCurrentPayment').value);
+    $('exPaymentDiff').textContent=signedMoney(r.newPayment-paymentReference);
     $('exPeriodDiff').textContent=r.periodDifference===0?'Mesmo prazo':(r.periodDifference>0?'+ ':'− ')+Math.abs(r.periodDifference).toLocaleString('pt-BR')+' parcelas';
     const positive=r.financialDifference>=0;
     $('exFinancialResult').textContent=(positive?'Economia nominal de ':'Acréscimo nominal de ')+brl.format(Math.abs(r.financialDifference));
