@@ -6,11 +6,10 @@
 <button type="button" class="tool-tab" data-tool="1">Simular portabilidade</button>
 <button type="button" class="tool-tab" data-tool="2">Projetar saldo</button>
 <button type="button" class="tool-tab" data-tool="3">Amortizar saldo</button>
-<button type="button" class="tool-tab" data-tool="4">Comparar crédito</button>
-<button type="button" class="tool-tab" data-tool="5">Trocar dívida</button>
-<button type="button" class="tool-tab" data-tool="6">Parcela ↔ Valor</button>
-<button type="button" class="tool-tab" data-tool="7">Crédito + amortização</button>
-<button type="button" class="tool-tab" data-tool="8">Argumentos da oferta</button>
+<button type="button" class="tool-tab" data-tool="4">Trocar dívida</button>
+<button type="button" class="tool-tab" data-tool="5">Parcela ↔ Valor</button>
+<button type="button" class="tool-tab" data-tool="6">Crédito + amortização</button>
+<button type="button" class="tool-tab" data-tool="7">Argumentos da oferta</button>
 </nav>
 <div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
@@ -105,36 +104,6 @@
 <div class="balance-stat"><span>Economia de juros · parcela</span><b id="amInterestPayment"></b></div>
 </div><p class="assumption-note">Estimativa pelo sistema Price, sem tarifas, seguros ou outros eventos do contrato.</p></section>
 </div></section>
-<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Comparar crédito</h2><p>Coloque duas alternativas lado a lado para enxergar as diferenças de parcela, prazo, taxa e desembolso.</p></div>
-<form id="compareForm" novalidate>
-<p class="result-label">Alternativa A</p><div class="grid">
-<label>Valor líquido <span>R$</span><input id="cmpAAmount" inputmode="numeric"></label>
-<label>Valor da parcela <span>R$</span><input id="cmpAPayment" inputmode="numeric"></label>
-<label>Prazo <input id="cmpAN" inputmode="numeric"></label>
-<label>Taxa mensal <span>% a.m.</span><input id="cmpAI" inputmode="numeric"></label>
-</div>
-<p class="result-label">Alternativa B</p><div class="grid">
-<label>Valor líquido <span>R$</span><input id="cmpBAmount" inputmode="numeric"></label>
-<label>Valor da parcela <span>R$</span><input id="cmpBPayment" inputmode="numeric"></label>
-<label>Prazo <input id="cmpBN" inputmode="numeric"></label>
-<label>Taxa mensal <span>% a.m.</span><input id="cmpBI" inputmode="numeric"></label>
-</div>
-<details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Se disponíveis, informe o IOF e as datas de cada proposta para registrar as condições reais da comparação.</p><div class="grid advanced">
-<label>IOF · alternativa A <span>R$</span><input id="cmpAIOF" inputmode="numeric"></label>
-<label>Contratação · A <input id="cmpAContractDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<label>Primeiro vencimento · A <input id="cmpAFirstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<label>IOF · alternativa B <span>R$</span><input id="cmpBIOF" inputmode="numeric"></label>
-<label>Contratação · B <input id="cmpBContractDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-<label>Primeiro vencimento · B <input id="cmpBFirstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
-</div></details>
-<div class="actions"><button type="submit" id="compare" disabled>Comparar</button><button type="button" class="secondary" id="clearComparison">Limpar</button></div><p id="compareError" class="error" role="alert"></p></form>
-<section id="comparisonResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Diferenças da alternativa B em relação à A</p><div class="simulation-meta">
-<div class="balance-stat"><span>Parcela</span><b id="cmpPaymentDiff"></b><small id="cmpPaymentPct"></small></div>
-<div class="balance-stat"><span>Prazo</span><b id="cmpPeriodDiff"></b></div>
-<div class="balance-stat"><span>Desembolso total</span><b id="cmpTotalDiff"></b><small id="cmpTotalPct"></small></div>
-<div class="balance-stat"><span>Custo além do valor líquido</span><b id="cmpCostDiff"></b></div>
-</div><p class="assumption-note" id="cmpSummary"></p><p class="assumption-note">Comparação matemática dos fluxos informados. IOF, seguros e tarifas devem estar refletidos nos valores das propostas quando aplicáveis.</p></section>
-</div></section>
 <section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Trocar dívida</h2><p>Compare o que ainda seria pago no contrato atual com uma proposta para liquidá-lo e substituí-lo.</p></div>
 <form id="exchangeForm" novalidate>
 <p class="result-label">Dívida atual</p><div class="grid">
@@ -215,4 +184,4 @@
 <section id="insightsHub" class="result embedded"><p class="result-label">Argumentos calculados</p><div id="insightsHubList" class="simulation-meta"><div class="balance-stat"><span>Aguardando cálculo</span><b>Use uma das ferramentas para gerar argumentos objetivos.</b></div></div><p class="assumption-note">Os textos são gerados por regras matemáticas, sem IA. Cada argumento deriva de números exibidos na própria simulação.</p></section>
 </div></section>
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-04"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-05"></script></body></html>
