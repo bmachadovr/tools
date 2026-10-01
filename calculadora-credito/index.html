@@ -72,6 +72,14 @@
 <section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Simular troca de dívida</h2><p>Compare uma nova operação com o empréstimo atual. O sistema identifica automaticamente se haverá liquidação ou amortização parcial.</p></div>
 <form id="exchangeForm" novalidate>
 <div class="portability-card">
+<h3>Forma de amortização</h3>
+<div class="credit-kind" role="group" aria-label="Forma de amortização">
+<button type="button" class="kind-option active exchange-mode-option" data-exchange-mode="payment" aria-pressed="true">Parcelas</button>
+<button type="button" class="kind-option exchange-mode-option" data-exchange-mode="term" aria-pressed="false">Prazo</button>
+</div>
+<p class="precision-help" id="exchangeModeHelp">Mantém o prazo restante e reduz o valor das parcelas.</p>
+</div>
+<div class="portability-card">
 <h3>Empréstimo atual</h3>
 <div class="grid">
 <label>Saldo para liquidação <span>R$</span><input id="exBalance" inputmode="numeric"></label>
@@ -102,8 +110,8 @@
 <div class="balance-stat"><span>Valor destinado à dívida</span><b id="exAppliedAmount"></b></div>
 <div class="balance-stat"><span>Valor livre para o cliente</span><b id="exCashAvailable"></b></div>
 <div class="balance-stat"><span>Saldo remanescente</span><b id="exRemainingBalance"></b></div>
-<div class="balance-stat" id="exAdjustedPaymentCard"><span>Nova parcela do contrato atual</span><b id="exAdjustedCurrentPayment"></b></div>
-<div class="balance-stat"><span>Diferença na parcela</span><b id="exPaymentDiff"></b></div>
+<div class="balance-stat" id="exAdjustedPaymentCard"><span id="exAdjustedMetricLabel">Nova parcela do contrato atual</span><b id="exAdjustedCurrentPayment"></b></div>
+<div class="balance-stat"><span id="exDifferenceMetricLabel">Diferença na parcela</span><b id="exPaymentDiff"></b></div>
 </div><p class="assumption-note" id="exIofNotice"></p><p class="assumption-note" id="exSummary"></p>
 <div class="portability-card"><h3>Consolidação</h3><div class="simulation-meta">
 <div class="balance-stat"><span>Total a pagar no contrato atual</span><b id="exCurrentTotal"></b></div>
@@ -151,4 +159,4 @@
 </div></section>
 
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-21"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-22"></script></body></html>
