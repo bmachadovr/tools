@@ -116,3 +116,15 @@ header{padding-left:48px}
 body[data-theme="color"] header{padding-left:48px}
 .theme-switcher{margin-top:-2px}
 @media(max-width:620px){.top-nav{top:0}.menu-trigger{width:34px;height:32px;padding:7px}.tool-menu{width:min(86vw,300px);padding-top:14px}header,body[data-theme="color"] header{padding-left:44px}}
+
+/* Fine tune compact tools menu */
+.top-nav{top:10px;left:10px}
+.menu-trigger{width:30px;height:28px;padding:6px;border-radius:7px}
+.menu-trigger span{width:15px}
+.tool-menu{width:min(70vw,245px);padding:14px 10px}
+.tool-menu-head{padding:0 5px 9px}
+.tool-menu-list{padding-top:7px;gap:2px}
+.tool-menu .tool-tab{padding:8px 9px}
+.menu-close{width:28px;height:28px;font-size:1.25rem}
+header,body[data-theme="color"] header{padding-left:42px}
+@media(max-width:620px){.top-nav{top:8px;left:8px}.menu-trigger{width:29px;height:27px;padding:6px}.tool-menu{width:min(72vw,235px);padding:12px 9px}header,body[data-theme="color"] header{padding-left:40px}}
