@@ -450,8 +450,9 @@ $('exchangeForm').addEventListener('submit',e=>{
       }else{
         $('exAdjustedMetricLabel').textContent='Nova parcela do contrato atual';
         $('exAdjustedCurrentPayment').innerHTML=brl.format(r.adjustedCurrentPayment)+(r.adjustedPaymentMethod==='proportional-payment'?'<span class="estimate-label"> estimada</span>':'');
-        $('exDifferenceMetricLabel').textContent='Diferença na parcela';
-        $('exPaymentDiff').textContent=signedMoney(r.newPayment-r.adjustedCurrentPayment);
+        const monthlyDifference=parseBRNumber($('exCurrentPayment').value)-(r.adjustedCurrentPayment+r.newPayment);
+        $('exDifferenceMetricLabel').textContent=monthlyDifference>=0?'Redução mensal':'Aumento mensal';
+        $('exPaymentDiff').textContent=brl.format(Math.abs(monthlyDifference));
       }
     }else adjustedCard.classList.add('hidden');
     $('exIofNotice').textContent=r.newIof===null?'IOF não calculado: informe a taxa da nova operação para estimá-lo.':'IOF estimado da nova operação: '+brl.format(r.newIof)+'.';
