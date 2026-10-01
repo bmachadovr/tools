@@ -1,13 +1,18 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f7f5"><title>Calculadora de Crédito</title><link rel="stylesheet" href="css/app.css?v=20261001-15"></head>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f7f5"><title>Calculadora de Crédito</title><link rel="stylesheet" href="css/app.css?v=20261001-16"></head>
 <body data-theme="color"><main class="wrap"><header><div class="theme-switcher" role="group" aria-label="Tema"><button type="button" class="theme-option active" data-theme="color" aria-pressed="true">Color</button><button type="button" class="theme-option" data-theme="white" aria-pressed="false">White</button><button type="button" class="theme-option" data-theme="black" aria-pressed="false">Black</button></div><p class="eyebrow">FINANÇAS</p><h1>Calculadora de Crédito</h1><p class="lead">Escolha a ferramenta que precisa. Os dados podem ser reaproveitados entre elas.</p></header>
 
-<nav class="tool-tabs" aria-label="Ferramentas">
+<div class="top-nav"><button type="button" class="menu-trigger" id="menuTrigger" aria-label="Abrir menu de ferramentas" aria-expanded="false" aria-controls="toolMenu"><span></span><span></span><span></span></button></div>
+<div class="menu-backdrop" id="menuBackdrop" hidden></div>
+<nav class="tool-menu" id="toolMenu" aria-label="Ferramentas" aria-hidden="true">
+<div class="tool-menu-head"><strong>Ferramentas</strong><button type="button" class="menu-close" id="menuClose" aria-label="Fechar menu">×</button></div>
+<div class="tool-menu-list">
 <button type="button" class="tool-tab active" data-tool="0">Simular crédito</button>
 <button type="button" class="tool-tab" data-tool="1">Simular portabilidade</button>
 <button type="button" class="tool-tab" data-tool="2">Simular troca de dívida</button>
 <button type="button" class="tool-tab" data-tool="3">Simular amortização</button>
 <button type="button" class="tool-tab" data-tool="4">Simular saldo futuro</button>
 <button type="button" class="tool-tab" data-tool="5">Gerar oferta</button>
+</div>
 </nav>
 <div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i><i></i></div>
 
@@ -160,4 +165,4 @@
 </div></section>
 
 </div>
-<footer><p>Simulação matemática baseada exclusivamente nos dados informados, não é válida como proposta.<br>O saldo oficial pode variar conforme as condições e eventos do contrato.</p><p>Desenvolvido por: bmachado.dev - 2026<br>Reprodução comercial não autorizada.</p></footer></main><script type="module" src="js/app.js?v=20261001-38"></script></body></html>
+<footer><p>Simulação matemática baseada exclusivamente nos dados informados, não é válida como proposta.<br>O saldo oficial pode variar conforme as condições e eventos do contrato.</p><p>Desenvolvido por: bmachado.dev - 2026<br>Reprodução comercial não autorizada.</p></footer></main><script type="module" src="js/app.js?v=20261001-39"></script></body></html>
