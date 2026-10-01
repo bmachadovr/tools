@@ -23,3 +23,6 @@
 @media(max-width:620px){.credit-kind{display:flex}.kind-option{flex:1}.simulation-meta{grid-template-columns:1fr 1fr}.simulation-meta .balance-stat:last-child{grid-column:1/-1}}
 
 .renewal-precision{display:contents}
+
+
+.portability-card{border:1px solid #e2e2de;border-radius:14px;padding:16px;margin:14px 0;background:#fafaf8}.portability-card h3{margin:0 0 14px;font-size:1rem;letter-spacing:-.01em}.portability-card details{margin-bottom:0}.portability-copy{margin:12px 0 0}.portability-card+.portability-card{margin-top:12px}@media(max-width:620px){.portability-card{padding:14px;margin-left:-2px;margin-right:-2px}}
