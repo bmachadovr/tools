@@ -393,29 +393,33 @@ validateComparison();
 
 function validateExchange(){
   const moneyIds=['exBalance','exCurrentPayment','exNewAmount','exNewPayment'];
-  const moneyOk=moneyIds.every(id=>{
+  const moneyStates=moneyIds.map(id=>{
     const v=parseBRNumber($(id).value),valid=Number.isFinite(v)&&v>0;
     updateFieldState(id,valid);return valid;
   });
+  const moneyOk=moneyStates.every(Boolean);
   const periodIds=['exCurrentN','exNewN'];
-  const periodsOk=periodIds.every(id=>{
+  const periodStates=periodIds.map(id=>{
     const v=parseBRNumber($(id).value),valid=Number.isInteger(v)&&v>=1&&v<=420;
     updateFieldState(id,valid);return valid;
   });
+  const periodsOk=periodStates.every(Boolean);
   const rateIds=['exCurrentI','exNewI'];
-  const ratesOk=rateIds.every(id=>{
+  const rateStates=rateIds.map(id=>{
     const raw=$(id).value.trim(),v=parseBRNumber(raw),valid=raw===''||(Number.isFinite(v)&&v>0);
     $(id).classList.toggle('field-valid',raw!==''&&valid);
     $(id).classList.toggle('field-invalid',raw!==''&&!valid);
     return valid;
   });
+  const ratesOk=rateStates.every(Boolean);
   const dateIds=['exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'];
-  const datesOk=dateIds.every(id=>{
+  const dateStates=dateIds.map(id=>{
     const raw=$(id).value.trim(),valid=raw===''||validDate(raw);
     $(id).classList.toggle('field-valid',raw!==''&&valid);
     $(id).classList.toggle('field-invalid',raw!==''&&!valid);
     return valid;
   });
+  const datesOk=dateStates.every(Boolean);
   const raw=$('exAmortizeAmount').value.trim(),amount=parseBRNumber(raw),newAmount=parseBRNumber($('exNewAmount').value);
   const optionalOk=raw===''||(Number.isFinite(amount)&&amount>0&&Number.isFinite(newAmount)&&amount<=newAmount);
   $('exAmortizeAmount').classList.toggle('field-valid',raw!==''&&optionalOk);
