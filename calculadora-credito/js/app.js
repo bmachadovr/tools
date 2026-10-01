@@ -24,7 +24,7 @@ function formatFixed2(input) {
   if (!digits || /^0+$/.test(digits)) { input.value = ''; return; }
   input.value=(Number(digits)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','cmpAIOF','cmpBIOF','exBalance','exCurrentPayment','exNewPayment','exCashBack','exFees','exNewIof','cvAmount','cvPayment','caBalance','caCurrentPayment','caNewAmount'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','simPmt','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','cmpAIOF','cmpBIOF','exBalance','exCurrentPayment','exNewPayment','exCashBack','exFees','exNewIof','cvAmount','cvPayment','caBalance','caCurrentPayment','caNewAmount'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
 ['i','portI','upI','simI','amI','cmpAI','cmpBI','exCurrentI','exNewI','cvI','caCurrentI','caNewI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
 
 function formatDate(input) {
@@ -258,71 +258,68 @@ function setSimulationKind(kind){
 }
 kindButtons.forEach(button=>button.addEventListener('click',()=>setSimulationKind(button.dataset.kind)));
 
-function positiveSimulationField(id){
-  const value=parseBRNumber($(id).value);
-  const valid=Number.isFinite(value)&&value>0;
-  updateFieldState(id,valid);
-  return valid;
+function simulationFieldState(id){
+  const raw=$(id).value.trim();
+  if(raw===''){ $(id).classList.remove('field-valid','field-invalid'); return 'empty'; }
+  const value=parseBRNumber(raw),valid=Number.isFinite(value)&&value>0;
+  updateFieldState(id,valid); return valid?'valid':'invalid';
 }
 function validateSimulation(){
-  const amountOk=positiveSimulationField('simAmount');
-  const nOk=positiveSimulationField('simN');
-  const rateOk=positiveSimulationField('simI');
-  const balanceOk=simulationKind==='new'||positiveSimulationField('simBalance');
+  const states=['simAmount','simN','simPmt'].map(simulationFieldState);
+  const rate=simulationFieldState('simI'),balanceOk=simulationKind==='new'||simulationFieldState('simBalance')==='valid';
   for(const id of ['simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue']){
     const raw=$(id).value.trim(),valid=raw===''||validDate(raw);
-    $(id).classList.toggle('field-valid',raw!==''&&valid);
-    $(id).classList.toggle('field-invalid',raw!==''&&!valid);
+    $(id).classList.toggle('field-valid',raw!==''&&valid);$(id).classList.toggle('field-invalid',raw!==''&&!valid);
   }
-  $('simulate').disabled=!(amountOk&&nOk&&rateOk&&balanceOk);
+  $('simulate').disabled=!(rate==='valid'&&balanceOk&&states.filter(x=>x==='valid').length===2&&states.filter(x=>x==='empty').length===1);
 }
-['simAmount','simBalance','simN','simI','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'].forEach(id=>$(id).addEventListener('input',validateSimulation));
+['simAmount','simBalance','simN','simPmt','simI','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'].forEach(id=>$(id).addEventListener('input',validateSimulation));
+
+function simulateCreditInputs(requestedAmount,periods,monthlyRate,contractDate,firstDue,originalContractDate,originalFinalDue){
+  return simulateCredit({kind:simulationKind,requestedAmount,outstandingBalance:simulationKind==='renewal'?parseBRNumber($('simBalance').value):0,periods,monthlyRate,contractDate,firstDue,originalContractDate,originalFinalDue});
+}
+function solveSimulationMissing({amount,n,pmt,rate,contractDate,firstDue,originalContractDate,originalFinalDue}){
+  if(pmt===null)return {result:simulateCreditInputs(amount,n,rate,contractDate,firstDue,originalContractDate,originalFinalDue),solved:'pmt'};
+  if(amount===null){
+    let lo=0.01,hi=Math.max(pmt*n*2,1000),candidate;
+    for(let k=0;k<80;k++){const mid=(lo+hi)/2;candidate=simulateCreditInputs(mid,n,rate,contractDate,firstDue,originalContractDate,originalFinalDue);if(candidate.payment>pmt)hi=mid;else lo=mid;}
+    candidate=simulateCreditInputs((lo+hi)/2,n,rate,contractDate,firstDue,originalContractDate,originalFinalDue);
+    if(Math.abs(candidate.payment-pmt)>0.05)throw new Error('Não foi possível encontrar um valor contratado compatível com a parcela informada.');
+    return {result:candidate,solved:'amount'};
+  }
+  if(n===null){
+    let best=null;
+    for(let periods=1;periods<=600;periods++){const candidate=simulateCreditInputs(amount,periods,rate,contractDate,firstDue,originalContractDate,originalFinalDue);const diff=Math.abs(candidate.payment-pmt);if(!best||diff<best.diff)best={result:candidate,diff};}
+    if(!best||best.diff>Math.max(0.05,pmt*0.005))throw new Error('A parcela informada não corresponde a um prazo inteiro entre 1 e 600 meses.');
+    return {result:best.result,solved:'n'};
+  }
+  throw new Error('Deixe exatamente um entre valor contratado, prazo e parcela mensal em branco.');
+}
 
 $('simulateForm').addEventListener('submit',e=>{
-  e.preventDefault(); $('simulateError').textContent=''; $('simulationResult').classList.add('hidden');
+  e.preventDefault();$('simulateError').textContent='';$('simulationResult').classList.add('hidden');
   try{
-    validateSimulation();
-    if($('simulate').disabled)throw new Error('Preencha os campos essenciais com valores válidos.');
+    validateSimulation();if($('simulate').disabled)throw new Error('Informe a taxa mensal e exatamente dois entre valor contratado, prazo e parcela mensal.');
     for(const id of ['simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'])if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');
     const originalDateRaw=$('simOriginalContractDate').value.trim(),originalFinalRaw=$('simOriginalFinalDue').value.trim();
     if(simulationKind==='renewal'&&((originalDateRaw&&!originalFinalRaw)||(!originalDateRaw&&originalFinalRaw)))throw new Error('Para refinar o IOF do saldo, informe as duas datas da operação original.');
-    const contractDate=parseDateBR($('simContractDate').value)??new Date();
-    const firstDue=parseDateBR($('simFirstDue').value)??defaultNextDue(contractDate);
+    const contractDate=parseDateBR($('simContractDate').value)??new Date(),firstDue=parseDateBR($('simFirstDue').value)??defaultNextDue(contractDate);
     if(firstDue<=contractDate)throw new Error('O primeiro vencimento deve ser posterior à data da contratação.');
-    const result=simulateCredit({
-      kind:simulationKind,
-      requestedAmount:parseBRNumber($('simAmount').value),
-      outstandingBalance:simulationKind==='renewal'?parseBRNumber($('simBalance').value):0,
-      periods:parseBRNumber($('simN').value),
-      monthlyRate:parseBRNumber($('simI').value)/100,
-      contractDate,firstDue,
-      originalContractDate:simulationKind==='renewal'?parseDateBR($('simOriginalContractDate').value):null,
-      originalFinalDue:simulationKind==='renewal'?parseDateBR($('simOriginalFinalDue').value):null
-    });
-    $('simPayment').textContent=brl.format(result.payment);
-    $('simFinanced').textContent=brl.format(result.financedAmount);
-    $('simIof').textContent=brl.format(result.iof);
-    $('simReleased').textContent=brl.format(result.requestedAmount);
-    $('simOldBalanceIof').textContent=brl.format(result.outstandingIof);
-    $('simOldBalanceIofStat').classList.toggle('hidden',simulationKind!=='renewal');
-    $('simReleasedLabel').textContent=simulationKind==='renewal'?'Valor liberado':'Valor contratado';
-    $('simRenewalStat').classList.toggle('hidden',simulationKind==='new');
-    $('simAssumption').textContent=simulationKind==='renewal'
-      ? (result.outstandingIofMode==='informed'
-          ? 'IOF do saldo renovado estimado pelo período complementar até o limite de 365 dias, sem repetir o adicional de 0,38%. '+result.complementaryDays+' dias complementares considerados. Primeiro vencimento em '+formatDateBR(firstDue)+'.'
-          : 'IOF do saldo renovado aproximado assumindo 180 dias já tributados na operação original. Informe as datas da operação original em “Aumente a precisão” para refinar. Primeiro vencimento em '+formatDateBR(firstDue)+'.')
-      : 'IOF estimado incluído no valor financiado. Primeiro vencimento em '+formatDateBR(firstDue)+'.';
-    $('simulationResult').classList.remove('hidden');
-    renderInsights('simulation',{...result,kind:simulationKind,outstandingBalance:simulationKind==='renewal'?parseBRNumber($('simBalance').value):0});
+    const originalContractDate=simulationKind==='renewal'?parseDateBR($('simOriginalContractDate').value):null,originalFinalDue=simulationKind==='renewal'?parseDateBR($('simOriginalFinalDue').value):null;
+    const amount=parseBRNumber($('simAmount').value),n=parseBRNumber($('simN').value),pmt=parseBRNumber($('simPmt').value),rate=parseBRNumber($('simI').value)/100;
+    if(n!==null&&!Number.isInteger(n))throw new Error('O prazo deve ser um número inteiro de parcelas.');
+    const solved=solveSimulationMissing({amount,n,pmt,rate,contractDate,firstDue,originalContractDate,originalFinalDue}),result=solved.result;
+    if(solved.solved==='amount')$('simAmount').value=result.requestedAmount.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    if(solved.solved==='n')$('simN').value=String(result.firstPeriodDays>=0?Math.round((result.financedAmount&&result.payment)?(()=>{for(let x=1;x<=600;x++){try{const r=simulateCreditInputs(result.requestedAmount,x,rate,contractDate,firstDue,originalContractDate,originalFinalDue);if(Math.abs(r.payment-result.payment)<0.01)return x;}catch{}}return n;})():n):n);
+    $('simPmt').value=result.payment.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    $('simPayment').textContent=brl.format(result.payment);$('simFinanced').textContent=brl.format(result.financedAmount);$('simIof').textContent=brl.format(result.iof);$('simReleased').textContent=brl.format(result.requestedAmount);$('simOldBalanceIof').textContent=brl.format(result.outstandingIof);
+    $('simOldBalanceIofStat').classList.toggle('hidden',simulationKind!=='renewal');$('simReleasedLabel').textContent=simulationKind==='renewal'?'Valor liberado':'Valor contratado';$('simRenewalStat').classList.toggle('hidden',simulationKind==='new');
+    $('simAssumption').textContent=simulationKind==='renewal'?(result.outstandingIofMode==='informed'?'IOF do saldo renovado estimado pelo período complementar até o limite de 365 dias, sem repetir o adicional de 0,38%. '+result.complementaryDays+' dias complementares considerados. Primeiro vencimento em '+formatDateBR(firstDue)+'.':'IOF do saldo renovado aproximado assumindo 180 dias já tributados na operação original. Informe as datas da operação original em “Aumente a precisão” para refinar. Primeiro vencimento em '+formatDateBR(firstDue)+'.'):'IOF estimado incluído no valor financiado. Primeiro vencimento em '+formatDateBR(firstDue)+'.';
+    $('simulationResult').classList.remove('hidden');renderInsights('simulation',{...result,kind:simulationKind,outstandingBalance:simulationKind==='renewal'?parseBRNumber($('simBalance').value):0});validateSimulation();
   }catch(err){$('simulateError').textContent=err.message;}
 });
-$('clearSimulation').addEventListener('click',()=>{
-  $('simulateForm').reset();
-  ['simAmount','simBalance','simN','simI','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));
-  $('simulateError').textContent='';$('simulationResult').classList.add('hidden');setSimulationKind('new');
-});
+$('clearSimulation').addEventListener('click',()=>{$('simulateForm').reset();['simAmount','simBalance','simN','simPmt','simI','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('simulateError').textContent='';$('simulationResult').classList.add('hidden');setSimulationKind('new');});
 setSimulationKind('new');
-
 
 function validateAmortization(){
   const ids=['amPv','amPmt','amN','amI','amExtra'];
