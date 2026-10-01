@@ -28,3 +28,7 @@
 .portability-card{border:1px solid #e2e2de;border-radius:14px;padding:16px;margin:14px 0;background:#fafaf8}.portability-card h3{margin:0 0 14px;font-size:1rem;letter-spacing:-.01em}.portability-card details{margin-bottom:0}.portability-copy{margin:12px 0 0}.portability-card+.portability-card{margin-top:12px}@media(max-width:620px){.portability-card{padding:14px;margin-left:-2px;margin-right:-2px}}
 
 .estimate-label{font-weight:400;font-size:.78em;color:#6b6b67;white-space:nowrap}
+
+#exchangeResult>.simulation-meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+.exchange-consolidation{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.exchange-consolidation .balance-stat:last-child,#exchangeResult>.simulation-meta .balance-stat:last-child{grid-column:auto}
