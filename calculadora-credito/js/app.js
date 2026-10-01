@@ -10,6 +10,24 @@ import { debtExchange } from './features/debt-exchange.js';
 import { creditToAmortize } from './features/credit-to-amortize.js';
 import { offerInsights } from './features/offer-insights.js';
 const $=id=>document.getElementById(id); const form=$('calcForm'); let current=null;
+const THEME_KEY='credit-calculator-theme';
+function applyTheme(theme){
+  const allowed=['color','white','black'];
+  const selected=allowed.includes(theme)?theme:'color';
+  document.body.dataset.theme=selected;
+  document.querySelectorAll('.theme-option').forEach(button=>{
+    const active=button.dataset.theme===selected;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta)meta.content=selected==='black'?'#0d0e10':selected==='color'?'#f5f6ff':'#f7f7f5';
+  try{localStorage.setItem(THEME_KEY,selected);}catch{}
+}
+let savedTheme='color';try{savedTheme=localStorage.getItem(THEME_KEY)||'color';}catch{}
+applyTheme(savedTheme);
+document.querySelectorAll('.theme-option').forEach(button=>button.addEventListener('click',()=>applyTheme(button.dataset.theme)));
+
 let lastOfferInsights=[];
 function buildOfferText(){
   if(!lastOfferInsights.length)return 'Faça uma simulação para gerar a oferta.';
