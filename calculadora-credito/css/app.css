@@ -99,3 +99,20 @@ label span{right:9px;bottom:9px}
 .grid{gap:12px 14px}
 @media(max-width:620px){input{min-height:38px;padding:6px 9px}.grid{gap:11px}}
 
+
+/* Traditional tools menu */
+.top-nav{position:absolute;top:0;left:0;z-index:20}
+.menu-trigger{width:36px;height:34px;padding:8px;border-radius:9px;background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;gap:4px}
+.menu-trigger span{display:block;width:17px;height:1.5px;background:currentColor;border-radius:2px}
+.menu-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.22);z-index:40}
+.tool-menu{position:fixed;top:0;left:0;bottom:0;width:min(82vw,310px);z-index:41;background:var(--surface);border-right:1px solid var(--border);padding:18px 14px;transform:translateX(-102%);transition:transform .2s ease;box-shadow:8px 0 24px rgba(0,0,0,.12)}
+.tool-menu.open{transform:translateX(0)}
+.tool-menu-head{display:flex;align-items:center;justify-content:space-between;padding:2px 6px 12px;border-bottom:1px solid var(--line)}
+.menu-close{width:34px;height:34px;padding:0;border:0;background:transparent!important;color:var(--muted)!important;font-size:1.45rem;line-height:1}
+.tool-menu-list{display:grid;gap:3px;padding-top:10px}
+.tool-menu .tool-tab{width:100%;justify-content:flex-start;text-align:left;padding:10px 11px;border:0;border-radius:9px;background:transparent;color:var(--text);font-size:.88rem}
+.tool-menu .tool-tab.active{background:var(--surface-muted);color:var(--accent);font-weight:750;box-shadow:none}
+header{padding-left:48px}
+body[data-theme="color"] header{padding-left:48px}
+.theme-switcher{margin-top:-2px}
+@media(max-width:620px){.top-nav{top:0}.menu-trigger{width:34px;height:32px;padding:7px}.tool-menu{width:min(86vw,300px);padding-top:14px}header,body[data-theme="color"] header{padding-left:44px}}
