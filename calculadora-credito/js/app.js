@@ -25,7 +25,7 @@ function formatFixed2(input) {
   input.value=(Number(digits)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 ['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','cmpAIOF','cmpBIOF','exBalance','exCurrentPayment','exNewPayment','exCashBack','exFees','exNewIof','cvAmount','cvPayment','caBalance','caCurrentPayment','caNewAmount'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
-['i','upI','simI','amI','cmpAI','cmpBI','exCurrentI','exNewI','cvI','caCurrentI','caNewI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['i','portI','upI','simI','amI','cmpAI','cmpBI','exCurrentI','exNewI','cvI','caCurrentI','caNewI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
 
 function formatDate(input) {
   const digits = input.value.replace(/\D/g, '').slice(0, 8);
@@ -78,15 +78,38 @@ function updateCalculateState() {
     $(id).classList.toggle('field-valid', states[index] === 'valid');
     $(id).classList.toggle('field-invalid', states[index] === 'invalid');
   });
+  const destinationRate=parseBRNumber($('portI').value);
+  const destinationValid=Number.isFinite(destinationRate)&&destinationRate>0;
+  updateFieldState('portI',destinationValid);
   const validCount = states.filter(state => state === 'valid').length;
   const emptyCount = states.filter(state => state === 'empty').length;
-  $('calculate').disabled = !(validCount === 3 && emptyCount === 1);
+  $('calculate').disabled = !(validCount === 3 && emptyCount === 1 && destinationValid);
 }
-['pv','pmt','n','i'].forEach(id => $(id).addEventListener('input', updateCalculateState));
+['pv','pmt','n','i','portI'].forEach(id => $(id).addEventListener('input', updateCalculateState));
 updateCalculateState();
-const labels={pv:'Saldo devedor encontrado',pmt:'Parcela encontrada',n:'Prazo encontrado',i:'Taxa encontrada'};
-form.addEventListener('submit',e=>{e.preventDefault();$('error').textContent='';$('evolution').classList.add('hidden');try{for(const id of ['due','baseDate','firstDue']){if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');}const data=read();const r=solve(data);current={...data,[r.key]:r.value};$('resultLabel').textContent=labels[r.key];$('resultValue').textContent=r.key==='pv'||r.key==='pmt'?brl.format(r.value):r.key==='i'?`${r.displayedRate.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}%`:`${r.displayedPeriods.toLocaleString('pt-BR')} parcelas`;$('resultExtra').textContent=r.key==='i'?`${pct(r.annual,2)} a.a. equivalente`:r.annual!==null?`${pct(r.annual,2)} a.a. equivalente`:'';$('result').classList.remove('hidden');}catch(err){$('result').classList.add('hidden');$('error').textContent=err.message;}});
-$('clear').addEventListener('click',()=>{form.reset();$('result').classList.add('hidden');$('evolution').classList.add('hidden');$('error').textContent='';current=null;updateCalculateState();});
+function paymentWithFirstPeriod(principalValue,rateValue,periodsValue,firstPeriodDays=30){
+  if(firstPeriodDays===30)return payment(principalValue,rateValue,periodsValue);
+  const fraction=firstPeriodDays/30;
+  if(Math.abs(rateValue)<1e-14)return principalValue/periodsValue;
+  const annuityDueFactor=(1-Math.pow(1+rateValue,-periodsValue))/rateValue*(1+rateValue);
+  return principalValue*Math.pow(1+rateValue,fraction)/annuityDueFactor;
+}
+form.addEventListener('submit',e=>{e.preventDefault();$('error').textContent='';$('evolution').classList.add('hidden');try{
+  for(const id of ['due','baseDate','firstDue']){if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');}
+  const data=read(),r=solve(data);
+  current={...data,[r.key]:r.value};
+  const originPayment=current.pmt??paymentWithFirstPeriod(current.pv,current.i,current.n,current.firstPeriodDays);
+  const destinationRate=parseBRNumber($('portI').value)/100;
+  const destinationPayment=paymentWithFirstPeriod(current.pv,destinationRate,current.n,current.firstPeriodDays);
+  $('resultValue').textContent=brl.format(destinationPayment);
+  $('portOriginPayment').textContent=brl.format(originPayment);
+  $('portOriginRate').textContent=(current.i*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'% a.m.';
+  $('portDestinationRate').textContent=(destinationRate*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'% a.m.';
+  const difference=destinationPayment-originPayment;
+  $('resultExtra').textContent=Math.abs(difference)<0.005?'A parcela estimada permanece igual.':difference<0?'Redução estimada de '+brl.format(-difference)+' por parcela, mantendo saldo, prazo e datas da origem.':'Aumento estimado de '+brl.format(difference)+' por parcela, mantendo saldo, prazo e datas da origem.';
+  $('result').classList.remove('hidden');
+}catch(err){$('result').classList.add('hidden');$('error').textContent=err.message;}});
+$('clear').addEventListener('click',()=>{form.reset();['pv','pmt','n','i','portI'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('result').classList.add('hidden');$('evolution').classList.add('hidden');$('error').textContent='';current=null;updateCalculateState();});
 $('showEvolution').addEventListener('click',()=>{if(!current)return;try{const pmt=current.pmt??payment(current.pv,current.i,current.n);const schedule=buildSchedule(current.pv,current.i,pmt,Math.min(600,Math.ceil(current.n)+2));const body=$('scheduleBody');body.innerHTML='';for(const r of schedule.rows){const tr=document.createElement('tr');[r.n,brl.format(r.opening),brl.format(r.interest),brl.format(r.amortization),brl.format(r.payment),brl.format(r.closing)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});body.appendChild(tr)}$('evolution').classList.remove('hidden');$('evolution').scrollIntoView({behavior:'smooth',block:'start'});}catch(err){$('error').textContent=err.message;}});
 $('hideEvolution').addEventListener('click',()=>$('evolution').classList.add('hidden'));
 
