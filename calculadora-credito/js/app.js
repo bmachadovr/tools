@@ -24,8 +24,8 @@ function formatFixed2(input) {
   if (!digits || /^0+$/.test(digits)) { input.value = ''; return; }
   input.value=(Number(digits)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','simPmt','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','cmpAIOF','cmpBIOF','exBalance','exCurrentPayment','exNewPayment','exCashBack','exFees','exNewIof','cvAmount','cvPayment','caBalance','caCurrentPayment','caNewAmount'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
-['i','portI','upI','amI','cmpAI','cmpBI','exCurrentI','exNewI','cvI','caCurrentI','caNewI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','simPmt','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','cmpAIOF','cmpBIOF','exBalance','exCurrentPayment','exNewPayment','exCashBack','exFees','exNewIof','cvAmount','cvPayment','caBalance','caCurrentPayment','caNewAmount'].forEach(id=>$(id)?.addEventListener('input',e=>formatFixed2(e.target)));
+['i','portI','upI','amI','cmpAI','cmpBI','exCurrentI','exNewI','cvI','caCurrentI','caNewI'].forEach(id=>$(id)?.addEventListener('input',e=>formatFixed2(e.target)));
 $('simI').addEventListener('input',e=>{formatFixed2(e.target);validateSimulation();});
 
 function formatDate(input) {
@@ -51,7 +51,7 @@ function validDate(value) {
   const date = new Date(year, month - 1, day);
   return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
 }
-['due','baseDate','firstDue','upBaseDate','upDue','updateDate','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue','amBaseDate','amDue','portEffectiveDate','portFirstDue','cmpAContractDate','cmpAFirstDue','cmpBContractDate','cmpBFirstDue','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue','cvContractDate','cvFirstDue','caBaseDate','caCurrentDue','caContractDate','caFirstDue'].forEach(id => $(id).addEventListener('input', e => formatDate(e.target)));
+['due','baseDate','firstDue','upBaseDate','upDue','updateDate','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue','amBaseDate','amDue','portEffectiveDate','portFirstDue','cmpAContractDate','cmpAFirstDue','cmpBContractDate','cmpBFirstDue','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue','cvContractDate','cvFirstDue','caBaseDate','caCurrentDue','caContractDate','caFirstDue'].forEach(id => $(id)?.addEventListener('input', e => formatDate(e.target)));
 
 function parseDateBR(value) {
   if (!value) return null;
