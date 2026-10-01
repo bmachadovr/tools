@@ -15,7 +15,7 @@
 
 <div class="tools-carousel" id="toolsCarousel">
 <section class="tool-panel">
-<div class="card tool-card"><div class="tool-heading"><h2>Simular crédito</h2><p>Informe quanto deseja contratar, o prazo e a taxa. O IOF é calculado automaticamente.</p></div>
+<div class="card tool-card"><div class="tool-heading"><h2>Simular crédito</h2><p>Informe a taxa mensal e dois entre valor contratado, prazo e parcela mensal. O campo restante será calculado automaticamente, com o IOF incluído na simulação.</p></div>
 <form id="simulateForm" novalidate>
 <div class="credit-kind" role="group" aria-label="Tipo de contratação">
 <button type="button" class="kind-option active" data-kind="new" aria-pressed="true">Novo</button>
@@ -25,6 +25,7 @@
 <label>Valor contratado <span>R$</span><input id="simAmount" inputmode="numeric"></label>
 <label id="simBalanceLabel" class="hidden">Saldo devedor <span>R$</span><input id="simBalance" inputmode="numeric"></label>
 <label>Prazo <input id="simN" inputmode="numeric"></label>
+<label>Parcela mensal <span>R$</span><input id="simPmt" inputmode="numeric"></label>
 <label>Taxa mensal <span>% a.m.</span><input id="simI" inputmode="numeric"></label>
 </div>
 <details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Informe as datas da contratação para calcular com maior precisão o período até a primeira parcela e o IOF.</p><div class="grid advanced">
@@ -184,4 +185,4 @@
 <section id="insightsHub" class="result embedded"><p class="result-label">Argumentos calculados</p><div id="insightsHubList" class="simulation-meta"><div class="balance-stat"><span>Aguardando cálculo</span><b>Use uma das ferramentas para gerar argumentos objetivos.</b></div></div><p class="assumption-note">Os textos são gerados por regras matemáticas, sem IA. Cada argumento deriva de números exibidos na própria simulação.</p></section>
 </div></section>
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-05"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-06"></script></body></html>
