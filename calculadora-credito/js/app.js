@@ -10,12 +10,34 @@ import { debtExchange } from './features/debt-exchange.js';
 import { creditToAmortize } from './features/credit-to-amortize.js';
 import { offerInsights } from './features/offer-insights.js';
 const $=id=>document.getElementById(id); const form=$('calcForm'); let current=null;
+let lastOfferInsights=[];
+function buildOfferText(){
+  if(!lastOfferInsights.length)return 'Faça uma simulação para gerar a oferta.';
+  const name=$('offerClientName')?.value.trim();
+  const opening=name?'Olá, '+name+'! Preparei uma simulação para você:':'Olá! Preparei uma simulação para você:';
+  return [opening,'',...lastOfferInsights.map(item=>'• '+item.text),'','Valores estimados conforme os dados informados. Esta simulação não constitui proposta.'].join('\n');
+}
+function refreshOfferPreview(){
+  const preview=$('offerPreview');if(!preview)return;
+  preview.textContent=buildOfferText();
+  if($('copyOffer'))$('copyOffer').disabled=!lastOfferInsights.length;
+}
 function renderInsights(context,data){
   const insights=offerInsights(context,data),hub=$('insightsHubList'); if(!hub)return;
+  lastOfferInsights=insights;
   hub.innerHTML='';
   for(const item of insights){const box=document.createElement('div');box.className='balance-stat';const span=document.createElement('span');span.textContent=item.title;const b=document.createElement('b');b.textContent=item.text;box.append(span,b);hub.appendChild(box);}
   if(!insights.length)hub.innerHTML='<div class="balance-stat"><span>Sem argumento adicional</span><b>Os dados calculados não produziram um destaque comercial relevante.</b></div>';
+  refreshOfferPreview();
 }
+$('offerClientName')?.addEventListener('input',refreshOfferPreview);
+$('copyOffer')?.addEventListener('click',async()=>{
+  if(!lastOfferInsights.length)return;
+  const status=$('copyOfferStatus');
+  try{await navigator.clipboard.writeText(buildOfferText());status.textContent='Oferta copiada.';}
+  catch{status.textContent='Não foi possível copiar automaticamente. Selecione o texto da oferta e copie manualmente.';}
+  status.classList.remove('hidden');
+});
 
 function formatFixed2(input) {
   const raw = input.value.trim();
