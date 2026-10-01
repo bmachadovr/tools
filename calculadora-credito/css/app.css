@@ -91,3 +91,10 @@ header .eyebrow{font-size:.62rem;letter-spacing:.14em;margin-bottom:3px}
 header h1{font-size:clamp(1.55rem,5vw,2.35rem);line-height:1.02;letter-spacing:-.035em}
 header .lead{font-size:.82rem;line-height:1.35;margin-top:6px}
 @media(max-width:620px){header .eyebrow{font-size:.58rem}header h1{font-size:1.65rem}header .lead{font-size:.78rem;margin-top:5px}}
+
+/* Compact form controls without reducing text size */
+label{gap:4px}
+input{min-height:38px;padding:6px 9px;font-size:16px}
+label span{right:9px;bottom:9px}
+.grid{gap:12px 14px}
+@media(max-width:620px){input{min-height:38px;padding:6px 9px}.grid{gap:11px}}
