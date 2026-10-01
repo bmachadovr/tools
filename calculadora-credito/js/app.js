@@ -369,8 +369,8 @@ document.querySelectorAll('.exchange-mode-option').forEach(button=>button.addEve
   document.querySelectorAll('.exchange-mode-option').forEach(option=>{
     const active=option===button;option.classList.toggle('active',active);option.setAttribute('aria-pressed',String(active));
   });
-  $('exchangeModeHelp').textContent=exchangeAmortizationMode==='term'
-    ? 'Mantém o valor da parcela atual e reduz a quantidade de parcelas. Para este cálculo, informe a taxa atual.'
+  $('exchangeModeHelp').innerHTML=exchangeAmortizationMode==='term'
+    ? 'Mantém o valor da parcela atual e <strong>reduz a quantidade de parcelas de modo decrescente</strong>. <strong>Informe a taxa do empréstimo atual para realizar este cálculo.</strong>'
     : 'Mantém o prazo restante e reduz o valor das parcelas.';
   $('exchangeResult').classList.add('hidden');validateExchange();
 }));
