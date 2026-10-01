@@ -6,7 +6,7 @@ export function offerInsights(context,data){
   const out=[];
   if(context==='simulation'){
     const {requestedAmount=0,payment=0,periods=0,kind='new',outstandingBalance=0}=data;
-    push(out,'value',kind==='renewal'?'Valor liberado':'Crédito disponível',kind==='renewal'?money(requestedAmount)+' de valor adicional na renovação.':money(requestedAmount)+' de crédito para o cliente.',requestedAmount,90);
+    push(out,'value',kind==='renewal'?'Valor liberado':'Crédito disponível',kind==='renewal'?money(requestedAmount)+' de valor adicional disponível para você.':money(requestedAmount)+' disponíveis para você.',requestedAmount,90);
     if(payment>0)push(out,'payment','Impacto mensal','Parcela estimada de '+money(payment)+' em '+periods+' meses.',payment,80);
     if(kind==='renewal'&&outstandingBalance>0)push(out,'balance','Saldo renovado',money(outstandingBalance)+' do saldo atual será incorporado à nova operação.',outstandingBalance,60);
   }
