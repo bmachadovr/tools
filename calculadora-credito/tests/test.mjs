@@ -4,6 +4,7 @@ import {updateBalance} from '../js/features/update-balance.js';
 import {amortizeBalance} from '../js/features/amortize-balance.js';
 import {compareCredit} from '../js/features/compare-credit.js';
 import {debtExchange} from '../js/features/debt-exchange.js';
+import {creditToAmortize} from '../js/features/credit-to-amortize.js';
 const near=(a,b,t=1e-8)=>assert.ok(Math.abs(a-b)<t,`${a} != ${b}`);
 const pv=50000,i=.015,n=36,pmt=payment(pv,i,n);
 near(principal(pmt,i,n),pv,1e-6); near(periods(pv,pmt,i),n,1e-8); near(rate(pv,pmt,n),i,1e-10); near(payment(12000,0,12),1000); near(annualEquivalent(.01),Math.pow(1.01,12)-1);
@@ -45,4 +46,7 @@ assert.throws(()=>debtExchange({currentBalance:1,currentPayment:0,currentPeriods
 const converterPayment=payment(25000,.015,36);
 const converterAmount=principal(converterPayment,.015,36);
 near(converterAmount,25000,1e-6);
-console.log('OK', {pmt, recoveredRate:rate(pv,pmt,n), comparison, exchange, converterPayment, converterAmount});
+const ca=creditToAmortize({targetBalance:30000,targetPayment:1200,targetPeriods:30,targetRate:.02,newCreditAmount:10000,newCreditPeriods:24,newCreditRate:.01,contractDate:new Date(2026,9,1),firstDue:new Date(2026,9,31),targetFirstPeriodDays:30});
+assert.ok(ca.credit.payment>0); assert.ok(ca.credit.iof>0); near(ca.amort.newBalance,20000); assert.ok(Number.isFinite(ca.economyTerm)); assert.ok(Number.isFinite(ca.economyPayment));
+assert.throws(()=>creditToAmortize({targetBalance:10000,targetPayment:500,targetPeriods:24,targetRate:.02,newCreditAmount:10000,newCreditPeriods:12,newCreditRate:.01,contractDate:new Date(2026,9,1),firstDue:new Date(2026,9,31)}),/menor/);
+console.log('OK', {pmt, recoveredRate:rate(pv,pmt,n), comparison, exchange, converterPayment, converterAmount, creditAmortization:ca});
