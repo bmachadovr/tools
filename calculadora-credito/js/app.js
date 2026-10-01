@@ -16,8 +16,8 @@ function formatFixed2(input) {
   if (!digits || /^0+$/.test(digits)) { input.value = ''; return; }
   input.value=(Number(digits)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','exBalance','exCurrentPayment','exNewPayment','exCashBack','exFees','cvAmount','cvPayment'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
-['i','upI','simI','amI','cmpAI','cmpBI','cvI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['pv','pmt','originalPv','upPv','upPmt','simAmount','simBalance','amPv','amPmt','amExtra','cmpAAmount','cmpAPayment','cmpBAmount','cmpBPayment','cmpAIOF','cmpBIOF','exBalance','exCurrentPayment','exNewPayment','exCashBack','exFees','exNewIof','cvAmount','cvPayment'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
+['i','upI','simI','amI','cmpAI','cmpBI','exCurrentI','exNewI','cvI'].forEach(id=>$(id).addEventListener('input',e=>formatFixed2(e.target)));
 
 function formatDate(input) {
   const digits = input.value.replace(/\D/g, '').slice(0, 8);
@@ -42,7 +42,7 @@ function validDate(value) {
   const date = new Date(year, month - 1, day);
   return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
 }
-['due','baseDate','firstDue','upBaseDate','upDue','updateDate','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'].forEach(id => $(id).addEventListener('input', e => formatDate(e.target)));
+['due','baseDate','firstDue','upBaseDate','upDue','updateDate','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue','amBaseDate','amDue','cmpAContractDate','cmpAFirstDue','cmpBContractDate','cmpBFirstDue','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue','cvContractDate','cvFirstDue'].forEach(id => $(id).addEventListener('input', e => formatDate(e.target)));
 
 function parseDateBR(value) {
   if (!value) return null;
@@ -285,12 +285,16 @@ function validateAmortization(){
   if($('amExtra').value.trim()!=='')updateFieldState('amExtra',extraOk);
   $('amortize').disabled=!(ok&&extraOk);
 }
-['amPv','amPmt','amN','amI','amExtra'].forEach(id=>$(id).addEventListener('input',validateAmortization));
+['amPv','amPmt','amN','amI','amExtra','amBaseDate','amDue'].forEach(id=>$(id).addEventListener('input',validateAmortization));
 $('amortizeForm').addEventListener('submit',e=>{
   e.preventDefault();$('amortizeError').textContent='';$('amortizationResult').classList.add('hidden');
   try{
     validateAmortization();if($('amortize').disabled)throw new Error('Preencha os campos essenciais com valores válidos. A amortização deve ser menor que o saldo.');
-    const r=amortizeBalance({principal:parseBRNumber($('amPv').value),currentPayment:parseBRNumber($('amPmt').value),remainingPeriods:parseBRNumber($('amN').value),monthlyRate:parseBRNumber($('amI').value)/100,extraPayment:parseBRNumber($('amExtra').value)});
+    for(const id of ['amBaseDate','amDue'])if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');
+    const amBase=parseDateBR($('amBaseDate').value),amDue=parseDateBR($('amDue').value);
+    const firstPeriodDays=amBase&&amDue?daysBetween(amBase,amDue):30;
+    if(firstPeriodDays<=0)throw new Error('O próximo vencimento deve ser posterior à data do saldo.');
+    const r=amortizeBalance({principal:parseBRNumber($('amPv').value),currentPayment:parseBRNumber($('amPmt').value),remainingPeriods:parseBRNumber($('amN').value),monthlyRate:parseBRNumber($('amI').value)/100,extraPayment:parseBRNumber($('amExtra').value),firstPeriodDays});
     $('amNewBalance').textContent=brl.format(r.newBalance);
     $('amNewN').textContent=Math.ceil(r.reducedPeriods).toLocaleString('pt-BR')+' parcelas';
     $('amSavedN').textContent='redução de aproximadamente '+Math.max(0,Math.floor(r.periodsSaved)).toLocaleString('pt-BR')+' parcelas';
@@ -302,7 +306,7 @@ $('amortizeForm').addEventListener('submit',e=>{
   }catch(err){$('amortizeError').textContent=err.message;}
 });
 $('clearAmortization').addEventListener('click',()=>{
-  $('amortizeForm').reset();['amPv','amPmt','amN','amI','amExtra'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));
+  $('amortizeForm').reset();['amPv','amPmt','amN','amI','amExtra','amBaseDate','amDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));
   $('amortizeError').textContent='';$('amortizationResult').classList.add('hidden');validateAmortization();
 });
 validateAmortization();
@@ -313,14 +317,15 @@ function validateComparison(){
   const ok=ids.every(id=>{const value=parseBRNumber($(id).value);const valid=Number.isFinite(value)&&value>0;updateFieldState(id,valid);return valid;});
   $('compare').disabled=!ok;
 }
-['cmpAAmount','cmpAPayment','cmpAN','cmpAI','cmpBAmount','cmpBPayment','cmpBN','cmpBI'].forEach(id=>$(id).addEventListener('input',validateComparison));
+['cmpAAmount','cmpAPayment','cmpAN','cmpAI','cmpBAmount','cmpBPayment','cmpBN','cmpBI','cmpAIOF','cmpBIOF','cmpAContractDate','cmpAFirstDue','cmpBContractDate','cmpBFirstDue'].forEach(id=>$(id).addEventListener('input',validateComparison));
 function signedMoney(value){return (value>0?'+ ':'− ')+brl.format(Math.abs(value));}
 function signedPctValue(value){if(value===null||Math.abs(value)<1e-12)return 'sem variação';return (value>0?'+ ':'− ')+Math.abs(value*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';}
 $('compareForm').addEventListener('submit',e=>{
   e.preventDefault();$('compareError').textContent='';$('comparisonResult').classList.add('hidden');
   try{
     validateComparison();if($('compare').disabled)throw new Error('Preencha todos os dados das duas alternativas com valores válidos.');
-    const readOption=p=>({amount:parseBRNumber($(p+'Amount').value),payment:parseBRNumber($(p+'Payment').value),periods:parseBRNumber($(p+'N').value),monthlyRate:parseBRNumber($(p+'I').value)/100});
+    for(const id of ['cmpAContractDate','cmpAFirstDue','cmpBContractDate','cmpBFirstDue'])if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');
+    const readOption=p=>{const iof=parseBRNumber($(p+'IOF').value)??0;return {amount:parseBRNumber($(p+'Amount').value),payment:parseBRNumber($(p+'Payment').value),periods:parseBRNumber($(p+'N').value),monthlyRate:parseBRNumber($(p+'I').value)/100,iof,financedAmount:parseBRNumber($(p+'Amount').value)+iof};};
     const r=compareCredit(readOption('cmpA'),readOption('cmpB'));
     $('cmpPaymentDiff').textContent=signedMoney(r.diff.payment);$('cmpPaymentPct').textContent=signedPctValue(r.pct.payment);
     $('cmpPeriodDiff').textContent=(r.diff.periods>0?'+ ':'− ')+Math.abs(r.diff.periods).toLocaleString('pt-BR')+' parcelas';
@@ -334,17 +339,17 @@ $('compareForm').addEventListener('submit',e=>{
     $('comparisonResult').classList.remove('hidden');
   }catch(err){$('compareError').textContent=err.message;}
 });
-$('clearComparison').addEventListener('click',()=>{$('compareForm').reset();['cmpAAmount','cmpAPayment','cmpAN','cmpAI','cmpBAmount','cmpBPayment','cmpBN','cmpBI'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('compareError').textContent='';$('comparisonResult').classList.add('hidden');validateComparison();});
+$('clearComparison').addEventListener('click',()=>{$('compareForm').reset();['cmpAAmount','cmpAPayment','cmpAN','cmpAI','cmpBAmount','cmpBPayment','cmpBN','cmpBI','cmpAIOF','cmpBIOF','cmpAContractDate','cmpAFirstDue','cmpBContractDate','cmpBFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('compareError').textContent='';$('comparisonResult').classList.add('hidden');validateComparison();});
 validateComparison();
 
 
 function validateExchange(){
   const required=['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN'];
   const ok=required.every(id=>{const v=parseBRNumber($(id).value),valid=Number.isFinite(v)&&v>0;updateFieldState(id,valid);return valid;});
-  for(const id of ['exCashBack','exFees']){const raw=$(id).value.trim(),v=parseBRNumber(raw),valid=raw===''||(Number.isFinite(v)&&v>=0);$(id).classList.toggle('field-valid',raw!==''&&valid);$(id).classList.toggle('field-invalid',raw!==''&&!valid);}
+  for(const id of ['exCashBack','exFees','exNewIof']){const raw=$(id).value.trim(),v=parseBRNumber(raw),valid=raw===''||(Number.isFinite(v)&&v>=0);$(id).classList.toggle('field-valid',raw!==''&&valid);$(id).classList.toggle('field-invalid',raw!==''&&!valid);}
   $('exchange').disabled=!ok;
 }
-['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exFees'].forEach(id=>$(id).addEventListener('input',validateExchange));
+['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exFees','exCurrentI','exNewI','exNewIof','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).addEventListener('input',validateExchange));
 $('exchangeForm').addEventListener('submit',e=>{
   e.preventDefault();$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');
   try{
@@ -356,7 +361,12 @@ $('exchangeForm').addEventListener('submit',e=>{
       newPayment:parseBRNumber($('exNewPayment').value),
       newPeriods:parseBRNumber($('exNewN').value),
       cashBack:parseBRNumber($('exCashBack').value)??0,
-      fees:parseBRNumber($('exFees').value)??0
+      fees:parseBRNumber($('exFees').value)??0,
+      currentRate:(parseBRNumber($('exCurrentI').value)??0)/100,
+      newRate:(parseBRNumber($('exNewI').value)??0)/100,
+      currentFirstPeriodDays:parseDateBR($('exBaseDate').value)&&parseDateBR($('exCurrentDue').value)?daysBetween(parseDateBR($('exBaseDate').value),parseDateBR($('exCurrentDue').value)):30,
+      newFirstPeriodDays:parseDateBR($('exNewContractDate').value)&&parseDateBR($('exNewFirstDue').value)?daysBetween(parseDateBR($('exNewContractDate').value),parseDateBR($('exNewFirstDue').value)):30,
+      newIof:parseBRNumber($('exNewIof').value)??0
     });
     $('exCurrentTotal').textContent=brl.format(r.currentRemaining);$('exNewTotal').textContent=brl.format(r.newRemaining);
     $('exPaymentDiff').textContent=signedMoney(r.paymentDifference);
@@ -368,7 +378,7 @@ $('exchangeForm').addEventListener('submit',e=>{
     $('exchangeResult').classList.remove('hidden');
   }catch(err){$('exchangeError').textContent=err.message;}
 });
-$('clearExchange').addEventListener('click',()=>{$('exchangeForm').reset();['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exFees'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');validateExchange();});
+$('clearExchange').addEventListener('click',()=>{$('exchangeForm').reset();['exBalance','exCurrentPayment','exCurrentN','exNewPayment','exNewN','exCashBack','exFees','exCurrentI','exNewI','exNewIof','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');validateExchange();});
 validateExchange();
 
 
@@ -380,15 +390,30 @@ function validateConverter(){
   const oneFinancial=(amountState==='valid'&&paymentState==='empty')||(paymentState==='valid'&&amountState==='empty');
   $('convertCredit').disabled=!(oneFinancial&&Number.isFinite(n)&&n>0&&Number.isFinite(rate)&&rate>0);
 }
-['cvAmount','cvPayment','cvN','cvI'].forEach(id=>$(id).addEventListener('input',validateConverter));
+['cvAmount','cvPayment','cvN','cvI','cvContractDate','cvFirstDue','cvIncludeIof'].forEach(id=>$(id).addEventListener('input',validateConverter));
 $('converterForm').addEventListener('submit',e=>{
   e.preventDefault();$('converterError').textContent='';$('converterResult').classList.add('hidden');
   try{
     validateConverter();if($('convertCredit').disabled)throw new Error('Informe prazo, taxa e apenas valor do crédito ou valor da parcela.');
+    for(const id of ['cvContractDate','cvFirstDue'])if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');
     const amount=parseBRNumber($('cvAmount').value),pmtValue=parseBRNumber($('cvPayment').value),n=parseBRNumber($('cvN').value),i=parseBRNumber($('cvI').value)/100;
-    const findingAmount=amount===null;
-    const result=findingAmount?principal(pmtValue,i,n):payment(amount,i,n);
-    const finalAmount=findingAmount?result:amount,finalPayment=findingAmount?pmtValue:result;
+    const contractDate=parseDateBR($('cvContractDate').value)??new Date(),firstDue=parseDateBR($('cvFirstDue').value)??defaultNextDue(contractDate);
+    const firstDays=daysBetween(contractDate,firstDue); if(firstDays<=0)throw new Error('O primeiro vencimento deve ser posterior à data da contratação.');
+    const findingAmount=amount===null,includeIof=$('cvIncludeIof').checked;
+    const fraction=firstDays/30,annuity=(1-Math.pow(1+i,-n))/i*(1+i)/Math.pow(1+i,fraction);
+    let result,finalAmount,finalPayment;
+    if(includeIof){
+      if(findingAmount){
+        let lo=0,hi=pmtValue*n;
+        for(let k=0;k<80;k++){const mid=(lo+hi)/2;const sim=simulateCredit({kind:'new',requestedAmount:mid,periods:n,monthlyRate:i,contractDate,firstDue});if(sim.payment>pmtValue)hi=mid;else lo=mid;}
+        result=(lo+hi)/2;finalAmount=result;finalPayment=pmtValue;
+      }else{
+        const sim=simulateCredit({kind:'new',requestedAmount:amount,periods:n,monthlyRate:i,contractDate,firstDue});
+        result=sim.payment;finalAmount=amount;finalPayment=result;
+      }
+    }else{
+      result=findingAmount?pmtValue*annuity:amount/annuity;finalAmount=findingAmount?result:amount;finalPayment=findingAmount?pmtValue:result;
+    }
     $('cvResultLabel').textContent=findingAmount?'Valor de crédito estimado':'Parcela estimada';
     $('cvResultValue').textContent=brl.format(result);$('cvResultN').textContent=n.toLocaleString('pt-BR')+' parcelas';
     $('cvResultI').textContent=(i*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'% a.m.';
@@ -396,5 +421,5 @@ $('converterForm').addEventListener('submit',e=>{
     $('converterResult').classList.remove('hidden');
   }catch(err){$('converterError').textContent=err.message;}
 });
-$('clearConverter').addEventListener('click',()=>{$('converterForm').reset();['cvAmount','cvPayment','cvN','cvI'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('converterError').textContent='';$('converterResult').classList.add('hidden');validateConverter();});
+$('clearConverter').addEventListener('click',()=>{$('converterForm').reset();['cvAmount','cvPayment','cvN','cvI','cvContractDate','cvFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('converterError').textContent='';$('converterResult').classList.add('hidden');validateConverter();});
 validateConverter();
