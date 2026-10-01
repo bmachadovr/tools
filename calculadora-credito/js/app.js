@@ -237,7 +237,7 @@ $('calculateUpdateBalance').addEventListener('click',()=>{
 });
 
 let simulationKind='new';
-const kindButtons=[...document.querySelectorAll('.kind-option')];
+const kindButtons=[...document.querySelectorAll('.kind-option[data-kind]')];
 function setSimulationKind(kind){
   simulationKind=kind;
   const renewal=kind==='renewal';
