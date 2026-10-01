@@ -98,3 +98,11 @@ input{min-height:38px;padding:6px 9px;font-size:16px}
 label span{right:9px;bottom:9px}
 .grid{gap:12px 14px}
 @media(max-width:620px){input{min-height:38px;padding:6px 9px}.grid{gap:11px}}
+
+/* Visual experiment: removable SVG icon layer */
+.tool-tab{display:inline-flex;align-items:center;gap:6px}
+.tool-icon{width:15px;height:15px;flex:0 0 15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tool-tab.active .tool-icon{color:var(--accent)}
+body[data-theme="color"] .tool-tab.active .tool-icon{color:#3333bd}
+.tool-heading h2{display:flex;align-items:center;gap:8px}
+@media(max-width:620px){.tool-icon{width:14px;height:14px;flex-basis:14px}.tool-tab{gap:5px}}
