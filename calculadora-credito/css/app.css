@@ -85,3 +85,9 @@ body[data-theme="color"] header{border-top-width:4px;padding-top:12px}
 header .eyebrow{margin-bottom:5px}
 header .lead{margin-top:9px;margin-bottom:0}
 @media(max-width:620px){.wrap{padding-top:14px}.theme-switcher{margin:0 0 6px}body[data-theme="color"] header{padding-top:8px}header{margin-bottom:12px}}
+
+/* Compact title block */
+header .eyebrow{font-size:.62rem;letter-spacing:.14em;margin-bottom:3px}
+header h1{font-size:clamp(1.55rem,5vw,2.35rem);line-height:1.02;letter-spacing:-.035em}
+header .lead{font-size:.82rem;line-height:1.35;margin-top:6px}
+@media(max-width:620px){header .eyebrow{font-size:.58rem}header h1{font-size:1.65rem}header .lead{font-size:.78rem;margin-top:5px}}
