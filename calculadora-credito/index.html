@@ -68,6 +68,7 @@
 <div class="actions"><button type="submit" id="calculate" disabled>Simular portabilidade</button><button type="button" class="secondary" id="clear">Limpar</button></div><p id="error" class="error" role="alert"></p></form>
 <section id="result" class="result embedded hidden" aria-live="polite"><p class="result-label">Parcela na instituição destino</p><strong id="resultValue"></strong><div class="simulation-meta"><div class="balance-stat"><span>Parcela na origem</span><b id="portOriginPayment"></b></div><div class="balance-stat"><span>Saldo portado na efetivação</span><b id="portUpdatedBalance"></b></div><div class="balance-stat"><span>Taxa na origem</span><b id="portOriginRate"></b></div><div class="balance-stat"><span>Taxa no destino</span><b id="portDestinationRate"></b></div><div class="balance-stat"><span>Carência até a 1ª parcela</span><b id="portGraceDays"></b></div><div class="balance-stat"><span>IOF</span><b>Não incide</b></div></div><p id="resultExtra" class="assumption-note"></p><div class="next"><button type="button" id="sendToUpdate">Usar origem em Projetar saldo</button><button type="button" id="showEvolution">Ver evolução da origem</button></div><p id="resultLabel" class="hidden"></p></section>
 <section id="evolution" class="embedded hidden"><div class="section-head"><h3>Evolução estimada da origem</h3><button type="button" class="secondary small" id="hideEvolution">Fechar</button></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Saldo inicial</th><th>Juros</th><th>Amortização</th><th>Parcela</th><th>Saldo final</th></tr></thead><tbody id="scheduleBody"></tbody></table></div></section>
+</div></section>
 <section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Simular troca de dívida</h2><p>Compare uma nova operação com o empréstimo atual. O sistema identifica automaticamente se haverá liquidação ou amortização parcial.</p></div>
 <form id="exchangeForm" novalidate>
 <div class="portability-card">
@@ -147,4 +148,4 @@
 </div></section>
 
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-14"></script></body></html>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-15"></script></body></html>
