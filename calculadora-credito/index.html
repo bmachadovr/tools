@@ -106,16 +106,22 @@
 </div></section>
 <section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Trocar dívida</h2><p>Compare o que ainda seria pago no contrato atual com uma proposta para liquidá-lo e substituí-lo.</p></div>
 <form id="exchangeForm" novalidate>
-<p class="result-label">Dívida atual</p><div class="grid">
+<div class="portability-card">
+<h3>Empréstimo atual</h3>
+<div class="grid">
 <label>Saldo para liquidação <span>R$</span><input id="exBalance" inputmode="numeric"></label>
 <label>Parcela atual <span>R$</span><input id="exCurrentPayment" inputmode="numeric"></label>
 <label>Parcelas restantes <input id="exCurrentN" inputmode="numeric"></label>
 </div>
-<p class="result-label">Nova operação</p><div class="grid">
+</div>
+<div class="portability-card">
+<h3>Nova operação</h3>
+<div class="grid">
 <label>Nova parcela <span>R$</span><input id="exNewPayment" inputmode="numeric"></label>
 <label>Novo prazo <input id="exNewN" inputmode="numeric"></label>
 <label>Valor adicional liberado <span>R$</span><input id="exCashBack" inputmode="numeric"></label>
 <label>Custos adicionais <span>R$</span><input id="exFees" inputmode="numeric"></label>
+</div>
 </div>
 <details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">Informe taxas, datas e IOF quando disponíveis para qualificar a comparação econômica da troca.</p><div class="grid advanced">
 <label>Taxa atual <span>% a.m.</span><input id="exCurrentI" inputmode="numeric"></label>
