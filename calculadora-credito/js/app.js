@@ -438,7 +438,7 @@ $('exchangeForm').addEventListener('submit',e=>{
     });
     $('exOperationType').textContent=r.operationType==='liquidation'?'Liquidação':'Amortização parcial';
     $('exAppliedAmount').textContent=brl.format(r.appliedAmount);$('exCashAvailable').textContent=brl.format(r.cashAvailable);$('exRemainingBalance').textContent=brl.format(r.remainingBalance);
-    $('exCurrentTotal').textContent=brl.format(r.adjustedCurrentRemaining);$('exNewTotal').textContent=brl.format(r.newRemaining);
+    $('exCurrentTotal').textContent=brl.format(r.currentRemaining);$('exAdjustedCurrentTotal').textContent=brl.format(r.adjustedCurrentRemaining);$('exNewTotal').textContent=brl.format(r.newRemaining);
     const adjustedCard=$('exAdjustedPaymentCard');
     if(r.operationType==='amortization'&&r.adjustedCurrentPayment!==null){
       adjustedCard.classList.remove('hidden');
@@ -449,7 +449,7 @@ $('exchangeForm').addEventListener('submit',e=>{
         $('exPaymentDiff').textContent=Math.max(0,parseBRNumber($('exCurrentN').value)-r.adjustedCurrentPeriods).toLocaleString('pt-BR')+' parcelas';
       }else{
         $('exAdjustedMetricLabel').textContent='Nova parcela do contrato atual';
-        $('exAdjustedCurrentPayment').textContent=brl.format(r.adjustedCurrentPayment)+(r.adjustedPaymentMethod==='proportional-payment'?' · estimada':'');
+        $('exAdjustedCurrentPayment').innerHTML=brl.format(r.adjustedCurrentPayment)+(r.adjustedPaymentMethod==='proportional-payment'?'<span class="estimate-label"> estimada</span>':'');
         $('exDifferenceMetricLabel').textContent='Diferença na parcela';
         $('exPaymentDiff').textContent=signedMoney(r.newPayment-r.adjustedCurrentPayment);
       }
@@ -457,7 +457,7 @@ $('exchangeForm').addEventListener('submit',e=>{
     $('exIofNotice').textContent=r.newIof===null?'IOF não calculado: informe a taxa da nova operação para estimá-lo.':'IOF estimado da nova operação: '+brl.format(r.newIof)+'.';
     $('exPeriodDiff').textContent=r.periodDifference===0?'Mesmo prazo':(r.periodDifference>0?'+ ':'− ')+Math.abs(r.periodDifference).toLocaleString('pt-BR')+' parcelas';
     const positive=r.financialDifference>=0;
-    $('exFinancialResult').textContent=(positive?'Economia nominal de ':'Acréscimo nominal de ')+brl.format(Math.abs(r.financialDifference));
+    $('exFinancialResult').textContent=(positive?'Economia nominal de ':'Aumento nominal da dívida de ')+brl.format(Math.abs(r.financialDifference));
     $('exSummary').textContent=r.operationType==='liquidation'
       ? 'A nova operação liquida integralmente o empréstimo atual'+(r.cashAvailable>0?' e deixa '+brl.format(r.cashAvailable)+' livres para o cliente.':'.')
       : 'A nova operação amortiza '+brl.format(r.appliedAmount)+' do empréstimo atual, mantém saldo de '+brl.format(r.remainingBalance)+' e deixa '+brl.format(r.cashAvailable)+' livres para o cliente.';
