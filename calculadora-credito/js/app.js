@@ -392,18 +392,41 @@ validateComparison();
 
 
 function validateExchange(){
-  const required=['exBalance','exCurrentPayment','exCurrentN','exNewAmount','exNewPayment','exNewN'];
-  const ok=required.every(id=>{const v=parseBRNumber($(id).value),valid=Number.isFinite(v)&&v>0;updateFieldState(id,valid);return valid;});
+  const moneyIds=['exBalance','exCurrentPayment','exNewAmount','exNewPayment'];
+  const moneyOk=moneyIds.every(id=>{
+    const v=parseBRNumber($(id).value),valid=Number.isFinite(v)&&v>0;
+    updateFieldState(id,valid);return valid;
+  });
+  const periodIds=['exCurrentN','exNewN'];
+  const periodsOk=periodIds.every(id=>{
+    const v=parseBRNumber($(id).value),valid=Number.isInteger(v)&&v>=1&&v<=420;
+    updateFieldState(id,valid);return valid;
+  });
+  const rateIds=['exCurrentI','exNewI'];
+  const ratesOk=rateIds.every(id=>{
+    const raw=$(id).value.trim(),v=parseBRNumber(raw),valid=raw===''||(Number.isFinite(v)&&v>0);
+    $(id).classList.toggle('field-valid',raw!==''&&valid);
+    $(id).classList.toggle('field-invalid',raw!==''&&!valid);
+    return valid;
+  });
+  const dateIds=['exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'];
+  const datesOk=dateIds.every(id=>{
+    const raw=$(id).value.trim(),valid=raw===''||validDate(raw);
+    $(id).classList.toggle('field-valid',raw!==''&&valid);
+    $(id).classList.toggle('field-invalid',raw!==''&&!valid);
+    return valid;
+  });
   const raw=$('exAmortizeAmount').value.trim(),amount=parseBRNumber(raw),newAmount=parseBRNumber($('exNewAmount').value);
   const optionalOk=raw===''||(Number.isFinite(amount)&&amount>0&&Number.isFinite(newAmount)&&amount<=newAmount);
-  $('exAmortizeAmount').classList.toggle('field-valid',raw!==''&&optionalOk);$('exAmortizeAmount').classList.toggle('field-invalid',raw!==''&&!optionalOk);
-  $('exchange').disabled=!(ok&&optionalOk);
+  $('exAmortizeAmount').classList.toggle('field-valid',raw!==''&&optionalOk);
+  $('exAmortizeAmount').classList.toggle('field-invalid',raw!==''&&!optionalOk);
+  $('exchange').disabled=!(moneyOk&&periodsOk&&ratesOk&&datesOk&&optionalOk);
 }
 ['exBalance','exCurrentPayment','exCurrentN','exNewAmount','exNewPayment','exNewN','exAmortizeAmount','exCurrentI','exNewI','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).addEventListener('input',validateExchange));
 $('exchangeForm').addEventListener('submit',e=>{
   e.preventDefault();$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');
   try{
-    validateExchange();if($('exchange').disabled)throw new Error('Preencha os dados essenciais com valores válidos. O valor a amortizar, quando informado, não pode superar a nova operação.');
+    validateExchange();if($('exchange').disabled)throw new Error('Preencha os campos com valores válidos. Os prazos devem ser números inteiros entre 1 e 420 meses e o valor a amortizar, quando informado, não pode superar a nova operação.');
     for(const id of ['exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'])if(!validDate($(id).value))throw new Error('Informe uma data válida no formato DD/MM/AAAA.');
     const base=parseDateBR($('exBaseDate').value),currentDue=parseDateBR($('exCurrentDue').value);
     const contractDate=parseDateBR($('exNewContractDate').value)??new Date(),firstDue=parseDateBR($('exNewFirstDue').value)??defaultNextDue(contractDate);
