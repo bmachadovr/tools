@@ -9,8 +9,9 @@
 <button type="button" class="tool-tab" data-tool="4">Comparar crédito</button>
 <button type="button" class="tool-tab" data-tool="5">Trocar dívida</button>
 <button type="button" class="tool-tab" data-tool="6">Parcela ↔ Valor</button>
+<button type="button" class="tool-tab" data-tool="7">Crédito + amortização</button>
 </nav>
-<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="tool-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
 <div class="tools-carousel" id="toolsCarousel">
 <section class="tool-panel">
@@ -168,5 +169,33 @@
 <div class="balance-stat"><span>Prazo</span><b id="cvResultN"></b></div><div class="balance-stat"><span>Taxa</span><b id="cvResultI"></b></div><div class="balance-stat"><span>Desembolso total</span><b id="cvResultTotal"></b></div>
 </div><p class="assumption-note">Cálculo pelo sistema Price. IOF, seguros e tarifas não estão incluídos; para uma proposta completa, use Simular crédito.</p></section>
 </div></section>
+<section class="tool-panel"><div class="card tool-card"><div class="tool-heading"><h2>Crédito + amortização</h2><p>Veja o impacto de contratar um novo crédito para amortizar o saldo de outra operação.</p></div>
+<form id="creditAmortForm" novalidate>
+<p class="result-label">Operação a amortizar</p><div class="grid">
+<label>Saldo devedor <span>R$</span><input id="caBalance" inputmode="numeric"></label>
+<label>Parcela atual <span>R$</span><input id="caCurrentPayment" inputmode="numeric"></label>
+<label>Parcelas restantes <input id="caCurrentN" inputmode="numeric"></label>
+<label>Taxa atual <span>% a.m.</span><input id="caCurrentI" inputmode="numeric"></label>
 </div>
-<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20260930-04"></script></body></html>
+<p class="result-label">Novo crédito</p><div class="grid">
+<label>Valor a contratar <span>R$</span><input id="caNewAmount" inputmode="numeric"></label>
+<label>Prazo do novo crédito <input id="caNewN" inputmode="numeric"></label>
+<label>Taxa do novo crédito <span>% a.m.</span><input id="caNewI" inputmode="numeric"></label>
+</div>
+<details><summary>Aumente a precisão do cálculo</summary><p class="precision-help">As datas refinam o período até os próximos vencimentos e o IOF do novo crédito.</p><div class="grid advanced">
+<label>Data do saldo atual <input id="caBaseDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Próximo vencimento atual <input id="caCurrentDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Data da nova contratação <input id="caContractDate" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<label>Primeiro vencimento novo <input id="caFirstDue" inputmode="numeric" maxlength="10" autocomplete="off"></label>
+<p class="coming">Sem as datas, serão considerados períodos de 30 dias.</p>
+</div></details>
+<div class="actions"><button type="submit" id="creditAmortize" disabled>Calcular impacto</button><button type="button" class="secondary" id="clearCreditAmort">Limpar</button></div><p id="creditAmortError" class="error" role="alert"></p></form>
+<section id="creditAmortResult" class="result embedded hidden" aria-live="polite"><p class="result-label">Impacto financeiro</p><div class="simulation-meta">
+<div class="balance-stat"><span>Parcela do novo crédito</span><b id="caNewPayment"></b></div>
+<div class="balance-stat"><span>IOF estimado</span><b id="caIof"></b></div>
+<div class="balance-stat"><span>Economia · reduzindo prazo</span><b id="caEconomyTerm"></b><small id="caTermDetail"></small></div>
+<div class="balance-stat"><span>Economia · reduzindo parcela</span><b id="caEconomyPayment"></b><small id="caPaymentDetail"></small></div>
+</div><p class="assumption-note" id="caSummary"></p></section>
+</div></section>
+</div>
+<footer>Simulação matemática. O saldo oficial pode variar conforme as condições e eventos do contrato.</footer></main><script type="module" src="js/app.js?v=20261001-01"></script></body></html>
