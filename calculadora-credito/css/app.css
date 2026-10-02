@@ -128,3 +128,9 @@ body[data-theme="color"] header{padding-left:48px}
 .menu-close{width:28px;height:28px;font-size:1.25rem}
 header,body[data-theme="color"] header{padding-left:42px}
 @media(max-width:620px){.top-nav{top:8px;left:8px}.menu-trigger{width:29px;height:27px;padding:6px}.tool-menu{width:min(72vw,235px);padding:12px 9px}header,body[data-theme="color"] header{padding-left:40px}}
+
+/* Bare menu trigger + restore header alignment */
+.menu-trigger{width:24px;height:24px;padding:3px;border:0;border-radius:0;background:transparent!important;box-shadow:none}
+.menu-trigger span{width:17px;height:1.5px}
+header,body[data-theme="color"] header{padding-left:0}
+@media(max-width:620px){.menu-trigger{width:24px;height:24px;padding:3px}header,body[data-theme="color"] header{padding-left:0}}
