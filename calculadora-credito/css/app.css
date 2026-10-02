@@ -139,3 +139,7 @@ header,body[data-theme="color"] header{padding-left:0}
 .wrap{padding-top:11px}
 .top-nav{left:0}
 @media(max-width:620px){.wrap{padding-top:7px}.top-nav{left:0}}
+
+/* Align hamburger strokes with content edge */
+.menu-trigger{padding-left:0;padding-right:0;align-items:flex-start}
+@media(max-width:620px){.menu-trigger{padding-left:0;padding-right:0}}
