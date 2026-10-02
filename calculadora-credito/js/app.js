@@ -170,6 +170,7 @@ form.addEventListener('submit',e=>{e.preventDefault();$('error').textContent='';
   const paymentText=Math.abs(difference)<0.005?'A parcela estimada permanece igual.':difference<0?'Redução estimada de '+brl.format(-difference)+' por parcela.':'Aumento estimado de '+brl.format(difference)+' por parcela.';
   $('resultExtra').textContent=paymentText+updateText+' Carência de '+destinationFirstPeriodDays.toLocaleString('pt-BR')+' dias projetada na parcela do destino. Portabilidade sem incidência de IOF.';
   $('result').classList.remove('hidden');
+  renderInsights('comparison',{diff:{payment:difference,totalPaid:difference*current.n,periods:0}});
 }catch(err){$('result').classList.add('hidden');$('error').textContent=err.message;}});
 $('clear').addEventListener('click',()=>{form.reset();['pv','pmt','n','i','portI','portEffectiveDate','portFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('result').classList.add('hidden');$('evolution').classList.add('hidden');$('error').textContent='';current=null;updateCalculateState();});
 $('showEvolution').addEventListener('click',()=>{if(!current)return;try{const pmt=current.pmt??payment(current.pv,current.i,current.n);const schedule=buildSchedule(current.pv,current.i,pmt,Math.min(600,Math.ceil(current.n)+2));const body=$('scheduleBody');body.innerHTML='';for(const r of schedule.rows){const tr=document.createElement('tr');[r.n,brl.format(r.opening),brl.format(r.interest),brl.format(r.amortization),brl.format(r.payment),brl.format(r.closing)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});body.appendChild(tr)}$('evolution').classList.remove('hidden');$('evolution').scrollIntoView({behavior:'smooth',block:'start'});}catch(err){$('error').textContent=err.message;}});
@@ -287,6 +288,7 @@ $('calculateUpdateBalance').addEventListener('click',()=>{
     $('updatedBalanceDate').textContent='Saldo em '+formatDateBR(targetDate);$('updatedBalanceValue').textContent=brl.format(updated.balance);
     $('paidPeriods').textContent=updated.paid.toLocaleString('pt-BR');$('remainingPeriods').textContent=informedPeriods===null?'—':updated.remaining.toLocaleString('pt-BR');$('updatedNextDue').innerHTML=formatDateBR(updated.nextDue)+($('upDue').value.trim()===''?'<span class="estimate-label"> estimado</span>':'');
     $('updatedBalanceResult').classList.remove('hidden');
+    renderInsights('futureBalance',{...updated,targetDateText:formatDateBR(targetDate)});
   }catch(err){$('updateError').textContent=err.message;}
 });
 
@@ -404,6 +406,7 @@ $('amortizeForm').addEventListener('submit',e=>{
     $('amInterestTerm').textContent=brl.format(r.interestSavingTerm);
     $('amInterestPayment').textContent=brl.format(r.interestSavingPayment);
     $('amortizationResult').classList.remove('hidden');
+    renderInsights('amortization',{...r,extraPayment:parseBRNumber($('amExtra').value)});
   }catch(err){$('amortizeError').textContent=err.message;}
 });
 $('clearAmortization').addEventListener('click',()=>{
