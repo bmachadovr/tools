@@ -31,6 +31,21 @@ export function offerInsights(context,data){
     if(amort?.paymentReduction>0)push(out,'payment','Parcela da dívida atual','Mantendo o prazo, a parcela da dívida amortizada cai '+money(amort.paymentReduction)+'.',amort.paymentReduction,80);
     if(credit?.payment>0)push(out,'payment','Novo crédito','O novo crédito acrescenta parcela de '+money(credit.payment)+'.',credit.payment,70);
   }
+
+  if(context==='amortization'){
+    const {extraPayment=0,newBalance=0,fullAmortizedPeriods=0,partialAmortization=0,paymentReduction=0,interestSavingTerm=0,interestSavingPayment=0}=data;
+    push(out,'value','Amortização','Amortização de '+money(extraPayment)+' reduz o saldo para '+money(newBalance)+'.',extraPayment,95);
+    if(fullAmortizedPeriods>0||partialAmortization>0)push(out,'term','Redução de prazo','A amortização elimina '+fullAmortizedPeriods+' parcelas completas'+(partialAmortization>0?' e '+money(partialAmortization)+' da próxima parcela.':'.'),fullAmortizedPeriods,85);
+    if(paymentReduction>0)push(out,'payment','Redução de parcela','Mantendo o prazo, a parcela diminui '+money(paymentReduction)+'.',paymentReduction,80);
+    const bestInterest=Math.max(interestSavingTerm,interestSavingPayment);
+    if(bestInterest>0)push(out,'cost','Economia de juros','A economia estimada de juros chega a '+money(bestInterest)+'.',bestInterest,75);
+  }
+  if(context==='futureBalance'){
+    const {balance=0,paid=0,remaining=null,targetDateText=''}=data;
+    push(out,'balance','Saldo projetado',(targetDateText?'Em '+targetDateText+', o saldo estimado é ':'Saldo estimado de ')+money(balance)+'.',balance,95);
+    if(paid>0)push(out,'term','Parcelas até a data',paid+' parcela'+(paid===1?' será considerada paga.':'s serão consideradas pagas.'),paid,80);
+    if(Number.isFinite(remaining))push(out,'term','Prazo restante','Restam aproximadamente '+remaining+' parcelas após a atualização.',remaining,70);
+  }
   if(context==='converter'){
     const {findingAmount,result,payment,periods}=data;
     if(findingAmount)push(out,'value','Capacidade em crédito','Uma parcela de '+money(payment)+' representa aproximadamente '+money(result)+' de crédito em '+periods+' meses.',result,90);
