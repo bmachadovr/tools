@@ -169,13 +169,16 @@ form.addEventListener('submit',e=>{e.preventDefault();$('error').textContent='';
   const updateText=informedEffective?' Saldo atualizado por '+balanceUpdateDays.toLocaleString('pt-BR')+' dias até a efetivação.':' Saldo informado usado sem atualização até a efetivação.';
   const paymentText=Math.abs(difference)<0.005?'A parcela estimada permanece igual.':difference<0?'Redução estimada de '+brl.format(-difference)+' por parcela.':'Aumento estimado de '+brl.format(difference)+' por parcela.';
   $('resultExtra').textContent=paymentText+updateText+' Carência de '+destinationFirstPeriodDays.toLocaleString('pt-BR')+' dias projetada na parcela do destino. Portabilidade sem incidência de IOF.';
-  $('result').classList.remove('hidden');
+  $('result').classList.remove('hidden');focusResult('result');
   renderInsights('comparison',{diff:{payment:difference,totalPaid:difference*current.n,periods:0}});
 }catch(err){$('result').classList.add('hidden');$('error').textContent=err.message;}});
 $('clear').addEventListener('click',()=>{form.reset();['pv','pmt','n','i','portI','portEffectiveDate','portFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('result').classList.add('hidden');$('evolution').classList.add('hidden');$('error').textContent='';current=null;updateCalculateState();});
 $('showEvolution').addEventListener('click',()=>{if(!current)return;try{const pmt=current.pmt??payment(current.pv,current.i,current.n);const schedule=buildSchedule(current.pv,current.i,pmt,Math.min(600,Math.ceil(current.n)+2));const body=$('scheduleBody');body.innerHTML='';for(const r of schedule.rows){const tr=document.createElement('tr');[r.n,brl.format(r.opening),brl.format(r.interest),brl.format(r.amortization),brl.format(r.payment),brl.format(r.closing)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});body.appendChild(tr)}$('evolution').classList.remove('hidden');$('evolution').scrollIntoView({behavior:'smooth',block:'start'});}catch(err){$('error').textContent=err.message;}});
 $('hideEvolution').addEventListener('click',()=>$('evolution').classList.add('hidden'));
 
+function focusResult(id){
+  requestAnimationFrame(()=>$(id)?.scrollIntoView({behavior:'smooth',block:'start'}));
+}
 function formatDateBR(date){return date?date.toLocaleDateString('pt-BR'): '—';}
 const carousel=$('toolsCarousel'), tabs=[...document.querySelectorAll('.tool-tab')], dots=[...document.querySelectorAll('.tool-dots i')];
 const toolCount=tabs.length;
@@ -287,7 +290,7 @@ $('calculateUpdateBalance').addEventListener('click',()=>{
     const updated=updateBalance({principal,monthlyRate,payment:pmt,periods,baseDate,nextDue,targetDate});
     $('updatedBalanceDate').textContent='Saldo em '+formatDateBR(targetDate);$('updatedBalanceValue').textContent=brl.format(updated.balance);
     $('paidPeriods').textContent=updated.paid.toLocaleString('pt-BR');$('remainingPeriods').textContent=informedPeriods===null?'—':updated.remaining.toLocaleString('pt-BR');$('updatedNextDue').innerHTML=formatDateBR(updated.nextDue)+($('upDue').value.trim()===''?'<span class="estimate-label"> estimado</span>':'');
-    $('updatedBalanceResult').classList.remove('hidden');
+    $('updatedBalanceResult').classList.remove('hidden');focusResult('updatedBalanceResult');
     renderInsights('futureBalance',{...updated,targetDateText:formatDateBR(targetDate)});
   }catch(err){$('updateError').textContent=err.message;}
 });
@@ -374,7 +377,7 @@ $('simulateForm').addEventListener('submit',e=>{
     $('simPayment').textContent=brl.format(result.payment);$('simFinanced').textContent=brl.format(result.financedAmount);$('simIof').textContent=brl.format(result.iof);$('simReleased').textContent=brl.format(result.requestedAmount);$('simOldBalanceIof').textContent=brl.format(result.outstandingIof);
     $('simOldBalanceIofStat').classList.toggle('hidden',simulationKind!=='renewal');$('simReleasedLabel').textContent=simulationKind==='renewal'?'Valor liberado':'Valor contratado';$('simRenewalStat').classList.toggle('hidden',simulationKind==='new');
     $('simAssumption').textContent=simulationKind==='renewal'?(result.outstandingIofMode==='estimated-informed'?'IOF sobre o saldo renovado é uma estimativa refinada pelas datas da operação original e pode divergir do valor real. '+result.complementaryDays+' dias complementares considerados. Primeiro vencimento em '+formatDateBR(firstDue)+'.':'IOF sobre o saldo renovado é uma estimativa. Informe as datas da operação original em “Aumente a precisão” para refinar. Primeiro vencimento em '+formatDateBR(firstDue)+'.'):'IOF estimado incluído no valor financiado. Primeiro vencimento em '+formatDateBR(firstDue)+'.';
-    $('simulationResult').classList.remove('hidden');renderInsights('simulation',{...result,periods:result.periods??n,kind:simulationKind,outstandingBalance:simulationKind==='renewal'?parseBRNumber($('simBalance').value):0});validateSimulation();
+    $('simulationResult').classList.remove('hidden');focusResult('simulationResult');renderInsights('simulation',{...result,periods:result.periods??n,kind:simulationKind,outstandingBalance:simulationKind==='renewal'?parseBRNumber($('simBalance').value):0});validateSimulation();
   }catch(err){$('simulateError').textContent=err.message;}
 });
 $('clearSimulation').addEventListener('click',()=>{$('simulateForm').reset();['simAmount','simBalance','simN','simPmt','simI','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('simulateError').textContent='';$('simulationResult').classList.add('hidden');setSimulationKind('new');});
@@ -405,7 +408,7 @@ $('amortizeForm').addEventListener('submit',e=>{
     $('amSavedPmt').textContent='redução de '+brl.format(r.paymentReduction)+' por parcela';
     $('amInterestTerm').textContent=brl.format(r.interestSavingTerm);
     $('amInterestPayment').textContent=brl.format(r.interestSavingPayment);
-    $('amortizationResult').classList.remove('hidden');
+    $('amortizationResult').classList.remove('hidden');focusResult('amortizationResult');
     renderInsights('amortization',{...r,extraPayment:parseBRNumber($('amExtra').value)});
   }catch(err){$('amortizeError').textContent=err.message;}
 });
@@ -518,7 +521,7 @@ $('exchangeForm').addEventListener('submit',e=>{
     $('exSummary').textContent=r.operationType==='liquidation'
       ? 'A nova operação liquida integralmente o empréstimo atual'+(r.cashAvailable>0?' e deixa '+brl.format(r.cashAvailable)+' livres para o cliente.':'.')
       : 'A nova operação amortiza '+brl.format(r.appliedAmount)+' do empréstimo atual, mantém saldo de '+brl.format(r.remainingBalance)+' e deixa '+brl.format(r.cashAvailable)+' livres para o cliente.';
-    $('exchangeResult').classList.remove('hidden');renderInsights('exchange',r);
+    $('exchangeResult').classList.remove('hidden');focusResult('exchangeResult');renderInsights('exchange',r);
   }catch(err){$('exchangeError').textContent=err.message;}
 });
 $('clearExchange').addEventListener('click',()=>{$('exchangeForm').reset();['exBalance','exCurrentPayment','exCurrentN','exNewAmount','exNewPayment','exNewN','exAmortizeAmount','exCurrentI','exNewI','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');validateExchange();});
