@@ -134,3 +134,8 @@ header,body[data-theme="color"] header{padding-left:42px}
 .menu-trigger span{width:17px;height:1.5px}
 header,body[data-theme="color"] header{padding-left:0}
 @media(max-width:620px){.menu-trigger{width:24px;height:24px;padding:3px}header,body[data-theme="color"] header{padding-left:0}}
+
+/* Header final spacing */
+.wrap{padding-top:11px}
+.top-nav{left:0}
+@media(max-width:620px){.wrap{padding-top:7px}.top-nav{left:0}}
