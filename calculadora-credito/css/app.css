@@ -143,3 +143,7 @@ header,body[data-theme="color"] header{padding-left:0}
 /* Align hamburger strokes with content edge */
 .menu-trigger{padding-left:0;padding-right:0;align-items:flex-start}
 @media(max-width:620px){.menu-trigger{padding-left:0;padding-right:0}}
+
+/* Match hamburger to the content's horizontal inset */
+.top-nav{left:18px}
+@media(max-width:620px){.top-nav{left:18px}}
