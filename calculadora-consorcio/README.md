@@ -930,3 +930,66 @@ Esses endereços **não identificam a instituição de referência** do produto.
 - [ ] Revalidar a redação consolidada das normas no início da implementação e antes de publicação.
 
 **Regra de documentação:** referências regulatórias oficiais genéricas podem ser citadas. Não inserir em código, repositório, metadados ou proposta o nome, domínio, identificadores ou marcas da instituição de referência.
+
+## 20. Catálogo de cláusulas gerais por modalidade e geração de grupo (17/11/2026)
+
+> **Evidência de navegação:** a área pública de regulamentação apresenta **31 arquivos PDF de cláusulas gerais**, agrupados por **bens móveis**, **bens imóveis** e **serviços**, além de um guia e links para normas gerais. Os links responderam como documentos públicos, mas **o teor integral de cada PDF não foi extraído nem comparado neste levantamento**. Não atribuir a esses regulamentos cláusulas específicas sem leitura de seu texto. Por regra absoluta de neutralidade, **não registrar no projeto o nome, links, domínios ou demais identificadores da instituição usada como referência**.
+
+### 20.1. Organização por modalidade e data
+
+| Modalidade | Gerações/versões de cláusulas gerais encontradas no catálogo público |
+| --- | --- |
+| **Bens móveis** | Arquivo intitulado para **grupos novos** (sem data expressa no rótulo); arquivos listados para **27/06/2024**, **02/05/2024**, **15/12/2023**, **15/10/2021**, **14/06/2021**, **16/05/2017**, **07/11/2014**, **07/05/2014**, **25/05/2009 a 06/05/2014**, **17/05/2006 a 24/05/2009**, **03/08/2004 a 16/05/2006** e **até agosto de 2004** |
+| **Bens imóveis** | Arquivos listados para grupos inaugurados a partir de **19/12/2024**, **27/06/2024**, **02/05/2024**, **15/12/2023**, **15/10/2021**, **14/06/2021**, **16/05/2017**, **07/11/2014**, **fevereiro de 2009** e **até janeiro de 2009** |
+| **Serviços** | Arquivos listados para grupos inaugurados a partir de **29/06/2026**, **27/06/2024**, **02/05/2024**, **15/06/2021**, **16/05/2017**, **07/11/2014**, **junho de 2014** e **até maio de 2014** |
+
+**Nota sobre datas:** rótulos de catálogo não provam automaticamente a aplicação do documento a toda contratação posterior. Pode haver transição, aditivos, regra de adesão em grupo em andamento e versões distintas para um mesmo período. **É preciso identificar o documento aplicável ao grupo específico**, sem deduzir apenas da data de adesão do cliente.
+
+### 20.2. Decisão arquitetural: perfil contratual por grupo
+
+Em vez de tratar “veículos”, “imóveis” e “serviços” como três fórmulas universais, o motor deve separar:
+
+```text
+perfil_contratual:
+  modalidade: bens_moveis | bens_imoveis | servicos
+  data_constituicao_grupo: AAAA-MM-DD | desconhecida
+  data_adesao: AAAA-MM-DD | desconhecida
+  versao_clausulas_gerais: identificador_generico | nao_confirmado
+  versao_proposta: identificador_generico | nao_confirmado
+  regime_normativo: confirmado | pendente
+  regras_lances: confirmadas | pendentes
+  distribuicao_taxas: confirmada | pendente
+  reajustes: confirmados | pendentes
+  amortizacao: confirmada | pendente
+  vigencia_verificacao: data
+```
+
+- **Constituição do grupo e adesão do participante são datas diferentes.** Em grupo em andamento, usar a versão aplicável ao grupo, incluindo documentos de transição e condições contratuais pertinentes.
+- **Prioridade da evidência para cálculo:** norma obrigatória vigente, cláusulas gerais aplicáveis ao grupo, proposta específica, quadro de taxas e demonstrativo de parcelas, dados operacionais verificados. Divergências devem ser sinalizadas para conferência, não resolvidas por uma prioridade automática sem contexto jurídico.
+- **Condições comerciais são por grupo:** administração, fundo de reserva, cronograma e índices podem variar, assim como tipo de lance e forma de amortização.
+- O modo comercial do MVP deve continuar aceitando **carta, prestação e condições da simulação operacional** sem exigir o carregamento integral de um regulamento.
+- O modo detalhado só poderá usar algoritmos avançados quando os respectivos componentes e a versão contratual tiverem sido **validados**.
+
+### 20.3. Matriz para leitura futura dos PDFs (pendente)
+
+Ao acessar o conteúdo integral da versão pertinente, extrair com referência de cláusula e página, separadamente para cada modalidade:
+
+1. **Cálculo da prestação:** fundo comum, reserva, administração, seguros, parcelas reduzidas, distribuição temporal, antecipação e arredondamentos.
+2. **Lance:** limite e base de cálculo do embutido, recursos próprios, lance combinado, desempate, elegibilidade, quitação, prazo de pagamento e formas de abatimento.
+3. **Crédito e contemplação:** momento de utilização, análise documental, garantia, despesas de aquisição, saldo excedente e eventual quitação de financiamento.
+4. **Reajuste:** índice, periodicidade, data-base e tratamento antes/depois da contemplação.
+5. **Eventos extraordinários:** adesão em andamento, mudança do bem, inadimplência, cancelamento, restituição, antecipação de parcelas e encerramento.
+6. **Modalidades específicas:** FGTS e regras do imóvel, classificação do bem móvel e regras dos serviços.
+
+**Ainda não feito:** leitura integral comparativa de 31 PDFs. A localização e abertura de metadados **não significam que seu conteúdo foi validado**. Não homologar percentuais ou procedimentos específicos de grupo com base somente na listagem.
+
+### 20.4. Impacto no roadmap
+
+- [x] Identificar que há **versões diferentes de cláusulas gerais** por modalidade e geração do grupo.
+- [x] Registrar catálogo de gerações e tratamento de grupos em andamento.
+- [x] Preservar neutralidade dos arquivos e nomes técnicos.
+- [ ] Ler integralmente e comparar, **na ordem de relevância do uso**, a versão aplicável a bens móveis, imóveis e serviços.
+- [ ] Cruzar cada versão pertinente com as simulações operacionais anonimizadas.
+- [ ] Só depois parametrizar as regras de vencimento, reajuste, amortização e lances cujo resultado dependa da versão do contrato.
+
+**Decisão final:** o contrato escolhido não é função apenas da modalidade; depende também da **geração do grupo e de suas condições de adesão**. Para o MVP comercial, usar dados reais informados como entrada; deixar projeções detalhadas dependentes da confirmação da versão contratual.
