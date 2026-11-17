@@ -149,3 +149,48 @@ footer p{margin:0;max-width:620px}
  .proposal-card{border:none;box-shadow:none;padding:0}
  .proposal-card pre{border:none;padding:10px 0;background:white;white-space:pre-wrap;font-size:12pt}
 }
+
+/* Modalidade com ilustrações vetoriais: cartões responsivos, fonte e contraste acessíveis. */
+.mode-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:8px;max-width:860px}
+.mode-card{min-width:0;display:flex;align-items:center;gap:15px;padding:13px 17px;border-radius:16px;border:1px solid #d3f0e630;
+ background:#ffffff10;color:#e7f4f7;text-align:left;transition:transform .18s,border-color .18s,background .18s;position:relative}
+.mode-card:hover{transform:translateY(-2px);border-color:#d8f7e09c;background:#ffffff1b}
+.mode-card.selected{background:#d6f5f4;color:#133e4b;border-color:#d6f5f4;box-shadow:0 8px 20px #082b3d24}
+.mode-art{flex:0 0 142px;display:block}
+.mode-art svg{display:block;width:100%;height:88px;max-height:100%}
+.mode-info{min-width:0;display:flex;flex-direction:column;gap:4px}
+.mode-info strong{font-size:1.17rem;letter-spacing:-.025em}
+.mode-info small{font-size:.77rem;color:inherit;opacity:.78;line-height:1.45;font-weight:600}
+.mode-check{align-self:flex-start;margin-left:auto;border:1px solid currentColor;opacity:0;width:23px;height:23px;flex:none;display:grid;place-items:center;border-radius:50%;font-weight:900;font-size:.75rem}
+.mode-card.selected .mode-check{opacity:1}
+.finance-advanced summary span{font-size:.75rem;font-weight:600;color:#72919a;margin-left:6px}
+.advanced-fields{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:16px}
+.calc-status{padding:10px 12px;border-radius:9px;border:1px solid #d4e9ed;background:#eef7f8;color:#276478;line-height:1.5;font-size:.79rem;font-weight:630;margin:14px 0 0}
+.fields input.is-derived{border-color:#9dd3be;background:#f2fbf7}
+.checkline{margin:13px 0;font-size:.81rem;font-weight:650;color:#45606e}
+.checkline label{display:flex;align-items:center;gap:10px;cursor:pointer}
+.checkline input{width:17px;height:17px;accent-color:#146879;flex:none}
+.checkline[hidden]{display:none}
+.iof-estimate{background:#e7f4f4;color:#185a6a;border-radius:10px;padding:12px;font-size:.82rem;font-weight:750;margin-top:12px;line-height:1.5}
+.finance-advanced .fields label{font-size:.83rem}
+.mode-card:focus-visible{outline:3px solid #b0ebec;outline-offset:4px}
+@media(max-width:880px){
+ .mode-picker{max-width:none}
+ .mode-art{flex-basis:105px}
+ .mode-art svg{height:75px}
+ .mode-card{padding:11px 13px}
+}
+@media(max-width:560px){
+ .mode-picker{gap:8px}
+ .mode-card{padding:13px 10px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;border-radius:12px}
+ .mode-art{flex:0 0 auto;width:100%;max-width:120px}
+ .mode-art svg{height:64px}
+ .mode-info strong{font-size:.98rem}
+ .mode-info small{font-size:.68rem}
+ .mode-check{position:absolute;right:8px;top:8px;width:20px;height:20px;font-size:11px}
+ .advanced-fields{grid-template-columns:1fr}
+ .calc-status{font-size:.75rem}
+}
+@media print{
+ .mode-picker{display:none!important}
+}
