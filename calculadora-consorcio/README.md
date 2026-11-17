@@ -886,3 +886,47 @@ prestacao_t = soma_de_componentes_arredondados_ou_regra_de_arredondamento_verifi
 - **Não condicionar o início do desenvolvimento** à reconstrução das parcelas detalhadas sem dados contratados suficientes.
 
 **Critério transversal:** destacar de forma verificável o que é `informado pelo usuário`, `observado na simulação`, `publicado em material informativo`, `confirmado no contrato` ou `estimado`.
+
+## 19. Base regulatória oficial — conferência de 17/11/2026
+
+**Fontes públicas primárias consultadas fora do portal comercial:**
+
+- **Lei nº 11.795, de 8 de outubro de 2008 (texto atualizado, Câmara dos Deputados):** https://www2.camara.leg.br/legin/fed/lei/2008/lei-11795-8-outubro-2008-581885-normaatualizada-pl.html
+- **Resolução BCB nº 285, de 19 de janeiro de 2023 (texto do regulador, com alterações):** https://www.bcb.gov.br/estabilidadefinanceira/exibenormativo?numero=285&tipo=resolu%C3%A7%C3%A3o+bcb
+- **Orientações públicas do Banco Central sobre as novas regras e vigência:** https://bcb.gov.br/meubc/faqs/p/novas-regras-sobre-a-constituicao-e-o-funcionamento-de-grupos-de-consorcios
+- **Página oficial sobre administradoras de consórcio:** https://www.bcb.gov.br/estabilidadefinanceira/administradoraconsorcio
+
+Esses endereços **não identificam a instituição de referência** do produto. A lista acima é a base normativa da pesquisa, distinta das condições comerciais e dos regulamentos particulares de cada grupo. Verificar sempre a **redação consolidada vigente** na data de implementação, pois os normativos podem ser alterados.
+
+### 19.1. Dispositivos relevantes para o motor
+
+| Fonte | Dispositivo | Implicação técnica |
+| --- | --- | --- |
+| Lei 11.795/2008 | Art. 22, §§ 1º e 3º | Sorteio ou lance conforme contrato; crédito contemplado pode ser utilizado para quitação total de financiamento próprio, sujeito a anuência e condições |
+| Lei 11.795/2008 | Arts. 23 e 24 | Contemplação condicionada aos recursos do grupo; crédito na data da assembleia e rendimentos do crédito não utilizado, quando aplicáveis |
+| Lei 11.795/2008 | Art. 27, caput e § 1º | Prestação composta de fundo comum, taxa de administração e demais obrigações contratuais; valores/obrigações expressos em percentuais de referência |
+| Lei 11.795/2008 | Art. 27, § 3º, I e II | Antecipação legal de taxa de administração tem tratamento específico, inclusive destaque e dedução da taxa total; **não duplicar cobrança** |
+| Resolução BCB 285/2023 | Arts. 2º e 19, conforme redação vigente | Informações contratuais discriminadas; cobrança regular da taxa de administração conforme regra proporcional/fixa, ressalvada antecipação admitida |
+| Resolução BCB 285/2023 | Regra do lance vencedor e do lance embutido | Lance vencedor deve amortizar ou quitar parcelas vincendas na forma contratual; lance embutido utiliza parte do crédito da contemplação |
+| Resolução BCB 285/2023 | Demonstrativo individual (art. 49) | Cronograma e históricos devem permitir discriminar componentes, amortizações e valores efetivamente devidos |
+| Orientação do Banco Central | Novas regras desde 01/07/2024 | **Data de constituição do grupo** é essencial na seleção do regime normativo aplicável |
+
+**Limites de interpretação:**
+
+1. **A lei e a resolução não estabelecem um teto geral de 30% para lance embutido.** O limite de 30% registrado neste projeto é **regra operacional informada**, sujeita às regras do grupo.
+2. A lei e a resolução **não determinam que se divida lance por `prazo - 1`**. A coincidência encontrada no exemplo com 99 prestações segue sendo validação específica, não regra normativa geral.
+3. **“0,60% diluído nas cinco primeiras parcelas” não pode ser automaticamente classificado como antecipação legal da taxa de administração do art. 27, § 3º.** É, antes de tudo, uma **distribuição de cobrança exibida no sistema**; a classificação jurídica/contratual exige conferir proposta e contrato. A informação anterior de que o lançamento é compensado pelo fundo comum permanece como regra operacional observada, não como imposição da lei.
+4. **A regulação não apresenta o cronograma mensal exato de cada grupo.** Isso continua dependendo da proposta, dos demonstrativos individuais e do fator de redução.
+5. A lei não autoriza tratar a contemplação como certa, nem desconsiderar o momento de aquisição na comparação com financiamento.
+6. Taxa de administração antecipada legal, taxa total da proposta, parcela mensal de administração e fundo comum **são conceitos separados**; não preencher um campo com o valor do outro.
+
+### 19.2. Critérios adicionais de aceitação
+
+- [x] Identificar fontes oficiais da Lei 11.795/2008 e da Resolução BCB 285/2023.
+- [x] Registrar a diferença entre **direito estabelecido pela norma** e **condição particular do grupo**.
+- [x] Registrar expressamente que **30% embutido** e **divisão por 99** são condições operacionais/empíricas, não percentuais prescritos pela lei.
+- [ ] Validar a natureza contratual exata dos 0,60% cobrados nas cinco primeiras prestações.
+- [ ] Conferir na proposta vigente as características do grupo que possam alterar o cronograma.
+- [ ] Revalidar a redação consolidada das normas no início da implementação e antes de publicação.
+
+**Regra de documentação:** referências regulatórias oficiais genéricas podem ser citadas. Não inserir em código, repositório, metadados ou proposta o nome, domínio, identificadores ou marcas da instituição de referência.
