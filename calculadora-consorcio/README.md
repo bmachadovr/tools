@@ -823,3 +823,66 @@ prestacao_t = soma_de_componentes_arredondados_ou_regra_de_arredondamento_verifi
 **Orientação prática:** não bloquear o desenvolvimento das ferramentas comerciais por falta do detalhamento da sexta parcela. Usar **parcela real informada** e **taxas totais do grupo**; oferecer projeção detalhada somente quando a distribuição por período estiver validada. Não inventar a alíquota das demais prestações.
 
 **Decisão de produto:** não criar lógica de aumento da parcela nas cinco primeiras prestações por causa do adicional de 0,60%. A distribuição das taxas e a compensação pela amortização devem ficar no **cronograma dos componentes**. Isso não constitui garantia de prestação fixa diante de reajustes e de outros eventos contratuais.
+
+## 18. Pesquisa do portal público de consórcios — 17/11/2026
+
+> **Status:** levantamento de informações públicas, realizado em 17/11/2026, complementar às imagens operacionais das seções 14–17. O portal apresenta explicações gerais e condições de produtos, **não** o detalhamento mensal de cada grupo. Por regra de neutralidade absoluta do projeto, **não são copiados nome, marca, domínio ou URLs que identifiquem a instituição de referência**. As evidências públicas permanecem na conversa de pesquisa, fora dos arquivos publicados.
+
+### 18.1. Regras corroboradas pela fonte
+
+| Assunto | Informação encontrada | Decisão de implementação |
+| --- | --- | --- |
+| Composição das parcelas | Fundo comum, taxa de administração, fundo de reserva e eventual seguro prestamista | Segregar componentes e não presumir ausência de seguro nem taxas fixas |
+| Contemplação | Por sorteio ou por lance; a oferta não assegura o resultado | Nunca estimar contemplação como garantida |
+| Lance embutido | Valor ofertado com a carta é deduzido do crédito utilizável | Calcular crédito líquido pela dedução exclusiva do componente embutido |
+| Lance vencedor | Pode reduzir prazo ou valor de prestações, conforme regras do plano | Tratar como duas estratégias distintas; solicitar modalidade de amortização |
+| Uso da carta | Depende de contemplação, aprovação documental, garantias e avaliação aplicável | Não apresentar carta como dinheiro automaticamente disponível |
+| Reajustes | Valores de parcelas podem continuar sendo atualizados após contemplação | Não congelar prestações futuras após lance ou contemplação |
+| Consórcio x financiamento | Financiamento pode disponibilizar o bem após aprovação; consórcio depende de contemplação | Comparar custo e também momento de acesso ao bem |
+| Quitação de financiamento | Há possibilidade de usar a carta após contemplação para quitar financiamento de bem da mesma categoria, com autorização | Potencial novo módulo de estratégias; não homologar sem regras específicas |
+| Uso de excedente | Parte do saldo não utilizado na aquisição pode cobrir despesas relacionadas ao bem ou amortizar a cota, conforme categoria e regras do plano | Criar campos separados para preço do bem, despesas e saldo da carta; não presumir reembolso livre |
+| Múltiplas cartas | O material público menciona utilização combinada sob condições (categoria e enquadramento, especialmente com FGTS) | Evolução futura, sujeita a elegibilidade e aprovação |
+| Imóveis e FGTS | Pode servir, conforme elegibilidade e regras aplicáveis, para lance e amortização | Não habilitar como dinheiro livre nem em segmentos não autorizados |
+| Crédito contemplado não utilizado | Material público informa manutenção de rendimentos e possibilidade de uso posterior | Considerar a data de utilização na estratégia de aquisição futura; rendimento só com índice válido |
+| Desistência | Restituição depende de contrato, apurações e prazos; não é imediata por padrão | Incluir na explicação de riscos, sem calcular restituição sem regras |
+
+**Fontes e limites:** o portal e os artigos oficiais são textos informativos; referências de produtos como número máximo de meses, idade de bens usados, percentual de despesas acessórias e modalidades disponíveis podem mudar e **não representam cláusulas universais de qualquer grupo**. Conferir a proposta e regulamento efetivos na data da oferta.
+
+### 18.2. Novas oportunidades comerciais identificadas
+
+**A. Substituir financiamento por carta contemplada (fase posterior).**
+- Entradas: saldo para quitação de financiamento existente, categoria do bem, crédito utilizável, preço/valor de garantia, custos e momento hipotético da contemplação.
+- Saídas: diferença de desembolso, custo de oportunidade, saldo de crédito e impacto da nova obrigação.
+- Restrição: só tratar como operação viável após conferir elegibilidade, autorização e garantias. **Não comparar sem considerar o tempo de espera para contemplação.**
+
+**B. Planejar crédito excedente e despesas de aquisição (fase posterior).**
+- Entradas: carta vigente, lance embutido, preço negociado do bem, impostos/despesas, limite contratual dessas despesas e saldo remanescente.
+- Saídas: crédito líquido após lance, valor destinado ao vendedor, custos acessórios admissíveis, sobra potencial e opção de amortização, quando prevista.
+- O material público menciona **limite de até 10% para determinadas despesas de aquisição** em contexto imobiliário; **não codificar esse percentual como regra global**, nem permitir utilização sem condições.
+
+**C. Estratégias de consórcio imobiliário e FGTS (fase posterior).**
+- Entradas: crédito, saldo potencialmente elegível de FGTS, capacidade de pagamento e modalidade autorizada (lance, amortização ou quitação).
+- Saídas: cenários separados de recursos próprios, FGTS e valor embutido, com efeitos sobre crédito líquido e obrigações.
+- Restrições: elegibilidade do participante, do imóvel, limites normativos e procedimentos operacionais são **obrigatórios**; sem conferência, exibir apenas cenário condicional.
+
+**D. Compra planejada com rendimento do crédito contemplado não utilizado (fase posterior).**
+- Entradas: data de contemplação hipotética, data de aquisição, crédito disponível, índices confirmados e custos.
+- Saídas: evolução condicional do crédito disponível e diferenças de poder de compra.
+- Restrição: não misturar **reajuste de crédito de cota não contemplada**, **rendimentos do crédito contemplado não utilizado** e **reajuste das parcelas**; são mecanismos distintos.
+
+### 18.3. O que o portal NÃO comprovou
+
+- Não forneceu percentuais **mensais reais de fundo comum, administração e amortização** para os grupos das imagens.
+- Não confirmou por documentação pública acessada o teto de **30% do lance embutido** para todos os grupos. Esse percentual está registrado como **regra operacional informada pelo usuário**, sujeito às condições da proposta.
+- Não definiu o motivo exato de usar **99 prestações** no abatimento mostrado no caso de 100 meses.
+- Não comprovou por fonte pública acessada o algoritmo de **compensação da administração pela amortização** no caso específico do fator de redução. Esse mecanismo está documentado nas imagens e na explicação do usuário.
+- Não disponibilizou um banco público de **taxas e ofertas comerciais de todas as administradoras** em tempo real.
+
+### 18.4. Decisão de prioridade
+
+- **Manter o MVP:** comparador consórcio x financiamento, estratégia de lances, análise de proposta concorrente e gerador de proposta.
+- **Incorporar agora somente critérios e alertas** necessários para comparações válidas: risco de não contemplação, crédito líquido após embutido, custos completos, reajustes e elegibilidade.
+- **Adicionar ao backlog após o MVP**: quitação de financiamento com carta contemplada; despesas de aquisição e saldo excedente; estratégias imobiliárias com FGTS; e utilização conjunta de cartas ou rendimentos de crédito contemplado.
+- **Não condicionar o início do desenvolvimento** à reconstrução das parcelas detalhadas sem dados contratados suficientes.
+
+**Critério transversal:** destacar de forma verificável o que é `informado pelo usuário`, `observado na simulação`, `publicado em material informativo`, `confirmado no contrato` ou `estimado`.
