@@ -561,16 +561,16 @@ A **média nominal aritmética arredondada** coincide com a **primeira parcela**
 - [ ] Obter composição discriminada da primeira parcela (fundo comum, administração regular, administração antecipada, reserva, seguro e eventuais encargos).
 - [ ] Obter o cronograma de cobrança por mês/faixa ou parcelas de referência em diferentes etapas do grupo.
 - [ ] Identificar possíveis antecipações de administração e a regra efetiva para este grupo.
-- [x] Obter uma segunda simulação do **mesmo plano** com lance de 30% da carta, com redução da parcela informada. A **origem do lance** ainda não foi confirmada.
+- [x] Obter uma segunda simulação do **mesmo plano** com lance de 30% da carta, com redução da parcela informada. A origem do lance foi confirmada posteriormente como **capital próprio**.
 - [ ] Obter exemplos com **lance próprio e embutido identificados separadamente**, inclusive mudança de prazo e cronogramas das parcelas posteriores.
 - [ ] Confirmar o calendário e a base dos reajustes FIPE.
 
-**Decisão de produto:** o primeiro exemplo valida a **reconciliação do custo nominal**. Uma segunda simulação do mesmo plano, documentada na seção 15, reproduz a parcela após lance por uma divisão em **99 prestações**. Isso valida a hipótese **neste caso observado**, mas **não homologa uma regra universal de redução pós-lance**, nem permite projetar reajustes e parcelas de outros grupos sem contrato ou exemplos adicionais.
+**Decisão de produto:** o primeiro exemplo valida a **reconciliação do custo nominal**. Uma segunda simulação do mesmo plano, **com lance de capital próprio**, documentada na seção 15, reproduz a parcela após lance por uma divisão em **99 prestações**. Isso valida a hipótese **neste caso observado**, mas **não homologa uma regra universal de redução pós-lance**, nem permite projetar reajustes e parcelas de outros grupos sem contrato ou exemplos adicionais.
 
 
 ## 15. Segundo caso de referência — mesmo plano com lance de 30% (17/11/2026)
 
-**Origem:** segunda imagem operacional, referente ao **mesmo plano** do caso 14. A imagem não discrimina a origem do lance (próprio, embutido ou combinado) nem mostra o fluxo mensal das prestações. Registrar valores sem identificadores institucionais.
+**Origem:** segunda imagem operacional, referente ao **mesmo plano** do caso 14. O usuário confirmou posteriormente que os **R$ 33.007,80 são integralmente de capital próprio**. A imagem não mostra o fluxo mensal das prestações. Registrar valores sem identificadores institucionais.
 
 ### 15.1. Valores observados
 
@@ -581,10 +581,10 @@ A **média nominal aritmética arredondada** coincide com a **primeira parcela**
 | Taxa de administração total | 20,90% | 20,90% |
 | Fundo de reserva total | 3,00% | 3,00% |
 | Primeira parcela | R$ 1.363,22 | R$ 1.363,22 |
-| Valor do lance | R$ 0,00 | **R$ 33.007,80** |
+| Lance com capital próprio | R$ 0,00 | **R$ 33.007,80** |
 | Nova parcela após lance | R$ 1.363,22 | **R$ 1.029,81** |
 
-O lance equivale exatamente a `33.007,80 / 110.026,00 = 30,00%` do valor da carta.
+O lance equivale exatamente a `33.007,80 / 110.026,00 = 30,00%` do valor da carta. **Como é integralmente próprio, não reduz a carta/crédito disponível para aquisição**; trata-se de desembolso adicional do cliente para amortização na hipótese de contemplação e quitação do lance. O limite de 30% mencionado para lance embutido não foi utilizado nesse exemplo.
 
 ### 15.2. Descoberta matemática: divisão por 99 parcelas
 
@@ -612,7 +612,8 @@ primeira_parcela - (lance / 100)
 - **Confirmado por imagem:** valores, mesmo plano, lance de 30% da carta, parcela de R$ 1.029,81.
 - **Reproduzido matematicamente:** `nova_parcela = arredondar(parcela_inicial - lance / 99, 2)` para **este caso**.
 - **Hipótese a verificar:** usar `prazo_original - 1` como divisor é regra contratual geral; a primeira parcela estaria paga ou excluída da amortização.
-- **Não comprovado:** se o lance de 30% é embutido, próprio ou combinação; se a redução é aplicada ao fundo comum ou a outros componentes; e se o prazo é mantido em outras modalidades.
+- **Confirmado pelo usuário:** o lance de R$ 33.007,80 é **100% capital próprio**, com crédito nominal preservado em **R$ 110.026,00** antes de eventuais deduções contratuais independentes do lance.
+- **Não comprovado:** se a redução é aplicada ao fundo comum ou a outros componentes; e se o prazo é mantido em outras modalidades.
 
 ### 15.3. Implicações para a aplicação comercial
 
@@ -621,19 +622,19 @@ primeira_parcela - (lance / 100)
 - Separar três informações: **parcela inicial informada**, **parcelas remanescentes elegíveis ao abatimento** e **saldo/obrigação amortizável**.
 - Continuar permitindo modo comercial que calcula a redução por parcelas remanescentes **somente com confirmação da regra**, mostrando a hipótese e a data-base.
 - Não extrapolar a redução de `lance / parcelas_restantes` para amortização por **prazo** sem regra contratual específica.
-- Não deduzir o lance da carta para calcular o crédito líquido **enquanto a origem do lance não for informada**:
-  - **Se próprio:** o desembolso do cliente inclui o lance; o crédito disponível para comprar o bem não é reduzido por esse componente.
-  - **Se embutido:** o valor embutido é descontado da carta, diminuindo o crédito líquido disponível para aquisição.
-  - **Se combinado:** descontar apenas a parte embutida, mantendo o capital próprio separado.
+- **Para este caso confirmado de lance próprio:** registrar **desembolso de R$ 33.007,80** com recursos do cliente; **crédito para a compra permanece R$ 110.026,00** antes de outras deduções eventualmente previstas.
+- **Para outros casos:** lance embutido diminui crédito disponível; no combinado, descontar somente a parte embutida e somar separadamente o capital próprio.
 - O limite operacional informado de **30% da carta** continua sendo aplicado **somente ao lance embutido**, e não deve ser usado para inferir que todo lance de 30% é embutido.
 
 ### 15.4. Validações pendentes
 
 - [x] Reproduzir a redução da parcela do segundo cenário: **R$ 1.029,81** com divisor 99.
 - [ ] Confirmar se as **99 prestações** decorrem de primeira parcela já paga/excluída ou de regra diferente.
-- [ ] Identificar a origem exata dos **R$ 33.007,80** e o crédito efetivamente disponível após contemplação.
+- [x] Confirmar origem dos **R$ 33.007,80**: **capital próprio integral**, não deduzido da carta.
+- [ ] Verificar se existem outras deduções contratuais sobre o crédito na efetiva aquisição, distintas do lance próprio.
 - [ ] Repetir no mesmo plano com **outro valor de lance** para testar a linearidade do abatimento.
-- [ ] Validar lance próprio, embutido e combinado, de modo independente.
+- [x] Obter um exemplo de lance **próprio** com parcela após lance.
+- [ ] Validar exemplos de lance **embutido e combinado** de modo independente.
 - [ ] Conferir as condições de redução **de prazo**, além da redução do valor da prestação.
 - [ ] Obter cronograma de parcelas por componente e regras de reajuste para testar amortizações posteriores.
 
