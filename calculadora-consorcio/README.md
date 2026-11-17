@@ -1342,6 +1342,7 @@ Se o usuário informar **nova parcela pós-lance**, ela prevalece; se informar *
 - [x] Sem lance não produz data inventada.
 - [x] Dados manuais de parcela ou prazo após lance prevalecem quando informados.
 - [x] Seletores CDC/Price (veículos) e SAC/Price (imóveis) preservados.
+- [x] Verificação pública em desktop e celular (390 px) na versão `v=20261117-09`: primeira prestação cheia, 99 posteriores estimadas, lance no mês 1 do gráfico, ausência de campo de contemplação e entrada igual ao lance próprio. Sem problemas de layout observados.
 - [ ] Conferir aproximação pós-lance com uma proposta real do simulador interno.
 
 **Detalhamento das novas regras e ressalvas:** [SPEC_V2.md](SPEC_V2.md#10-simplificação-definitiva-do-lance-e-da-atualização-17112026). As seções anteriores permanecem como histórico de mudanças e podem descrever comportamentos já substituídos.
