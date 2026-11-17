@@ -444,6 +444,7 @@ Exemplo puramente aritmético: carta R$ 100.000, embutido R$ 30.000, capital pr�
 - [ ] Confirmar se seguros e fundo de reserva variam por oferta.
 - [ ] Validar no mínimo **três casos reais anonimizados**: sem lance, lance próprio e embutido; incluir amortização pós-lance.
 - [ ] Somente após validação, registrar perfil contratual homologado sem identificadores institucionais.
+
 ### 13.9. Distribuição das contribuições nas parcelas — verificação regulatória de 17/11/2026
 
 **Conclusão principal:** a cobrança mensal **não pode ser reconstruída com segurança a partir da taxa total e do prazo apenas**. É necessário conhecer o cronograma contratual dos componentes, a data de constituição do grupo e a existência de antecipações ou reduções.
