@@ -8,7 +8,7 @@ window.ConsorcioCompareV2 = (function () {
   const round = (v) => Math.round((v+Number.EPSILON)*100)/100;
   const CORE=["c-prazo","c-taxa","c-parcela"];
   const LOAN=["c-entrada","c-fintaxa","c-finprazo","c-finparcela"];
-  const state={mode:"veiculos",coreHistory:["c-prazo","c-taxa"],loanHistory:["c-entrada","c-fintaxa","c-finprazo"],netManual:false,rateManual:false,termManual:false,priceLinked:true};
+  const state={mode:"veiculos",coreHistory:[],loanHistory:[],netManual:false,rateManual:false,termManual:false,priceLinked:true,reajManual:false};
   const asValue=(id)=>{
     let s=String(get(id).value||"").trim().replace(/R\$|%|\s/g,"");
     if(!s) return null;
@@ -223,12 +223,17 @@ window.ConsorcioCompareV2 = (function () {
     get("c-taxa-unidade").textContent=mode==="imoveis"?"% ao ano (efetiva)":"% ao mês";
     get("c-habitacional-row").hidden=mode!=="imoveis";
     get("c-finstatus").textContent="Prazo e parcelas sempre mensais; a taxa de imóveis é informada ao ano.";
+    const reference = mode==="imoveis"
+      ? {name:"INCC-M (FGV)",pct:"6,35",url:"https://portal.fgv.br/noticias/incc-m-outubro-2026",note:"A variante do INCC aplicável ao grupo deve ser conferida no contrato."}
+      : {name:"IPCA (IBGE)",pct:"4,69",url:"https://www.ibge.gov.br/indicadores-e-sistemas/indices-e-certificados/16855-ipca.html",note:"O reajuste real do grupo pode seguir outro critério."};
+    if(!state.reajManual || !present("c-reajuste")) get("c-reajuste").value=reference.pct;
+    get("c-reajuste-info").innerHTML="Referência para "+(mode==="imoveis"?"imóveis":"veículos")+": <strong>"+reference.name+" — "+reference.pct+"% a.a.</strong>. Média anualizada de 36 meses fechados (nov/2023–out/2026). <a href='"+reference.url+"' target='_blank' rel='noopener noreferrer'>Fonte oficial</a>. "+reference.note+" Taxa editável; não é previsão.";
     if(changed&&byUser){
-      if(!state.rateManual){get("c-fintaxa").value=mode==="imoveis"?"12":"1,50";}
-      else {get("c-fintaxa").value="";state.loanHistory=state.loanHistory.filter(id=>id!=="c-fintaxa");}
-      if(!state.termManual)get("c-finprazo").value=mode==="imoveis"?"240":"60";
+      // Uma taxa anual não pode ser reaproveitada como mensal, e vice-versa.
+      get("c-fintaxa").value="";
       get("c-finparcela").value="";
-      history(state.loanHistory,"c-fintaxa",3);history(state.loanHistory,"c-finprazo",3);
+      state.loanHistory=state.loanHistory.filter(id=>id!=="c-fintaxa"&&id!=="c-finparcela");
+      note("c-finstatus","Informe os juros na nova unidade. Os demais campos foram mantidos.");
     }
     autoLoan();
   }
@@ -261,6 +266,7 @@ window.ConsorcioCompareV2 = (function () {
     get("c-carta").addEventListener("input",()=>{state.priceLinked=false;deriveCore();deriveNet();});
     get("c-lance").addEventListener("input",synchronizeOwn);
     get("c-embutido").addEventListener("input",deriveNet);
+    get("c-reajuste").addEventListener("input",()=>{state.reajManual=true;});
     get("c-liquida").addEventListener("input",()=>{state.netManual=present("c-liquida");});
     ["c-sistema","c-fintarifas","c-finseguro","c-finextras","c-contratacao","c-primeiro-vencimento","c-habitacional","c-iof-isento","c-financia-iof"].forEach(id=>{
       get(id).addEventListener("change",autoLoan);
@@ -268,20 +274,33 @@ window.ConsorcioCompareV2 = (function () {
     });
     get("form-comparar").addEventListener("reset",()=>{
       setTimeout(()=>{
+        const fields=["c-bem","c-carta","c-contemplacao","c-prazo","c-taxa","c-parcela",
+          "c-lance","c-embutido","c-liquida","c-apos-parcela","c-apos-prazo","c-extras",
+          "c-entrada","c-fintaxa","c-finprazo","c-finparcela",
+          "c-fintarifas","c-finseguro","c-finextras","c-contratacao","c-primeiro-vencimento"];
+        fields.forEach(id=>{const field=get(id);field.value="";field.classList.remove("is-derived");});
+        get("c-financia-iof").checked=true;
+        get("c-habitacional").checked=true;
+        get("c-iof-isento").checked=false;
+        get("c-sistema").value="price";
+        get("c-detalhes").open=false;
+        get("c-fin-detalhes").open=false;
         state.mode="veiculos";
-        state.coreHistory=["c-prazo","c-taxa"];
-        state.loanHistory=["c-entrada","c-fintaxa","c-finprazo"];
-        state.netManual=false;state.rateManual=false;state.termManual=false;state.priceLinked=true;
-        get("c-parcela").value="";get("c-finparcela").value="";get("c-liquida").value="";
-        setMode("veiculos",false);deriveCore();deriveNet();autoLoan();
+        state.coreHistory=[];
+        state.loanHistory=[];
+        state.netManual=false;state.rateManual=false;state.termManual=false;
+        state.priceLinked=true;state.reajManual=false;
+        setMode("veiculos",false);
+        deriveCore();autoLoan();
       },0);
     });
-    setMode("veiculos",false);deriveCore();deriveNet();autoLoan();
+    setMode("veiculos",false);deriveCore();autoLoan();
   }
   function afterExample(){
     state.coreHistory=["c-prazo","c-taxa"];
     state.loanHistory=["c-entrada","c-fintaxa","c-finprazo"];
-    state.netManual=false;state.rateManual=false;state.termManual=false;state.priceLinked=true;
+    state.netManual=false;state.rateManual=false;state.termManual=false;
+    state.priceLinked=true;state.reajManual=false;
     setMode("veiculos",false);
     deriveCore();deriveNet();autoLoan();
   }
