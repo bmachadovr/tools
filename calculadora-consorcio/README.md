@@ -1,9 +1,9 @@
 # Calculadora de Consórcio — Central de Estratégias Comerciais
 
-> **Status:** especificação funcional e técnica aprovada para início do desenvolvimento (17/11/2026).  
+> **Status:** MVP funcional implementado em 17/11/2026; interface e lógica publicadas para teste de uso, com ressalvas matemáticas e contratuais explícitas.  
 > **Local:** `tools/calculadora-consorcio/` (pasta `calculadora-consorcio/` na raiz do repositório `tools`).  
 > **Produto:** aplicação web independente, estática, responsiva e orientada ao apoio à negociação.  
-> **Importante:** este README documenta o projeto; nenhuma funcionalidade está implementada apenas pela criação desta pasta.
+> **Implementação atual:** `index.html`, `styles.css` e `app.js`; aplicação estática sem backend, acessível a partir da página inicial das ferramentas.
 
 ## 1. Propósito
 
@@ -1059,3 +1059,48 @@ Ao acessar o conteúdo integral da versão pertinente, extrair com referência d
 - [ ] Testar **redutor imobiliário** com momentos de contemplação antes/depois de metade do prazo, sem extrapolar a outras modalidades.
 
 **Resultado de engenharia:** criar **perfis de regras por modalidade e geração de grupo**, com entradas de percentuais individuais e fonte/status da proposta. O MVP deve continuar focado em ferramentas comerciais, mas os detalhes contratuais que afetam cálculos deixam de ser suposições.
+
+## 22. MVP implementado — primeira entrega funcional (17/11/2026)
+
+**URL prevista de publicação pelo Pages:** `https://bmachadovr.github.io/tools/calculadora-consorcio/`  
+**Arquivos:** `index.html` (interface), `styles.css` (layout desktop/mobile e impressão) e `app.js` (lógica e geração de propostas). A implementação roda no navegador e **não envia dados a servidor próprio**. O link público dependerá do processamento do Pages após os commits.
+
+### 22.1. Funcionalidades entregues
+
+| Funcionalidade | Entrada principal | Saída atual |
+| --- | --- | --- |
+| **Comparar alternativas** | Preço do bem, carta líquida, prestações restantes, custos próprios, entrada/parcelas do financiamento, cenário de contemplação | Desembolso nominal futuro do consórcio, financiamento e à vista; diferença; alertas sobre acesso ao bem e reajuste hipotético |
+| **Estratégia de lances** | Carta vigente, lance próprio, embutido, teto, preço do bem, regra de amortização | Crédito líquido, lance total, aporte próprio, complemento de compra; prestação pós-lance **somente quando são informadas prestações elegíveis** |
+| **Analisar concorrente** | Duas propostas com crédito, parcela, prazo, custos adicionais, taxas informativas e fonte | Comparação lado a lado, diferenças nominais, alerta quando crédito ou prazo não são equivalentes |
+| **Gerar proposta** | Última análise realizada; nome e objetivo opcionais | Resumo textual revisável, cópia, WhatsApp e impressão do navegador; compartilhamento WhatsApp desativado para exemplos ilustrativos |
+
+### 22.2. Premissas de cálculo e limitações da primeira versão
+
+- **Não duplicar o simulador operacional**: a ferramenta recebe a prestação e os valores da carta já informados pelo usuário.
+- **Consórcio x financiamento:** somar prestações **a pagar** e desembolsos próprios adicionais. Diferença entre preço do bem e carta líquida entra como complemento de compra quando necessário. O capital próprio usado no lance é desembolso adicional; o embutido já deve estar refletido no **crédito líquido informado**.
+- **Reajuste do consórcio:** quando informado, usar cenário **simplificado** de reaplicação anual sobre a prestação a cada 12 meses a partir da primeira prestação usada na simulação. O resultado não substitui índice, data-base ou cronograma contratual reais.
+- **Financiamento:** utilizar **prestação informada**, entrada e custos efetivamente externos; **não inferir CET** nem estimar juros em sistema de amortização não especificado. O comparativo não calcula valor presente ou custo de oportunidade.
+- **Preço à vista:** utilizado como referência de desembolso imediato; não deduzir valor excedente da carta como livre disponibilidade de caixa.
+- **Lance embutido:** aplicar o teto percentual **configurável**, inicializado em 30% conforme contratos recentes examinados, quando essa modalidade for permitida; crédito líquido igual à carta vigente menos embutido. O lance próprio **não é deduzido da carta**.
+- **Redução de parcela:** quando o usuário fornecer prestação base e prestações realmente afetadas, aplicar somente a hipótese `nova = parcela − lance_total / parcelas_elegiveis`; apresentar advertência de que não é regra universal. **Não calcular redução de prazo** sem cronograma do grupo.
+- **Comparação de concorrentes:** custo nominal dos dados informados não constitui comparação ajustada a valor presente, diferença de índices, disponibilidade do bem ou probabilidade de contemplação; taxas de administração e reserva não são somadas novamente se já integrarem prestações.
+- **Privacidade:** os formulários não exigem dados de identificação; nome no gerador de proposta é facultativo e não é enviado a servidor da ferramenta.
+- **Atenção ao rótulo de custo:** em grupos já em andamento, o cálculo atual considera apenas **prestações restantes e novos desembolsos informados**, e não o custo histórico completo da cota.
+- **Fontes contratuais:** qualquer decisão automática que dependa de tabela de componentes, fator de redução, vencimento ou índice deverá ser homologada para a versão aplicável do grupo.
+
+### 22.3. Validações executadas nesta entrega
+
+- [x] JavaScript passou pela compilação de sintaxe do runtime usado no teste.
+- [x] Interface contém quatro abas, três formulários de análise e gerador de proposta.
+- [x] Fluxo de comparação entre alternativas executou sem erro, e a soma nominal do caso informado (R$ 1.363,22 × 100) resultou em **R$ 136.322,00** antes de reajustes, distinta da média exata do contrato por arredondamentos.
+- [x] Fluxo de lances reproduziu **R$ 1.029,81** para carta de R$ 110.026, lance próprio de R$ 33.007,80, parcela de R$ 1.363,22 e **99** prestações afetadas.
+- [x] Fluxo de comparação de propostas executou com duas prestações e prazos informados, com total nominal e diferença corretos.
+- [x] O gerador de proposta recebeu os dados da última análise.
+- [x] A página inicial do repositório contém link para a nova ferramenta.
+- [x] Revisão dos arquivos novos para evitar referências e identificadores institucionais.
+- [ ] Conferir renderização real em navegadores desktop e Android, especialmente campos longos, abas e impressão.
+- [ ] Confirmar publicação do Pages; consulta externa da URL não pôde ser concluída no ambiente de validação.
+- [ ] Homologar fluxos de erro (campos inválidos, limites, casos de borda) com amostras operacionais adicionais.
+- [ ] Criar cenários de comparação com reajustes reais e efeitos financeiros da espera após validação contratual.
+
+**Prioridade seguinte:** testar utilização no computador e celular, corrigir divergências encontradas e então avaliar a necessidade de recursos avançados. O MVP é uma ferramenta de **análise de cenários**, não sistema de contratação nem promessa de contemplação.
