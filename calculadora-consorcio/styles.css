@@ -274,3 +274,40 @@ footer p{margin:0;max-width:620px}
   .technical-disclosure .technical-section .compare-table th,.technical-disclosure .technical-section .compare-table td{font-size:.75rem;overflow-wrap:anywhere}
   .technical-disclosure .technical-section .compare-table td:first-child{width:56%}
 }
+
+
+/* Linhas de desembolso acumulado — valores reais da simulação, não imagem estática. */
+.cash-flow-section{background:#f8fbfc;border:1px solid #dce8ec;border-radius:15px;padding:17px;min-width:0}
+.cash-chart-top h4{margin:0 0 6px;font-size:.98rem;color:#1b4151;letter-spacing:-.025em}
+.cash-chart-top p{margin:0;font-size:.79rem;color:#728792;line-height:1.6}
+.cash-legend{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:17px 0 8px}
+.cash-legend-item{display:flex;align-items:center;gap:7px;font-size:.76rem;color:#365666;font-weight:800}
+.cash-legend-line{display:inline-block;height:4px;width:24px;border-radius:100px}
+.cash-legend-line.cons{background:#187f86}
+.cash-legend-line.fin{background:#c17a42}
+.cash-line-wrap{width:100%;overflow:hidden}
+.cash-line-svg{display:block;width:100%;height:auto;max-height:350px}
+.cash-gridline{stroke:#dae5e9;stroke-width:1;stroke-dasharray:3 5}
+.cash-tick-line{stroke:#b9ccd2;stroke-width:1.2}
+.cash-tick{font-size:13px;fill:#69818c;font-weight:600}
+.cash-y-tick{font-size:12px}
+.cash-axis-label{font-size:13px;fill:#536f7e;font-weight:760}
+.cash-line{fill:none;stroke-width:3.6;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.cash-line-cons{stroke:#187f86}
+.cash-line-fin{stroke:#c17a42}
+.cash-dot{stroke:#f8fbfc;stroke-width:1.5;vector-effect:non-scaling-stroke}
+.cons-dot{fill:#187f86}
+.fin-dot{fill:#c17a42}
+.cash-chart-note{border-top:1px solid #e0e9ed;padding-top:12px;margin:8px 0 15px;font-size:.75rem;color:#647d89;line-height:1.6}
+.cash-milestones{background:white}
+.cash-milestones .compare-table{width:100%;min-width:0;margin-top:14px}
+.cash-milestones .compare-table td,.cash-milestones .compare-table th{white-space:normal;overflow-wrap:anywhere;font-size:.76rem}
+.cash-milestones .compare-table th:first-child{width:25%}
+@media(max-width:600px){
+ .cash-flow-section{padding:13px 9px}
+ .cash-chart-top,.cash-legend,.cash-chart-note,.cash-milestones{margin-left:4px;margin-right:4px}
+ .cash-tick{font-size:15px}
+ .cash-y-tick{font-size:14px}
+ .cash-chart-top h4{font-size:.91rem}
+ .cash-milestones .compare-table{table-layout:fixed}
+}
