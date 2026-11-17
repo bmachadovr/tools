@@ -120,12 +120,13 @@ window.ConsorcioCompareV2 = (function () {
     const bem=value("c-carta"),fees=value("c-fintarifas"),insurance=value("c-finseguro");
     if(!(bem>0)||entry<0||entry>=bem)return null;
     const rate=effectiveMonthly(rateInput), financedPrice=bem-entry,base=financedPrice+fees;
-    const iof=isExempt()?0:round(base*ioFCoefficient(rate,n,get("c-sistema").value));
+    const system=state.mode==="veiculos"?"price":get("c-sistema").value;
+    const iof=isExempt()?0:round(base*ioFCoefficient(rate,n,system));
     const financedIOF=get("c-financia-iof").checked;
     const principal=round(base+(financedIOF?iof:0));
-    const initialPayment=payment(principal,rate,n,get("c-sistema").value,insurance);
+    const initialPayment=payment(principal,rate,n,system,insurance);
     if(!Number.isFinite(initialPayment)||initialPayment<=0)return null;
-    const system=get("c-sistema").value;let first=round(initialPayment),last=first,total=0,baseInstTotal=0;
+    let first=round(initialPayment),last=first,total=0,baseInstTotal=0;
     if(system==="sac"){
       for(let k=1;k<=n;k++){
         const before=Math.max(0,principal-principal*(k-1)/n);
@@ -216,6 +217,16 @@ window.ConsorcioCompareV2 = (function () {
   function setMode(mode,byUser){
     if(!["veiculos","imoveis"].includes(mode))return;
     const changed=state.mode!==mode;state.mode=mode;
+    const isProperty=mode==="imoveis";
+    const sacOption=get("c-sac-option");
+    sacOption.disabled=!isProperty;
+    sacOption.hidden=!isProperty;
+    get("c-price-option").textContent=isProperty?"Price — prestações fixas":"CDC — prestações fixas (Price)";
+    get("c-sistema-label").textContent=isProperty?"Sistema de amortização imobiliária":"Tipo de financiamento de veículo";
+    get("c-finance-system-note").textContent=isProperty
+      ?"Imóveis: escolha Price ou SAC nos campos opcionais. Taxa anual efetiva convertida para mensal."
+      :"Veículos: financiamento CDC, com prestações Price. SAC não é oferecido nesta modalidade.";
+    if(!isProperty || changed)get("c-sistema").value="price";
     document.querySelectorAll(".mode-card").forEach(el=>{
       const selected=el.dataset.mode===mode;
       el.classList.toggle("selected",selected);
@@ -356,6 +367,39 @@ window.ConsorcioCompareV2 = (function () {
     installmentTotal=round(installmentTotal);
     const totalCons=round(installmentTotal+own+cost+priceDifference);
     const totalFin=finance.total,diff=round(Math.abs(totalCons-totalFin));
+    // Séries de caixa acumulado. O financiamento tem entrada e despesas à vista no mês zero.
+    // No consórcio, lance próprio, complemento do bem e custos são colocados no mês
+    // hipotético da contemplação, sem implicar data garantida de aquisição.
+    // As prestações reproduzem exatamente as hipóteses usadas nos totais.
+    const finalMonth=Math.max(n,finance.term);
+    const flow=[];
+    let runningCons=0, runningFin=round(finance.entrada+finance.external+finance.upfrontIOF);
+    flow.push({month:0,cons:0,fin:runningFin});
+    for(let t=1;t<=finalMonth;t++){
+      if(t<=n){
+        const paymentBase=t<=preCount?pmt:finalPay;
+        runningCons+=paymentBase*Math.pow(1+reaj/100,Math.floor((t-1)/12));
+        if(t===month)runningCons+=own+cost+priceDifference;
+      }
+      if(t<=finance.term){
+        let loanPayment;
+        if(finance.system==="sac"){
+          const balanceBefore=Math.max(0,finance.principal-finance.principal*(t-1)/finance.term);
+          loanPayment=round(finance.principal/finance.term+balanceBefore*finance.monthlyRate+finance.insurance);
+        }else{
+          loanPayment=t===finance.term?finance.last:finance.first;
+        }
+        runningFin+=loanPayment;
+      }
+      flow.push({month:t,cons:round(runningCons),fin:round(runningFin)});
+    }
+    // Verificar que os custos do último ponto correspondem à memória de cálculo.
+    const lastFlow=flow[flow.length-1];
+    if(Math.abs(lastFlow.cons-totalCons)>.02||Math.abs(lastFlow.fin-totalFin)>.02){
+      throw Error("Inconsistência no fluxo acumulado. Confira parcelas e custos antes de comparar.");
+    }
+
+    if(totalBid>0&&postCount!==null&&n-postCount!==month)warnings.push("O cronograma pós-lance informado sugere início após o mês "+(n-postCount)+", diferente da contemplação hipotética no mês "+month+". Confirme as datas reais do grupo.");
     if(month!==1)warnings.push("A contemplação no mês "+month+" é somente hipótese; custos de espera não foram incluídos.");
     else warnings.push("Contemplação no primeiro mês é hipótese de comparação, sem promessa de ocorrência.");
     if(excess>0)warnings.push("Crédito líquido excede o preço do bem em "+brMoney(excess)+". Não se considera a diferença dinheiro livre.");
@@ -435,7 +479,7 @@ window.ConsorcioCompareV2 = (function () {
       finEntry:finance.entrada,finExternal:finance.external+finance.upfrontIOF,
       finSystem:finance.system,finMonthlyRate:finance.monthlyRate*100,
       finAnnualEffective:financeAnnualEffective,
-      monthContemplation:month
+      monthContemplation:month,flow
     };
     return {
       main:comparable?currency(diff):"Comparação parcial",
