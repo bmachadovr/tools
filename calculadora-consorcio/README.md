@@ -695,3 +695,93 @@ Exemplo **hipotético** para essa mesma carta: embutido R$ 22.005,20 (20% da car
 - [ ] Validar distribuição mensal das taxas e o reflexo de reajustes futuros sobre prestações após lance.
 
 **Separação de evidências:** simulação em imagem confirma a amortização após lance **próprio**; o comportamento igual do **embutido** foi **informado pelo usuário**, mas ainda não há captura independente desse cenário.
+
+## 17. Terceiro caso de referência — grupo em andamento com administração adicional nas primeiras parcelas (17/11/2026)
+
+**Origem:** captura fornecida pelo usuário de uma simulação operacional distinta das anteriores. Manter **identificadores institucionais e do plano fora do projeto**. O novo cenário não deve ser confundido com o grupo em formação da seção 14, embora possua a mesma carta e prazo.
+
+### 17.1. Dados visíveis na captura
+
+| Campo | Valor observado |
+| --- | ---: |
+| Modalidade | Automóvel |
+| Situação | Grupo em andamento |
+| Valor do bem e da proposta (carta) | R$ 110.026,00 |
+| Prazo atual | 100 prestações mensais |
+| Parcela exibida | R$ 1.329,12 |
+| Taxa de administração (componentes) | **17,20% + 0,60%** |
+| Taxa de administração total em reais | **R$ 19.584,63** |
+| Fundo de reserva total | **3,00% / R$ 3.300,78** |
+| Seguro de vida total | **0,0000% / R$ 0,00** |
+| Observação literal relevante | **0,60% diluído nas 5 primeiras parcelas** |
+
+**Importante:** os 0,60% integram a soma da taxa de administração, totalizando **17,80%** neste cenário. Não adicionar os 0,60% novamente ao custo contratual depois de incluí-los no total.
+
+### 17.2. Reconciliação aritmética — não confundir média com calendário real
+
+```text
+carta                       = 110026,00
+taxa_administracao_regular  = 17,20%
+taxa_administracao_adicional=  0,60%
+taxa_administracao_total    = 17,80%
+fundo_reserva_total         =  3,00%
+seguro                     =  0,00%
+
+administracao_regular_nominal  = 110026 × 0,172 = 18924,472  -> 18924,47
+administracao_adicional_nominal= 110026 × 0,006 =   660,156  ->   660,16
+administracao_total_nominal    = 110026 × 0,178 = 19584,628  -> 19584,63
+fundo_reserva_nominal          = 110026 × 0,03  =  3300,78
+total_nominal_sem_reajustes    = 110026 × 1,208 = 132911,408 -> 132911,41
+
+media_direta_100               = 132911,408 / 100 = 1329,11408 -> 1329,11
+parcela_exibida                = 1329,12
+
+simulacao_de_arredondamento_por_componente:
+fundo_comum_mensal_teorico     = arred(110026 / 100)          = 1100,26
+administracao_mensal_teorica   = arred(19584,628 / 100)       =  195,85
+fundo_reserva_mensal_teorico   = arred(3300,78 / 100)         =   33,01
+soma_componentes_arredondados = 1329,12  # reproduz a tela
+```
+
+**Observações:**
+- A simulação sugere **arredondamento separado por componente**, mas a diferença de R$ 0,01 também poderia decorrer de outras regras internas; a captura não comprova o algoritmo.
+- A existência da observação **“0,60% diluído nas 5 primeiras parcelas”** significa que **não devemos presumir** que R$ 1.329,12 será cobrado em cada um dos 100 meses.
+- Nem o percentual efetivamente aplicado à primeira prestação nem a distribuição do fundo comum e demais componentes em cada período estão discriminados.
+- A frase sobre 0,60% **não demonstra, sozinha**, se esses valores são cobrados **além da média exibida**, se os demais componentes são ajustados em sentido inverso ou se a tela mostra valor médio/indicativo.
+- Sem distribuição mensal verificada, calcular as cinco primeiras parcelas usando **0,60% ÷ 5** geraria apenas uma **hipótese ilustrativa** e não deve ser apresentado como cobrança contratual.
+
+### 17.3. Comparação correta com o caso anterior
+
+| Campo | Caso anterior: grupo em formação | Novo caso: grupo em andamento |
+| --- | ---: | ---: |
+| Crédito nominal | R$ 110.026,00 | R$ 110.026,00 |
+| Prazo atual | 100 | 100 |
+| Taxa de administração total | **20,90%** | **17,80%**, sendo 0,60% relacionado às 5 primeiras parcelas |
+| Fundo de reserva total | 3,00% | 3,00% |
+| Parcela exibida | R$ 1.363,22 | R$ 1.329,12 |
+| Diferença de parcelas exibidas | — | **R$ 34,10 menor** |
+| Diferença nominal de taxa de administração | — | **3,10 pontos percentuais / R$ 3.410,81** |
+
+Comparação nominal **não equivale** à comparação de custo futuro efetivo: o novo grupo pode ter cronogramas, vencimentos, reajustes e regras de adesão distintos. Não afirmar que uma opção é melhor apenas pela parcela exibida.
+
+### 17.4. Consequências para o motor matemático e a interface
+
+1. Separar `administracao_total_pct`, `administracao_regular_pct`, `administracao_adicional_pct`, `periodos_adicional`, `base_adicional` e `cronograma_adicional`.
+2. Guardar a **parcela exibida pelo simulador** como campo de origem externa, separado da **média nominal calculada** e da **prestação mensal contratual projetada**.
+3. Para cálculos de lance e comparador comercial, permitir informar diretamente a parcela exibida; **não usar essa entrada para afirmar o valor de todas as parcelas**.
+4. Se apenas o texto de antecipação estiver disponível, apresentar um aviso de **distribuição mensal não verificada** e bloquear projeção exata para as primeiras cinco prestações.
+5. Conferir se o número de parcelas afetadas pela antecipação é contado desde a **adesão ou desde a formação do grupo**, já que o exemplo é de grupo em andamento.
+6. Criar testes para cálculo da soma nominal e para casos de arredondamento por componente; não considerar um centavo de coincidência prova suficiente.
+7. Preservar o status do grupo, pois pode alterar prazos remanescentes, condições de adesão e cobrança das taxas.
+
+### 17.5. Pendências objetivas
+
+- [x] Registrar a existência de **administração regular (17,20%) mais 0,60% distribuído nas cinco primeiras parcelas**, conforme captura.
+- [x] Confirmar o total de administração de **17,80% / R$ 19.584,63** e o fundo de reserva de **3,00% / R$ 3.300,78**.
+- [x] Encontrar reconciliação aritmética que reproduz **R$ 1.329,12** pela soma de componentes mensais individualmente arredondados (**hipótese**, não algoritmo homologado).
+- [ ] Identificar o valor efetivo **da 1ª, 2ª, 5ª e 6ª prestações**, ou suas alíquotas componentes, nesse mesmo plano.
+- [ ] Confirmar se a primeira cobrança e o período de distribuição adicional se referem à adesão do consorciado ou ao cronograma original do grupo.
+- [ ] Verificar se o valor apresentado é prestação inicial, média informativa ou parcela de um período específico.
+- [ ] Confirmar possíveis ajustes residuais de arredondamento.
+
+**Conclusão:** este terceiro caso confirma a necessidade de **taxa total versus distribuição temporal** e não autoriza inferir, só pela parcela exibida, o cronograma real de cobrança.
