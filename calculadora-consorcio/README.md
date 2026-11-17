@@ -493,3 +493,49 @@ perfil_de_calculo:
 - Exibir diferenças de arredondamento, componentes adicionais e eventuais parcelas residuais.
 
 **Dados ainda necessários para aferir a distribuição real:** pelo menos **uma proposta atual anonimizada** acompanhada de demonstrativo de parcelas ou extrato com componentes de cobrança. Sem isso, **não há fundamento para inventar percentuais mensais específicos**.
+
+## 14. Caso de referência recebido — simulação operacional de automóvel (17/11/2026)
+
+**Origem:** imagem de simulação fornecida pelo usuário para conferência de regras e entrada de dados. Não inclui, neste repositório, marca, código do grupo ou código do bem; os resultados a seguir são **dados observados**, não fórmulas homologadas.
+
+| Campo exibido | Valor observado |
+| --- | ---: |
+| Segmento | Automóvel |
+| Situação do grupo | Formação |
+| Atualização do bem | FIPE |
+| Prazo atual | 100 |
+| Taxa de administração geral | 20,90% |
+| Total contratado (rótulo literal da tela) | R$ 110.026,00 |
+| Primeira parcela | R$ 1.363,22 |
+| Lance | R$ 0,00 |
+| Nova parcela após lance | R$ 1.363,22 |
+
+### 14.1. O que é possível afirmar
+
+- Com lance zero, a parcela após lance coincide com a primeira parcela exibida: **R$ 1.363,22**. Não é possível inferir a fórmula da parcela após lance sem um segundo exemplo com lance diferente de zero.
+- **R$ 1.363,22 × 100 = R$ 136.322,00** é somente uma extrapolação aritmética da primeira parcela, **não** uma previsão válida de custo total.
+- A diferença aritmética em relação ao campo «Total contratado» é **R$ 26.296,00**; ela **não demonstra** isoladamente distribuição não linear nem comprova o significado contratual do valor informado.
+- Não assumir que «Total contratado» representa a carta de crédito, o custo total do plano ou o valor líquido de compra, porque a tela **não define esse campo**.
+- A tela não discrimina fundo comum, reserva, seguro ou administração antecipada e **não mostra parcelas 2 a 100**. Portanto, ela não identifica o cronograma real dos componentes, tampouco comprova se há prestações não lineares nesse caso.
+- A indicação de atualização por **FIPE** deve ser preservada como atributo do cenário; sem datas de reajuste e base contratual não projetar índice automaticamente.
+- A indicação **grupo em formação** não autoriza tratar valores como condições definitivas nem inferir contemplação ou data de início.
+
+### 14.2. Como usar esse caso no desenvolvimento
+
+1. Criar um **teste de importação/digitação** dos campos observados, preservando seus rótulos e separando valores contratados de valores calculados.
+2. Implementar validação do cenário **sem lance**, verificando se «parcela após lance» = «primeira parcela» sem alterações.
+3. **Não** fazer «parcela inicial × prazo» como custo total exibido sem explicitar que é apenas hipótese de parcela constante.
+4. **Não** inferir crédito nominal, taxas de reserva/seguro ou percentuais mensais a partir de «Total contratado» sem documentação.
+5. No módulo comercial, permitir inserir a parcela real diretamente enquanto a distribuição mensal não estiver homologada.
+6. Solicitar apenas dados **anonimizados** do demonstrativo mensal ou de uma proposta detalhada, evitando dados de consorciados e qualquer identificação institucional.
+
+### 14.3. Evidências ainda necessárias
+
+- [ ] Confirmar o significado contratual do campo **Total contratado** e identificar separadamente **valor da carta/crédito nominal**.
+- [ ] Obter o quadro de composição da **primeira parcela** em fundo comum, taxa de administração, reserva, seguro e outras cobranças.
+- [ ] Obter **cronograma de prestações/percentuais** ou ao menos uma parcela intermediária e a última, bem como faixas de mudança das cobranças.
+- [ ] Obter um segundo exemplo **do mesmo grupo e carta** com lance próprio, embutido ou combinado para conferir o cálculo após lance.
+- [ ] Confirmar eventuais taxas antecipadas, periodicidade e base de atualização.
+- [ ] Registrar os valores como condições observadas de uma simulação, sem afirmar que valem universalmente para outros grupos.
+
+**Decisão de produto:** este caso valida os campos básicos da entrada comercial, mas **não aprova ainda o motor de projeção de parcelas**.
