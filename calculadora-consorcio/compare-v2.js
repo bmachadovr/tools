@@ -151,7 +151,7 @@ window.ConsorcioCompareV2 = (function () {
   }
   function autoLoan(){
     const fields=LOAN.filter(present);
-    if(fields.length<3){note("c-finstatus","Preencha três dos quatro campos para calcular o campo faltante.");return null;}
+    if(fields.length<3){note("c-finstatus","Preencha três dos quatro campos para calcular o campo faltante.");get("c-iof-display").textContent="IOF: preencha os campos essenciais para calcular.";return null;}
     let target=LOAN.find(id=>!present(id));
     if(!target)target=LOAN.find(id=>!state.loanHistory.slice(-3).includes(id))||"c-finparcela";
     let rate=value("c-fintaxa"),n=value("c-finprazo"),entry=value("c-entrada"),installment=value("c-finparcela");
@@ -330,7 +330,8 @@ window.ConsorcioCompareV2 = (function () {
     const excess=Math.max(0,liquid-bem);
     const totalCount=postCount===null?n:postCount;
     const preCount=postCount===null?0:n-postCount;
-    const finalPay=(postPay===null?pmt:postPay);
+    // Sem prazo pós-lance validado, não aplicar a nova parcela ao prazo inteiro.
+    const finalPay=(postCount===null||postPay===null?pmt:postPay);
     let installmentTotal=0;
     // A distribuição real de taxas e reajustes é obtida da proposta; aqui o
     // crescimento anual é apenas uma projeção transparente em blocos de 12 meses.
@@ -353,6 +354,21 @@ window.ConsorcioCompareV2 = (function () {
     const winner=!comparable?"Comparação parcial":(Math.abs(totalCons-totalFin)<.01?"Mesmo desembolso":(totalCons<totalFin?"Consórcio":"Financiamento"));
     const currency=brMoney;
     const financePayment=finance.system==="sac"?currency(finance.first)+" (1ª) / "+currency(finance.last)+" (última)":currency(finance.first)+(finance.first!==finance.last?" / última ajustada "+currency(finance.last):"");
+    const consortiumDetails=[
+      ["Preço do bem",currency(bem)],
+      ["Carta contratada",currency(carta)],
+      ["Lance com recursos próprios",currency(own)],
+      ["Lance embutido",currency(embedded)],
+      ["Crédito disponível após embutido",currency(liquid)],
+      ["Prestação inicial",currency(pmt)],
+      ["Prestações originais",String(n)],
+      ["Prestações após lance",postCount===null?"Não informadas":String(postCount)],
+      ["Nova prestação após lance",postCount===null?"Não aplicada":(postPay===null?"Não informada":currency(finalPay)+(inferredPost?" (estimada)":""))],
+      ["Total em prestações",currency(installmentTotal)],
+      ["Complemento para adquirir o bem",currency(priceDifference)],
+      ["Custos adicionais",currency(cost)],
+      ["Desembolso nominal do consórcio",currency(totalCons)+(incompleteBid?" (parcial)":"")]
+    ];
     const details=[
       ["Financiamento do bem",currency(finance.financedPrice)],
       ["Tarifas financiadas",currency(finance.fees)],
@@ -389,7 +405,7 @@ window.ConsorcioCompareV2 = (function () {
       sub:"Financiamento calculado pelo "+(finance.system==="sac"?"SAC":"sistema Price")+"; entrada igual ao lance próprio. Totais nominais, sem desconto a valor presente ou garantia de contemplação.",
       metrics:[["Carta líquida",currency(liquid)],["Entrada = lance próprio",currency(own)],["Parcela financiamento",currency(finance.first)],["Juros do financiamento",currency(finance.interest)]],
       comparison:[["Consórcio",currency(totalCons)+(incompleteBid?" (parcial)":"")],["Financiamento",currency(totalFin)],["Compra à vista",currency(bem)]],
-      details,rows,warnings, finance, totalCons,totalFin
+      details,consortiumDetails,rows,warnings, finance, totalCons,totalFin
     };
   }
   return {init,calculate,afterExample,setMode};
