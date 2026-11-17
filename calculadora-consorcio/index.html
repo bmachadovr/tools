@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#f5f7fa">
   <meta name="description" content="Compare alternativas de aquisição, analise lances e propostas e gere resumos de consórcio com cálculos transparentes.">
   <title>Calculadora de Consórcio | Central de Estratégias</title>
-  <link rel="stylesheet" href="styles.css?v=20261117-07">
-  <script src="input-masks.js?v=20261117-07" defer></script>
-  <script src="compare-v2.js?v=20261117-07" defer></script>
-  <script src="app.js?v=20261117-07" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20261117-08">
+  <script src="input-masks.js?v=20261117-08" defer></script>
+  <script src="compare-v2.js?v=20261117-08" defer></script>
+  <script src="app.js?v=20261117-08" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -62,10 +62,10 @@
           <label id="c-taxa-label">Juros <span id="c-taxa-unidade">% ao mês</span><input id="c-fintaxa" inputmode="decimal" placeholder="Ex.: 1,50"></label>
           <label>Prazo <span>meses</span><input id="c-finprazo" type="number" min="1" max="600"></label>
           <label>Parcela <span>R$ · primeira no SAC</span><input id="c-finparcela" inputmode="decimal" placeholder="Calculada automaticamente"></label>
-        </div><p class="calc-status" id="c-finstatus" aria-live="polite">Com três campos preenchidos, calcularemos o quarto.</p>
+        </div><p class="hint" id="c-finance-system-note">Veículos: crédito direto ao consumidor (CDC), com parcelas calculadas pelo sistema Price. Imóveis: escolha SAC ou Price nos detalhes.</p><p class="calc-status" id="c-finstatus" aria-live="polite">Com três campos preenchidos, calcularemos o quarto.</p>
         <details class="finance-advanced" id="c-fin-detalhes"><summary>IOF, seguro e despesas <span>cálculo automático</span></summary>
           <div class="fields advanced-fields">
-            <label>Amortização do financiamento<select id="c-sistema"><option value="price">Price — parcela fixa</option><option value="sac">SAC — amortização constante</option></select></label>
+            <label><span id="c-sistema-label">Modalidade do financiamento</span><select id="c-sistema"><option value="price" id="c-price-option">CDC — parcelas fixas (Price)</option><option value="sac" id="c-sac-option" disabled hidden>SAC — parcelas decrescentes</option></select></label>
             <label>Tarifas financiadas <span>R$</span><input id="c-fintarifas" inputmode="decimal" placeholder="0,00"></label>
             <label>Seguro mensal <span>R$ por parcela</span><input id="c-finseguro" inputmode="decimal" placeholder="0,00"></label>
             <label>Custos pagos à vista <span>R$</span><input id="c-finextras" inputmode="decimal" placeholder="0,00"></label>
@@ -76,7 +76,7 @@
           <div class="checkline" id="c-habitacional-row" hidden><label><input id="c-habitacional" type="checkbox" checked> Operação para fins habitacionais (isenção legal de IOF)</label></div>
           <div class="checkline"><label><input id="c-iof-isento" type="checkbox"> Outra hipótese de isenção de IOF confirmada</label></div>
           <div class="iof-estimate" id="c-iof-display" aria-live="polite">IOF: calculado conforme modalidade, amortização e vencimentos.</div>
-          <p class="hint">Estimativa para pessoa física: 0,0082% ao dia por parcela amortizada (máximo 365 dias) + 0,38% adicional, quando tributável. Datas ausentes: intervalos aproximados de 30 dias. A operação habitacional é isenta; confirme enquadramento, datas e valores na proposta. O financiamento imobiliário não incorpora TR, seguros variáveis ou outras correções automáticas.</p>
+          <p class="hint">IOF exclusivo do financiamento quando tributável; <strong>consórcio não possui IOF</strong>. Estimativa para pessoa física: 0,0082% ao dia por amortização (até 365 dias) + 0,38% adicional. Datas ausentes: intervalos de 30 dias. Operações habitacionais elegíveis podem ser isentas. Confirme as condições na proposta; financiamentos imobiliários não incluem TR ou correções contratuais neste cálculo.</p>
         </details></div>
         <div class="actions"><button type="submit" class="primary">Comparar alternativas</button><button type="reset" class="ghost">Limpar</button></div><p class="form-error" id="erro-comparar" role="alert"></p>
       </form><aside id="resultado-comparar" class="result-card" aria-live="polite"><div class="empty-result"><span class="empty-icon">↗</span><h3>Compare as duas estratégias</h3><p>Preencha ou ajuste os dados para calcular o financiamento, o consórcio e a diferença nominal.</p></div></aside></div>
