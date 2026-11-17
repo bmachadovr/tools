@@ -44,6 +44,17 @@
   }
   function attach(input) {
     input.autocomplete="off";
+    // Teclas de exclusão deslocam os centavos para a direita. Sem isso,
+    // a máscara pode recriar o último zero e impedir o usuário de apagar.
+    input.addEventListener("beforeinput",(event)=>{
+      if(percentIds.has(input.id)||!["deleteContentBackward","deleteContentForward"].includes(event.inputType)||!event.cancelable)return;
+      event.preventDefault();
+      const fullSelection=input.selectionStart===0&&input.selectionEnd===input.value.length;
+      const significant=input.value.replace(/\D/g,"").replace(/^0+/,"");
+      const next=fullSelection?"":significant.slice(0,-1);
+      input.value=moneyFromDigits(next);
+      input.dispatchEvent(new Event("input",{bubbles:true}));
+    });
     input.addEventListener("input", (event) => {
       if(event.isComposing)return;
       const previous=input.value;
