@@ -6,9 +6,10 @@
   <meta name="theme-color" content="#f5f7fa">
   <meta name="description" content="Compare alternativas de aquisição, analise lances e propostas e gere resumos de consórcio com cálculos transparentes.">
   <title>Calculadora de Consórcio | Central de Estratégias</title>
-  <link rel="stylesheet" href="styles.css?v=20261117-03">
-  <script src="compare-v2.js?v=20261117-03" defer></script>
-  <script src="app.js?v=20261117-03" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20261117-04">
+  <script src="input-masks.js?v=20261117-04" defer></script>
+  <script src="compare-v2.js?v=20261117-04" defer></script>
+  <script src="app.js?v=20261117-04" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -34,33 +35,33 @@
   </nav>
   <main id="main">
     <section class="panel active" id="painel-comparar" role="tabpanel" aria-labelledby="tab-comparar">
-      <div class="panel-head"><div><span class="section-kicker">ANÁLISE FINANCEIRA</span><h2>Consórcio ou financiamento?</h2><p>O mesmo bem, duas formas de aquisição. Calcule uma prestação a partir dos campos disponíveis, compare o dinheiro investido e considere a espera pela contemplação.</p></div><button type="button" class="example" data-example="comparar">Preencher exemplo</button></div>
+      <div class="panel-head"><div><span class="section-kicker">ANÁLISE FINANCEIRA</span><h2>Consórcio ou financiamento?</h2><p>O mesmo bem, duas formas de aquisição. Calcule uma prestação a partir dos campos disponíveis, compare o dinheiro investido e considere a espera pela contemplação.</p></div><div class="panel-tools"><button type="button" class="example" data-example="comparar">Preencher exemplo</button><button type="reset" form="form-comparar" class="example" aria-label="Limpar todos os dados da comparação">Limpar</button></div></div>
       <div class="content-grid"><form id="form-comparar" class="form-card" novalidate>
-        <div class="how"><strong>Como usar</strong><p>Escolha <b>Veículos</b> ou <b>Imóveis</b> acima. No consórcio, preencha dois entre prazo, taxa total e parcela. No financiamento, preencha três entre entrada, juros, prazo e parcela; o campo restante é calculado. A <b>entrada do financiamento é sempre igual ao lance com recursos próprios</b>.</p></div>
+        <div class="how"><strong>Como usar</strong><p>Escolha <b>Veículos</b> ou <b>Imóveis</b> acima e informe o preço do bem e a carta. No consórcio, preencha dois entre prazo, taxa total e parcela. No financiamento, preencha três entre entrada, juros, prazo e parcela. <b>Entrada = lance com recursos próprios.</b> Use <b>Preencher exemplo</b> para ver uma demonstração ou <b>Limpar</b> para começar de novo.</p></div>
         <div class="form-section"><h3>Valores de referência</h3><div class="fields">
-          <label>Preço do bem <span>R$</span><input id="c-bem" inputmode="decimal" value="100.000,00" required></label>
-          <label>Carta de crédito <span>R$</span><input id="c-carta" inputmode="decimal" value="100.000,00" required></label>
-          <label>Contemplação hipotética <span>mês</span><input id="c-contemplacao" type="number" min="1" max="600" value="1" required></label>
-        </div><p class="hint">A contemplação no primeiro mês é apenas o cenário de referência, não uma previsão. O valor da carta pode ser diferente do preço do bem.</p></div>
+          <label>Preço do bem <span>R$</span><input id="c-bem" inputmode="decimal" required></label>
+          <label>Carta de crédito <span>R$</span><input id="c-carta" inputmode="decimal" required></label>
+          <label>Contemplação hipotética <span>mês</span><input id="c-contemplacao" type="number" min="1" max="600" required></label>
+        </div><p class="hint">No botão <strong>Preencher exemplo</strong> você pode carregar uma carta de R$ 100.000 e contemplação hipotética no 1º mês. Sem clicar, os campos começam vazios. A contemplação é apenas hipótese, não previsão.</p></div>
         <div class="form-section"><h3>Consórcio <span class="inline-tag">preencha 2 campos</span></h3><div class="fields">
-          <label>Prestações a pagar <span>meses</span><input id="c-prazo" type="number" min="1" max="600" value="100" placeholder="Ex.: 100"></label>
-          <label>Taxa de administração + fundo reserva <span>% total</span><input id="c-taxa" inputmode="decimal" value="20" placeholder="Ex.: 20,00"></label>
+          <label>Prestações a pagar <span>meses</span><input id="c-prazo" type="number" min="1" max="600" placeholder="Ex.: 100"></label>
+          <label>Taxa de administração + fundo reserva <span>% total</span><input id="c-taxa" inputmode="decimal" placeholder="Ex.: 20,00"></label>
           <label>Valor da parcela <span>R$</span><input id="c-parcela" inputmode="decimal" placeholder="Calculado automaticamente"></label>
         </div><p class="calc-status" id="c-status" aria-live="polite">Com dois campos preenchidos, o terceiro será calculado.</p>
         <p class="hint">Cálculo nominal simplificado: carta × (1 + taxa total) ÷ prestações. A distribuição real por componentes e eventuais redutores pode variar conforme o grupo.</p>
         <details class="finance-advanced" id="c-detalhes"><summary>Ajustar lances, parcelas e reajustes <span>opcional</span></summary><div class="fields advanced-fields">
-          <label>Lance com capital próprio <span>R$</span><input id="c-lance" inputmode="decimal" value="0" placeholder="0,00"></label>
+          <label>Lance com capital próprio <span>R$</span><input id="c-lance" inputmode="decimal" placeholder="0,00"></label>
           <label>Lance embutido <span>R$</span><input id="c-embutido" inputmode="decimal" placeholder="0,00"></label>
           <label>Valor da carta após lance embutido <span>R$</span><input id="c-liquida" inputmode="decimal" placeholder="Calculado automaticamente"></label>
           <label>Nova prestação após lance <span>R$</span><input id="c-apos-parcela" inputmode="decimal" placeholder="Se informada pelo simulador"></label>
           <label>Prestações a pagar após lance <span>meses</span><input id="c-apos-prazo" type="number" min="1" max="600" placeholder="Ex.: 99"></label>
           <label>Outros custos fora das parcelas <span>R$</span><input id="c-extras" inputmode="decimal" placeholder="0,00"></label>
-          <label>Reajuste anual hipotético <span>%</span><input id="c-reajuste" inputmode="decimal" placeholder="0 sem reajuste"></label>
-        </div><p class="hint">O lance próprio se espelha automaticamente na entrada do financiamento. O embutido reduz a carta disponível, não a entrada. As novas prestações serão usadas apenas quando o número correspondente for conhecido.</p></details></div>
+          <label>Reajuste anual hipotético <span>% a.a. · editável</span><input id="c-reajuste" inputmode="decimal" value="4,69" placeholder="Índice de referência"></label>
+        </div><p class="hint" id="c-reajuste-info">Referência para veículos: <strong>IPCA, 4,69% a.a.</strong> — média anualizada de nov/2023 a out/2026. <a href="https://www.ibge.gov.br/indicadores-e-sistemas/indices-e-certificados/16855-ipca.html" target="_blank" rel="noopener noreferrer">Fonte: IBGE</a>. Pode alterar a taxa.</p><p class="hint">O lance próprio se espelha automaticamente na entrada do financiamento. O embutido reduz a carta disponível, não a entrada. As novas prestações serão usadas apenas quando o número correspondente for conhecido.</p></details></div>
         <div class="form-section"><h3>Financiamento <span class="inline-tag">preencha 3 campos</span></h3><div class="fields">
-          <label>Entrada <span>R$ · vinculada ao lance próprio</span><input id="c-entrada" inputmode="decimal" value="0" placeholder="Mesmo valor do lance próprio"></label>
-          <label id="c-taxa-label">Juros <span id="c-taxa-unidade">% ao mês</span><input id="c-fintaxa" inputmode="decimal" value="1,50" placeholder="Ex.: 1,50"></label>
-          <label>Prazo <span>meses</span><input id="c-finprazo" type="number" min="1" max="600" value="60"></label>
+          <label>Entrada <span>R$ · vinculada ao lance próprio</span><input id="c-entrada" inputmode="decimal" placeholder="Mesmo valor do lance próprio"></label>
+          <label id="c-taxa-label">Juros <span id="c-taxa-unidade">% ao mês</span><input id="c-fintaxa" inputmode="decimal" placeholder="Ex.: 1,50"></label>
+          <label>Prazo <span>meses</span><input id="c-finprazo" type="number" min="1" max="600"></label>
           <label>Parcela <span>R$ · primeira no SAC</span><input id="c-finparcela" inputmode="decimal" placeholder="Calculada automaticamente"></label>
         </div><p class="calc-status" id="c-finstatus" aria-live="polite">Com três campos preenchidos, calcularemos o quarto.</p>
         <details class="finance-advanced" id="c-fin-detalhes"><summary>IOF, seguro e despesas <span>cálculo automático</span></summary>
@@ -78,7 +79,7 @@
           <div class="iof-estimate" id="c-iof-display" aria-live="polite">IOF: calculado conforme modalidade, amortização e vencimentos.</div>
           <p class="hint">Estimativa para pessoa física: 0,0082% ao dia por parcela amortizada (máximo 365 dias) + 0,38% adicional, quando tributável. Datas ausentes: intervalos aproximados de 30 dias. A operação habitacional é isenta; confirme enquadramento, datas e valores na proposta. O financiamento imobiliário não incorpora TR, seguros variáveis ou outras correções automáticas.</p>
         </details></div>
-        <div class="actions"><button type="submit" class="primary">Comparar alternativas</button><button type="reset" class="ghost">Restaurar referência</button></div><p class="form-error" id="erro-comparar" role="alert"></p>
+        <div class="actions"><button type="submit" class="primary">Comparar alternativas</button><button type="reset" class="ghost">Limpar</button></div><p class="form-error" id="erro-comparar" role="alert"></p>
       </form><aside id="resultado-comparar" class="result-card" aria-live="polite"><div class="empty-result"><span class="empty-icon">↗</span><h3>Compare as duas estratégias</h3><p>Preencha ou ajuste os dados para calcular o financiamento, o consórcio e a diferença nominal.</p></div></aside></div>
     </section>
     <section class="panel" id="painel-lances" role="tabpanel" aria-labelledby="tab-lances" hidden>
