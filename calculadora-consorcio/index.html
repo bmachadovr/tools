@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f7fa">
+  <meta name="description" content="Compare alternativas de aquisição, analise lances e propostas e gere resumos de consórcio com cálculos transparentes.">
+  <title>Calculadora de Consórcio | Central de Estratégias</title>
+  <link rel="stylesheet" href="styles.css?v=1">
+  <script src="app.js?v=1" defer></script>
+</head>
+<body>
+<div class="shell">
+  <header class="hero">
+    <div class="hero-top"><a class="back" href="../">← Todas as ferramentas</a><span class="eyebrow">SIMULAÇÃO E PLANEJAMENTO</span></div>
+    <div class="hero-main"><div><h1>Calculadora de <span>Consórcio</span></h1><p>Transforme números em decisões claras: compare alternativas, planeje lances e prepare propostas. Sem cadastro, direto no navegador.</p></div><div class="hero-mark" aria-hidden="true"><span>01</span><span>02</span><span>03</span><span>04</span></div></div>
+    <div class="hero-pills"><span>Veículos</span><span>Imóveis</span><span>Serviços</span><span>Cálculos transparentes</span></div>
+  </header>
+  <nav class="tabs" role="tablist" aria-label="Funcionalidades da calculadora">
+    <button class="tab active" id="tab-comparar" role="tab" aria-selected="true" aria-controls="painel-comparar" data-tab="comparar"><span class="tab-num">01</span> Comparar alternativas</button>
+    <button class="tab" id="tab-lances" role="tab" aria-selected="false" aria-controls="painel-lances" tabindex="-1" data-tab="lances"><span class="tab-num">02</span> Estratégia de lances</button>
+    <button class="tab" id="tab-propostas" role="tab" aria-selected="false" aria-controls="painel-propostas" tabindex="-1" data-tab="propostas"><span class="tab-num">03</span> Analisar concorrente</button>
+    <button class="tab" id="tab-oferta" role="tab" aria-selected="false" aria-controls="painel-oferta" tabindex="-1" data-tab="oferta"><span class="tab-num">04</span> Gerar proposta</button>
+  </nav>
+  <main id="main">
+    <section class="panel active" id="painel-comparar" role="tabpanel" aria-labelledby="tab-comparar">
+      <div class="panel-head"><div><span class="section-kicker">ANÁLISE FINANCEIRA</span><h2>Consórcio, financiamento ou à vista?</h2><p>Compare quanto será desembolsado e quando será possível usar o bem. A data de contemplação no consórcio é apenas um cenário hipotético.</p></div><button type="button" class="example" data-example="comparar">Preencher exemplo</button></div>
+      <div class="content-grid"><form id="form-comparar" class="form-card" novalidate>
+        <div class="how"><strong>Como usar</strong><p>Informe o valor do bem e as condições que você já possui do simulador de consórcio. Depois preencha as condições do financiamento. O cálculo compara desembolsos nominais e mostra a diferença no acesso ao bem.</p></div>
+        <div class="form-section"><h3>Objetivo da compra</h3><div class="fields">
+          <label>Preço do bem <span>R$</span><input id="c-bem" inputmode="decimal" placeholder="Ex.: 110.026,00" required></label>
+          <label>Contemplação hipotética <span>mês</span><input id="c-contemplacao" type="number" min="1" max="999" placeholder="Ex.: 12" required></label>
+        </div></div>
+        <div class="form-section"><h3>Consórcio <span class="inline-tag">Plano de referência</span></h3><div class="fields">
+          <label>Crédito líquido disponível <span>R$</span><input id="c-carta" inputmode="decimal" placeholder="Valor após eventual lance embutido" required></label>
+          <label>Prestação mensal atual <span>R$</span><input id="c-parcela" inputmode="decimal" placeholder="Valor total informado" required></label>
+          <label>Prestações a pagar <span>meses</span><input id="c-prazo" type="number" min="1" max="600" placeholder="Ex.: 100" required></label>
+          <label>Lance pago com capital próprio <span>R$</span><input id="c-lance" inputmode="decimal" placeholder="0,00"></label>
+          <label>Outros custos fora das parcelas <span>R$</span><input id="c-extras" inputmode="decimal" placeholder="0,00"></label>
+          <label>Reajuste anual hipotético <span>%</span><input id="c-reajuste" inputmode="decimal" placeholder="0 para comparação nominal"></label>
+        </div><p class="hint">A prestação deve incluir os encargos já cobrados nela. Não some novamente administração e reserva. Informe custos extras somente se estiverem fora das parcelas.</p></div>
+        <div class="form-section"><h3>Financiamento</h3><div class="fields">
+          <label>Entrada <span>R$</span><input id="c-entrada" inputmode="decimal" placeholder="Ex.: 22.005,20" required></label>
+          <label>Prestação mensal <span>R$</span><input id="c-finparcela" inputmode="decimal" placeholder="Valor total do financiamento" required></label>
+          <label>Prazo <span>meses</span><input id="c-finprazo" type="number" min="1" max="600" placeholder="Ex.: 60" required></label>
+          <label>Outros custos fora das parcelas <span>R$</span><input id="c-finextras" inputmode="decimal" placeholder="0,00"></label>
+        </div></div>
+        <div class="actions"><button type="submit" class="primary">Comparar alternativas</button><button type="reset" class="ghost">Limpar</button></div><p class="form-error" id="erro-comparar" role="alert"></p>
+      </form><aside id="resultado-comparar" class="result-card" aria-live="polite"><div class="empty-result"><span class="empty-icon">↗</span><h3>Sua comparação aparecerá aqui</h3><p>Preencha os valores da operação e compare o custo e o momento de acesso ao bem.</p></div></aside></div>
+    </section>
+    <section class="panel" id="painel-lances" role="tabpanel" aria-labelledby="tab-lances" hidden>
+      <div class="panel-head"><div><span class="section-kicker">PLANEJAMENTO DE CONTEMPLAÇÃO</span><h2>Qual a melhor composição do lance?</h2><p>Separe dinheiro próprio e lance embutido. Um lance maior não garante contemplação.</p></div><button type="button" class="example" data-example="lances">Preencher exemplo</button></div>
+      <div class="content-grid"><form id="form-lances" class="form-card" novalidate>
+        <div class="how"><strong>Como usar</strong><p>Informe o crédito da carta e divida o lance entre recursos próprios e embutidos. Veja o crédito restante para adquirir o bem. Se souber a regra de amortização do seu grupo, indique o número de prestações que receberão o abatimento para estimar a nova parcela.</p></div>
+        <div class="form-section"><h3>Carta e necessidade</h3><div class="fields">
+          <label>Crédito vigente da carta <span>R$</span><input id="l-carta" inputmode="decimal" required placeholder="Ex.: 110.026,00"></label>
+          <label>Valor do bem desejado <span>R$</span><input id="l-bem" inputmode="decimal" placeholder="Opcional"></label>
+        </div></div>
+        <div class="form-section"><h3>Composição do lance</h3><div class="fields">
+          <label>Capital próprio <span>R$</span><input id="l-proprio" inputmode="decimal" placeholder="0,00"></label>
+          <label>Lance embutido <span>R$</span><input id="l-embutido" inputmode="decimal" placeholder="0,00"></label>
+          <label>Teto de lance embutido <span>% da carta</span><input id="l-limite" inputmode="decimal" value="30" required></label>
+          <label>Modalidade de amortização<select id="l-modo"><option value="parcela">Reduzir o valor da parcela</option><option value="prazo">Reduzir o prazo</option></select></label>
+        </div><p class="hint">O limite padrão de 30% corresponde aos contratos de referência analisados. Confirme se o lance embutido e a combinação de recursos são permitidos no seu grupo.</p></div>
+        <div class="form-section"><h3>Prestação pós-lance <span class="inline-tag">opcional</span></h3><div class="fields">
+          <label>Parcela atual <span>R$</span><input id="l-parcela" inputmode="decimal" placeholder="Ex.: 1.363,22"></label>
+          <label>Prestações sujeitas ao abatimento <span>quantidade</span><input id="l-restantes" type="number" min="1" max="600" placeholder="Ex.: 99"></label>
+        </div><p class="hint">O cálculo da nova prestação usa a hipótese de dividir o lance pelas prestações informadas. Sem confirmação da regra e da quantidade, não é uma parcela contratual.</p></div>
+        <div class="actions"><button type="submit" class="primary">Analisar lance</button><button type="reset" class="ghost">Limpar</button></div><p class="form-error" id="erro-lances" role="alert"></p>
+      </form><aside id="resultado-lances" class="result-card" aria-live="polite"><div class="empty-result"><span class="empty-icon">◈</span><h3>Veja o impacto do seu lance</h3><p>O resultado mostrará quanto fica disponível na carta e quanto precisará sair do seu bolso.</p></div></aside></div>
+    </section>
+    <section class="panel" id="painel-propostas" role="tabpanel" aria-labelledby="tab-propostas" hidden>
+      <div class="panel-head"><div><span class="section-kicker">COMPARAÇÃO DE PROPOSTAS</span><h2>Compare condições, não apenas parcelas</h2><p>Use propostas reais e verifique se oferecem crédito, prazo e condições de aquisição equivalentes.</p></div><button type="button" class="example" data-example="propostas">Preencher exemplo</button></div>
+      <div class="content-grid"><form id="form-propostas" class="form-card" novalidate>
+        <div class="how"><strong>Como usar</strong><p>Transcreva os números de duas propostas. O custo de cada uma é calculado pelas parcelas e pelos desembolsos adicionais. As taxas percentuais servem de referência, mas não são somadas outra vez às parcelas.</p></div>
+        <div class="form-section"><h3>Plano de referência</h3><div class="fields">
+          <label>Crédito líquido <span>R$</span><input id="p-a-credito" inputmode="decimal" required placeholder="Ex.: 110.026,00"></label>
+          <label>Parcela atual <span>R$</span><input id="p-a-parcela" inputmode="decimal" required placeholder="Ex.: 1.363,22"></label>
+          <label>Prestações restantes <span>meses</span><input id="p-a-prazo" type="number" min="1" max="600" required></label>
+          <label>Taxa total de administração <span>%</span><input id="p-a-taxa" inputmode="decimal" placeholder="Opcional"></label>
+          <label>Fundo de reserva <span>%</span><input id="p-a-reserva" inputmode="decimal" placeholder="Opcional"></label>
+          <label>Lance próprio e custos adicionais <span>R$</span><input id="p-a-extras" inputmode="decimal" placeholder="0,00"></label>
+        </div></div>
+        <div class="form-section"><h3>Proposta concorrente</h3><div class="fields">
+          <label>Administradora concorrente<input id="p-nome" type="text" maxlength="70" placeholder="Nome da administradora" required></label>
+          <label>Crédito líquido <span>R$</span><input id="p-b-credito" inputmode="decimal" required></label>
+          <label>Parcela atual <span>R$</span><input id="p-b-parcela" inputmode="decimal" required></label>
+          <label>Prestações restantes <span>meses</span><input id="p-b-prazo" type="number" min="1" max="600" required></label>
+          <label>Taxa total de administração <span>%</span><input id="p-b-taxa" inputmode="decimal" placeholder="Opcional"></label>
+          <label>Fundo de reserva <span>%</span><input id="p-b-reserva" inputmode="decimal" placeholder="Opcional"></label>
+          <label>Lance próprio e custos adicionais <span>R$</span><input id="p-b-extras" inputmode="decimal" placeholder="0,00"></label>
+          <label>Fonte da proposta<input id="p-fonte" type="text" maxlength="120" placeholder="Ex.: Proposta recebida por e-mail"></label>
+          <label>Data da proposta<input id="p-data" type="date"></label>
+        </div></div>
+        <div class="actions"><button type="submit" class="primary">Comparar propostas</button><button type="reset" class="ghost">Limpar</button></div><p class="form-error" id="erro-propostas" role="alert"></p>
+      </form><aside id="resultado-propostas" class="result-card" aria-live="polite"><div class="empty-result"><span class="empty-icon">≍</span><h3>Uma comparação com critérios claros</h3><p>Compare custo nominal, crédito líquido e prazo — e identifique quando as propostas não são equivalentes.</p></div></aside></div>
+    </section>
+    <section class="panel" id="painel-oferta" role="tabpanel" aria-labelledby="tab-oferta" hidden>
+      <div class="panel-head"><div><span class="section-kicker">APRESENTAÇÃO COMERCIAL</span><h2>Transforme a análise em uma proposta</h2><p>Crie um texto objetivo e compartilhável, sempre identificando estimativas e condições de contemplação.</p></div></div>
+      <div class="content-grid"><div class="form-card">
+        <div class="how"><strong>Como usar</strong><p>Faça primeiro uma análise em qualquer aba. Volte aqui para copiar o resumo, compartilhar pelo WhatsApp ou imprimir. Revise valores e condições antes de enviar.</p></div>
+        <div class="form-section"><h3>Personalização</h3><div class="fields"><label>Nome do cliente <span>opcional</span><input id="o-nome" type="text" maxlength="70" placeholder="Não é obrigatório"></label><label>Objetivo da proposta<input id="o-objetivo" type="text" maxlength="110" placeholder="Ex.: Aquisição de veículo"></label></div></div>
+        <div class="actions"><button type="button" class="primary" id="o-copiar">Copiar texto</button><button type="button" class="secondary" id="o-whatsapp">Enviar pelo WhatsApp</button><button type="button" class="ghost" id="o-imprimir">Imprimir / salvar PDF</button></div><p class="form-error" id="erro-oferta" role="status"></p><div class="notice">Os números são estimativas matemáticas baseadas nos dados fornecidos. Esta ferramenta não faz reservas, não garante contemplação e não substitui a proposta ou as regras do grupo.</div>
+      </div><aside class="result-card proposal-card"><div class="result-top"><span class="result-kicker">PRÉVIA DA PROPOSTA</span><span class="status-pill">Editável nos campos ao lado</span></div><pre id="o-previa">Faça uma análise em uma das três primeiras abas para gerar seu resumo comercial.</pre></aside></div>
+    </section>
+  </main>
+  <footer><p>Simulação matemática orientativa. Os resultados dependem das condições informadas e não garantem contemplação. Reajustes, encargos e regras contratuais podem alterar os valores.</p><p>Desenvolvido por: bmachado.dev – 2026.</p></footer>
+</div>
+</body>
+</html>
