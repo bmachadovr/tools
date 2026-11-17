@@ -26,7 +26,7 @@
     <section class="panel active" id="painel-comparar" role="tabpanel" aria-labelledby="tab-comparar">
       <div class="panel-head"><div><span class="section-kicker">ANÁLISE FINANCEIRA</span><h2>Consórcio, financiamento ou à vista?</h2><p>Compare quanto será desembolsado e quando será possível usar o bem. A data de contemplação no consórcio é apenas um cenário hipotético.</p></div><button type="button" class="example" data-example="comparar">Preencher exemplo</button></div>
       <div class="content-grid"><form id="form-comparar" class="form-card" novalidate>
-        <div class="how"><strong>Como usar</strong><p>Informe o valor do bem e as condições que você já possui do simulador de consórcio. Depois preencha as condições do financiamento. O cálculo compara desembolsos nominais e mostra a diferença no acesso ao bem.</p></div>
+        <div class="how"><strong>Como usar</strong><p>Informe o valor do bem e os dados obtidos no simulador de consórcio. Para o financiamento, basta informar <b>entrada, taxa mensal e prazo</b>: a ferramenta calcula o valor financiado, as prestações e os juros pelo sistema Price ou SAC. Acrescente IOF e tarifas quando conhecidos. A comparação mostra os desembolsos nominais e a diferença no momento de acesso ao bem.</p></div>
         <div class="form-section"><h3>Objetivo da compra</h3><div class="fields">
           <label>Preço do bem <span>R$</span><input id="c-bem" inputmode="decimal" placeholder="Ex.: 110.026,00" required></label>
           <label>Contemplação hipotética <span>mês</span><input id="c-contemplacao" type="number" min="1" max="999" placeholder="Ex.: 12" required></label>
@@ -39,12 +39,20 @@
           <label>Outros custos fora das parcelas <span>R$</span><input id="c-extras" inputmode="decimal" placeholder="0,00"></label>
           <label>Reajuste anual hipotético <span>%</span><input id="c-reajuste" inputmode="decimal" placeholder="0 para comparação nominal"></label>
         </div><p class="hint">A prestação deve incluir os encargos já cobrados nela. Não some novamente administração e reserva. Informe custos extras somente se estiverem fora das parcelas.</p></div>
-        <div class="form-section"><h3>Financiamento</h3><div class="fields">
+        <div class="form-section"><h3>Financiamento <span class="inline-tag">parcela calculada automaticamente</span></h3><div class="fields">
           <label>Entrada <span>R$</span><input id="c-entrada" inputmode="decimal" placeholder="Ex.: 22.005,20" required></label>
-          <label>Prestação mensal <span>R$</span><input id="c-finparcela" inputmode="decimal" placeholder="Valor total do financiamento" required></label>
+          <label>Taxa de juros mensal <span>% a.m.</span><input id="c-fintaxa" inputmode="decimal" placeholder="Ex.: 1,60" required></label>
           <label>Prazo <span>meses</span><input id="c-finprazo" type="number" min="1" max="600" placeholder="Ex.: 60" required></label>
-          <label>Outros custos fora das parcelas <span>R$</span><input id="c-finextras" inputmode="decimal" placeholder="0,00"></label>
-        </div></div>
+          <label>Sistema de amortização<select id="c-sistema"><option value="price">Price — prestação fixa</option><option value="sac">SAC — prestação decrescente</option></select></label>
+        </div>
+        <details class="finance-advanced"><summary>Adicionar IOF e outras despesas</summary><p class="hint">Use os valores informados pela financeira. Esses custos não são calculados automaticamente, pois dependem das condições da operação. Valores financiados entram no saldo sobre o qual incidem os juros; custos pagos à vista entram diretamente no desembolso.</p>
+          <div class="fields">
+            <label>IOF financiado <span>R$</span><input id="c-finiof" inputmode="decimal" placeholder="Se conhecido"></label>
+            <label>Tarifas e seguros financiados <span>R$</span><input id="c-fintarifas" inputmode="decimal" placeholder="Se conhecidos"></label>
+            <label>Custos pagos à vista <span>R$</span><input id="c-finextras" inputmode="decimal" placeholder="Se conhecidos"></label>
+          </div>
+        </details>
+        <p class="hint">O cálculo considera a taxa de juros mensal informada, <b>não o CET</b>. O valor da compra menos a entrada forma o principal; IOF e tarifas financiados, quando informados, são acrescidos a ele. Não informe duas vezes a mesma despesa.</p></div>
         <div class="actions"><button type="submit" class="primary">Comparar alternativas</button><button type="reset" class="ghost">Limpar</button></div><p class="form-error" id="erro-comparar" role="alert"></p>
       </form><aside id="resultado-comparar" class="result-card" aria-live="polite"><div class="empty-result"><span class="empty-icon">↗</span><h3>Sua comparação aparecerá aqui</h3><p>Preencha os valores da operação e compare o custo e o momento de acesso ao bem.</p></div></aside></div>
     </section>
