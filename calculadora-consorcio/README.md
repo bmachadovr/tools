@@ -562,7 +562,8 @@ A **média nominal aritmética arredondada** coincide com a **primeira parcela**
 - [ ] Obter o cronograma de cobrança por mês/faixa ou parcelas de referência em diferentes etapas do grupo.
 - [ ] Identificar possíveis antecipações de administração e a regra efetiva para este grupo.
 - [x] Obter uma segunda simulação do **mesmo plano** com lance de 30% da carta, com redução da parcela informada. A origem do lance foi confirmada posteriormente como **capital próprio**.
-- [ ] Obter exemplos com **lance próprio e embutido identificados separadamente**, inclusive mudança de prazo e cronogramas das parcelas posteriores.
+- [x] Obter simulação com **lance próprio** e confirmação verbal do comportamento equivalente para **lance embutido**; este último ainda não foi demonstrado em imagem.
+- [ ] Obter testes de lance **combinado**, redução de prazo e cronogramas de parcelas posteriores.
 - [ ] Confirmar o calendário e a base dos reajustes FIPE.
 
 **Decisão de produto:** o primeiro exemplo valida a **reconciliação do custo nominal**. Uma segunda simulação do mesmo plano, **com lance de capital próprio**, documentada na seção 15, reproduz a parcela após lance por uma divisão em **99 prestações**. Isso valida a hipótese **neste caso observado**, mas **não homologa uma regra universal de redução pós-lance**, nem permite projetar reajustes e parcelas de outros grupos sem contrato ou exemplos adicionais.
@@ -634,8 +635,63 @@ primeira_parcela - (lance / 100)
 - [ ] Verificar se existem outras deduções contratuais sobre o crédito na efetiva aquisição, distintas do lance próprio.
 - [ ] Repetir no mesmo plano com **outro valor de lance** para testar a linearidade do abatimento.
 - [x] Obter um exemplo de lance **próprio** com parcela após lance.
-- [ ] Validar exemplos de lance **embutido e combinado** de modo independente.
+- [x] Registrar regra operacional **informada pelo usuário**: o lance embutido tem o mesmo efeito sobre a parcela que lance próprio de igual valor, mas reduz o crédito disponível.
+- [ ] Conferir com evidências adicionais o comportamento de lance **embutido e combinado** em propostas de outros grupos.
 - [ ] Conferir as condições de redução **de prazo**, além da redução do valor da prestação.
 - [ ] Obter cronograma de parcelas por componente e regras de reajuste para testar amortizações posteriores.
 
-**Critério de aceite:** nenhuma fórmula inferida de **um único par de simulações** deve se tornar regra permanente sem confirmação adicional em propostas ou demonstrações de outros valores e grupos.
+**Critério de aceite:** a fórmula de redução da parcela está reproduzida em um par de simulações do mesmo grupo e a equivalência do embutido foi confirmada pelo usuário. Não converter automaticamente essa informação em regra universal para outros grupos, prazos ou formas de amortização.
+
+
+## 16. Regra operacional confirmada pelo usuário — lance embutido (17/11/2026)
+
+**Origem da confirmação:** declaração explícita do usuário após a segunda simulação: **o lance embutido produz a mesma redução nas prestações que um lance próprio do mesmo valor; sua diferença é que o montante embutido é deduzido da carta de crédito**. Não há imagem de simulação embutida; registrar como **regra operacional informada**, não como segunda validação independente do sistema.
+
+### 16.1. Exemplo equivalente no mesmo plano
+
+| Item | Lance próprio | Lance embutido |
+| --- | ---: | ---: |
+| Carta contratada | R$ 110.026,00 | R$ 110.026,00 |
+| Valor do lance (30% da carta) | R$ 33.007,80 | R$ 33.007,80 |
+| Recursos próprios usados no lance | R$ 33.007,80 | R$ 0,00 |
+| Valor deduzido da carta | R$ 0,00 | R$ 33.007,80 |
+| Crédito líquido preliminar para aquisição | R$ 110.026,00 | **R$ 77.018,20** |
+| Primeira prestação de referência | R$ 1.363,22 | R$ 1.363,22 |
+| Nova prestação após lance no cenário informado | **R$ 1.029,81** (observada) | **R$ 1.029,81** (derivada da regra informada) |
+
+**Condição de aplicação:** o quadro compara cenários de igual valor total de lance e amortização da mesma prestação, considerando as 99 obrigações usadas no exemplo, **sem atualizações ou outras deduções contratuais**. Não é oferta nem confirmação de contemplação.
+
+### 16.2. Algoritmo proposto para o modo comercial
+
+```text
+carta = 110026.00
+prazo_original = 100
+parcelas_sujeitas_a_amortizacao = 99   # parâmetro confirmado no exemplo, não padrão universal
+parcela_antes_lance = 1363.22
+
+lance_proprio = input >= 0
+lance_embutido = input >= 0
+assert lance_embutido <= 0.30 * carta   # regra operacional; validar limites específicos
+lance_total = lance_proprio + lance_embutido
+
+credito_liquido_preliminar = carta - lance_embutido
+reducao_parcela = lance_total / parcelas_sujeitas_a_amortizacao
+nova_parcela = arredondar(parcela_antes_lance - reducao_parcela, 2)
+```
+
+A redução por lance total deve ser aplicada **somente** se as condições da operação comprovarem essa forma de amortização e a quantidade de parcelas remanescentes. Para outros grupos, os campos devem ser parametrizáveis. Não contar recursos próprios como dedução de crédito; não contar lance embutido como recurso de caixa do cliente.
+
+### 16.3. Cenário de lance combinado — previsão para implementação
+
+Exemplo **hipotético** para essa mesma carta: embutido R$ 22.005,20 (20% da carta) + próprio R$ 11.002,60 (10% da carta) = lance total R$ 33.007,80. Na hipótese de mesma forma de amortização, nova prestação seria **R$ 1.029,81**, enquanto o crédito líquido preliminar seria **R$ 88.020,80**. Os dois componentes do lance devem ser apresentados separadamente na interface e na proposta.
+
+### 16.4. Testes pendentes e limitações
+
+- [x] Registrar que a diferença entre embutido e próprio é **origem do recurso e crédito líquido**, não o efeito do valor total ofertado sobre a amortização da prestação, conforme regra informada.
+- [x] Aplicar limite de **30% da carta somente ao embutido**, sem limitar por engano o lance total com recursos próprios.
+- [ ] Confirmar se as **99 prestações** decorrem de primeira prestação paga, excluída ou outra regra operacional.
+- [ ] Homologar o comportamento em outros grupos com taxas, prazos e cronogramas diferentes.
+- [ ] Confirmar eventuais limitações próprias de lances combinados por modalidade.
+- [ ] Validar distribuição mensal das taxas e o reflexo de reajustes futuros sobre prestações após lance.
+
+**Separação de evidências:** simulação em imagem confirma a amortização após lance **próprio**; o comportamento igual do **embutido** foi **informado pelo usuário**, mas ainda não há captura independente desse cenário.
