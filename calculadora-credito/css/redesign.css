@@ -255,3 +255,82 @@ button.secondary,.next button { background: var(--surface-muted); color: var(--t
   .tool-menu, button, input { transition: none !important; }
   .tools-carousel { scroll-behavior: auto; }
 }
+
+/* Orientações para quem está usando a calculadora pela primeira vez */
+.example-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 15px;
+}
+.example-row span {
+  flex: 1 1 210px;
+  color: var(--muted);
+  font-size: .8rem;
+  line-height: 1.4;
+}
+body .example-button, body[data-theme="color"] button.example-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 9px 15px;
+  background: var(--surface) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  white-space: nowrap;
+  font-size: .81rem;
+  font-weight: 750;
+}
+.example-button::before {
+  content: '▤';
+  font-size: 1rem;
+}
+.example-button:hover { filter: brightness(.97); border-color: var(--accent); }
+.example-note {
+  display: block;
+  padding: 11px 13px;
+  margin: 13px 0 0 !important;
+  font-size: .8rem !important;
+  line-height: 1.55;
+  background: var(--note-bg);
+  border-radius: 9px;
+  color: var(--note-text) !important;
+}
+.example-note[hidden] { display: none !important; }
+.result-explanation {
+  margin: 20px 0 0;
+  padding: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 12px;
+}
+.result-explanation h3 {
+  margin: 0 0 8px;
+  font-size: .95rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.result-explanation p {
+  margin: 7px 0 0;
+  line-height: 1.6;
+  color: var(--muted);
+  font-size: .84rem;
+}
+.result-explanation p.example-result-warning {
+  color: var(--note-text);
+  font-weight: 750;
+  background: var(--note-bg);
+  border-radius: 8px;
+  padding: 9px 11px;
+  margin: 11px 0 12px;
+}
+@media(max-width:620px) {
+  .example-row { align-items: stretch; gap: 9px; }
+  .example-button { width: 100%; }
+  .example-row span { flex: 1 1 100%; font-size: .77rem; }
+  .result-explanation { padding: 14px 13px; }
+}
