@@ -1263,7 +1263,7 @@ O resultado da primeira aba foi reestruturado com:
 - [x] Botão `Limpar` remove os valores e o resultado.
 - [x] Verificar em navegador público desktop: cartões, barras de desembolso e parcelas, tabela e análise técnica foram apresentados.
 - [x] Identificar e corrigir no código problemas de responsividade em tela de 390 px: abas agora em grade 2×2 e tabela técnica convertida em indicadores empilhados.
-- [ ] Confirmar no navegador público a segunda publicação da correção mobile, sem recorte lateral.
+- [x] Validar em navegador público mobile de **390 px** a versão `v=20261117-07`: abas 2×2 e os 12 indicadores técnicos sem corte/rolagem horizontal. Atenção: houve cache da versão anterior na primeira abertura; usar a URL com parâmetro de versão para atualização.
 - [ ] Verificar posição do cursor e teclados físicos/virtuais reais ao digitar e apagar valores monetários.
 - [ ] Confirmar o processamento da publicação no GitHub Pages.
 
