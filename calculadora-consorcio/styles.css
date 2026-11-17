@@ -203,3 +203,53 @@ footer p{margin:0;max-width:620px}
  .panel-tools{justify-content:flex-start;margin-top:15px}
  .panel-tools .example{flex:1 1 auto}
 }
+
+
+/* Resultado profissional do comparador: cards de alternativas, gráfico em escala comum e leitura técnica. */
+.technical-dashboard{display:flex;flex-direction:column;gap:17px}
+.technical-verdict{border-bottom:1px solid #e5edf0;padding-bottom:15px}
+.technical-verdict .hero-number{margin:9px 0 8px}
+.technical-flag{display:inline-block;padding:7px 11px;border-radius:9px;font-size:.8rem;background:#eaf3f5;color:#205968;font-weight:800;line-height:1.5}
+.technical-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.technical-card{border:1px solid #dbe7ec;border-radius:15px;padding:15px 13px;min-width:0;background:#fbfdfd;overflow-wrap:anywhere}
+.technical-card:first-child{background:linear-gradient(150deg,#ecf8f8 0%,#fbfdfd 78%);border-color:#c7e1e4}
+.technical-card-title{display:flex;flex-direction:column;gap:4px;font-size:.86rem;font-weight:800;color:#194a5a}
+.technical-card-title span{font-size:.7rem;color:#7b8b95;font-weight:650;letter-spacing:.02em}
+.technical-main{font-size:clamp(1.1rem,2vw,1.42rem);font-weight:850;letter-spacing:-.038em;line-height:1.15;color:#163a4c;margin:14px 0;overflow-wrap:anywhere}
+.technical-line{display:flex;flex-direction:column;gap:4px;border-top:1px solid #e7edef;padding:9px 0}
+.technical-line:last-child{padding-bottom:0}
+.technical-line span:not(.technical-muted){color:#718590;font-size:.73rem}
+.technical-line strong{font-size:.88rem;color:#214353;line-height:1.45}
+.technical-muted{display:block;font-size:.71rem;font-weight:550;color:#718692;line-height:1.5;margin-top:3px}
+.technical-chart{background:#f8fafb;border:1px solid #e1eaed;border-radius:14px;padding:16px}
+.technical-chart-head h4,.technical-section h4{font-size:.96rem;margin:0 0 5px;color:#203e4c;letter-spacing:-.025em}
+.technical-chart-head p{font-size:.73rem;color:#81919a;margin:0 0 15px}
+.technical-bar-row{display:grid;grid-template-columns:77px minmax(0,1fr);align-items:center;column-gap:10px;row-gap:5px;margin:13px 0}
+.technical-bar-row>span{font-size:.78rem;font-weight:750;color:#4b6773}
+.technical-bar-row>strong{grid-column:2;text-align:right;color:#183c4c;font-size:.78rem;line-height:1}
+.technical-bar-track{height:13px;border-radius:100px;background:#e2ebee;overflow:hidden}
+.technical-bar{height:100%;border-radius:100px;min-width:5px}
+.technical-bar.cons{background:#207b89}
+.technical-bar.fin{background:#7f9aa8}
+.technical-footnote{font-size:.71rem;color:#926b34;line-height:1.5;margin-bottom:0}
+.technical-section{padding-top:17px;border-top:1px solid #e9eff1;min-width:0;overflow-x:auto}
+.technical-section .compare-table{min-width:345px;margin-top:11px}
+.technical-section .compare-table th,.technical-section .compare-table td{font-size:.78rem;line-height:1.43;overflow-wrap:anywhere}
+.technical-section .compare-table th:first-child,.technical-section .compare-table td:first-child{min-width:90px}
+.technical-insights{margin:13px 0 0;padding-left:20px;font-size:.83rem;color:#45626f;line-height:1.65}
+.technical-insights li{padding-left:5px;margin:9px 0}
+.technical-disclosure{border:1px solid #dbe6ea;border-radius:12px;padding:13px 15px;background:#fafcfd}
+.technical-disclosure>summary{cursor:pointer;font-weight:800;font-size:.83rem;color:#276578}
+.technical-disclosure .technical-section{margin-top:12px}
+.technical-disclosure .technical-section:first-of-type{border-top:none;padding-top:5px}
+.technical-dashboard .callout{margin-top:10px}
+@media(min-width:981px) and (max-width:1220px){
+ .technical-cards{grid-template-columns:1fr}
+ .technical-card{padding:16px}
+}
+@media(max-width:540px){
+ .technical-cards{grid-template-columns:1fr;gap:10px}
+ .technical-main{font-size:1.5rem}
+ .technical-bar-row{grid-template-columns:72px minmax(0,1fr)}
+ .technical-section .compare-table{min-width:450px}
+}
