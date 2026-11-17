@@ -152,11 +152,13 @@
       ?" <span class='technical-muted'>primeira (última "+escapeHtml(money(d.finLast))+")</span>"
       :" <span class='technical-muted'>mensal"+(d.finFirst!==d.finLast?" (última ajustada)":"")+"</span>");
     const technicalRows=[
+      ["Taxas informadas / juros do financiamento",roundPct(d.consFeesPct)+" (administração + reserva)",roundPct(d.finMonthlyRate)+" a.m. · "+roundPct(d.finAnnualEffective)+" a.a. efetivos"],
       ["Parcela inicial",money(d.monthlyCons),money(d.finFirst)],
       ["Parcela pós-lance / final",d.monthlyPost===null?"Não informada":money(d.monthlyPost)+(d.monthlyPostInferred?" (estimada)":""),money(d.finLast)],
       ["Prestações",d.consTerm+" meses",d.finTerm+" meses"],
       ["Recursos próprios no início",money(d.consOwn),money(d.finEntry)],
       ["Crédito líquido / principal",money(d.consLiquid),money(d.finPrincipal)],
+      ["Complemento para compra / custos à vista",money(d.consComplement),money(d.finExternal)],
       ["Custo de juros", "Não há juros remuneratórios; há taxas contratuais",money(d.finInterest)],
       ["IOF estimado", "Não calculado",money(d.finIof)],
       ["Custos/seguro no financiamento","—",money(d.finFees)+" tarifas; "+money(d.finInsuranceTotal)+" seguros"],
@@ -165,9 +167,9 @@
     ];
     const insights=[];
     const monthlyGap=Math.abs(d.finFirst-d.monthlyCons);
-    insights.push("Na primeira prestação, o "+(d.finFirst>=d.monthlyCons?"financiamento":"consórcio")+
-      " exige "+money(monthlyGap)+" "+(monthlyGap<.01?"(praticamente o mesmo valor)":"a mais")+
-      " por mês. Para SAC, o valor financiado diminui ao longo do prazo.");
+    if(monthlyGap<.01)insights.push("A primeira prestação é equivalente nas duas modalidades, antes de possíveis mudanças contratuais.");
+    else insights.push("Na primeira prestação, o "+(d.finFirst>d.monthlyCons?"financiamento":"consórcio")+
+      " exige "+money(monthlyGap)+" a mais. No SAC, a prestação normalmente diminui ao longo do prazo.");
     const deltaMonths=Math.abs(d.consTerm-d.finTerm);
     insights.push("Prazo: "+d.consTerm+" meses no consórcio e "+d.finTerm+" no financiamento"+
       (deltaMonths?" — diferença de "+deltaMonths+" meses.":" — mesma duração informada."));
@@ -206,6 +208,9 @@
       '<div class="technical-bar-row"><span>Consórcio'+(d.comparable?"":" *")+'</span><div class="technical-bar-track"><div class="technical-bar cons" style="width:'+width(d.consTotal)+'"></div></div><strong>'+escapeHtml(money(d.consTotal))+'</strong></div>'+
       '<div class="technical-bar-row"><span>Financiamento</span><div class="technical-bar-track"><div class="technical-bar fin" style="width:'+width(d.finTotal)+'"></div></div><strong>'+escapeHtml(money(d.finTotal))+'</strong></div>'+
       (!d.comparable?'<p class="technical-footnote">* Estimativa parcial sem cronograma validado de amortização do lance.</p>':'')+
+      '<div class="technical-chart-head technical-installments"><h4>Primeira prestação</h4><p>O SAC inicia com parcela maior e decrescente; os valores futuros podem mudar.</p></div>'+
+      '<div class="technical-bar-row"><span>Consórcio</span><div class="technical-bar-track"><div class="technical-bar cons" style="width:'+((d.monthlyCons/Math.max(d.monthlyCons,d.finFirst,1))*100).toFixed(2)+'%"></div></div><strong>'+escapeHtml(money(d.monthlyCons))+'</strong></div>'+
+      '<div class="technical-bar-row"><span>Financiamento</span><div class="technical-bar-track"><div class="technical-bar fin" style="width:'+((d.finFirst/Math.max(d.monthlyCons,d.finFirst,1))*100).toFixed(2)+'%"></div></div><strong>'+escapeHtml(money(d.finFirst))+'</strong></div>'+
       '</div>';
     const analyzed=insights.map(x=>'<li>'+escapeHtml(x)+'</li>').join("");
     const notices=extraWarnings.map(x=>note(x,true)).join("");
