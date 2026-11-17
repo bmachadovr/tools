@@ -427,7 +427,7 @@ window.ConsorcioCompareV2 = (function () {
       monthlyPostInferred:inferredPost, postCount,preCount,consTerm:n,
       consInstallments:installmentTotal,consUpfront:own,
       consOwn:own,embedded,consLiquid:liquid,consComplement:priceDifference,
-      consOtherCosts:cost,consReaj:reaj,
+      consOtherCosts:cost,consReaj:reaj,consFeesPct:taxa,
       finFirst:finance.first,finLast:finance.last,finTerm:finance.term,
       finInterest:finance.interest,finIof:finance.iof,finFees:finance.fees,
       finInsuranceTotal:round(finance.insurance*finance.term),
