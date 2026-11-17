@@ -136,6 +136,62 @@
     };
   }
 
+  function cumulativeLineChart(d) {
+    const points=d.flow;
+    if(!points||points.length<2)return "";
+    const last=points[points.length-1];
+    const maxMonth=last.month;
+    const maxValue=Math.max(1,d.consTotal,d.finTotal)*1.07;
+    const left=88,right=732,top=27,bottom=286;
+    const x=(m)=>left+((m/maxMonth)*(right-left));
+    const y=(v)=>bottom-(v/maxValue)*(bottom-top);
+    const coord=(num)=>Number(num).toFixed(2);
+    const makePath=(key)=>points.map((p,i)=>(i===0?"M":"L")+coord(x(p.month))+" "+coord(y(p[key]))).join(" ");
+    const compact=(v)=>{
+      if(v>=1000000)return "R$ "+Number(v/1000000).toLocaleString("pt-BR",{maximumFractionDigits:1})+" mi";
+      if(v>=1000)return "R$ "+Number(v/1000).toLocaleString("pt-BR",{maximumFractionDigits:0})+" mil";
+      return "R$ "+Number(v).toLocaleString("pt-BR",{maximumFractionDigits:0});
+    };
+    let grid="";
+    for(let n=0;n<=4;n++){
+      const val=maxValue*n/4;
+      const py=y(val);
+      grid+='<line class="cash-gridline" x1="'+left+'" x2="'+right+'" y1="'+coord(py)+'" y2="'+coord(py)+'"/>';
+      grid+='<text class="cash-tick cash-y-tick" x="'+(left-10)+'" y="'+coord(py+4)+'" text-anchor="end">'+escapeHtml(compact(val))+'</text>';
+    }
+    const ticks=[...new Set([0,Math.round(maxMonth/4),Math.round(maxMonth/2),Math.round(maxMonth*3/4),maxMonth])].sort((a,b)=>a-b);
+    for(const t of ticks){
+      grid+='<line class="cash-tick-line" x1="'+coord(x(t))+'" x2="'+coord(x(t))+'" y1="'+bottom+'" y2="'+(bottom+6)+'"/>';
+      grid+='<text class="cash-tick" x="'+coord(x(t))+'" y="'+(bottom+22)+'" text-anchor="middle">'+t+'</text>';
+    }
+    const milestoneMonths=[...new Set([0,1,12,24,36,60,120,Math.round(maxMonth/2),maxMonth])].filter(t=>t<=maxMonth).sort((a,b)=>a-b);
+    const markers=milestoneMonths.map(t=>{
+      const p=points[t];
+      return '<circle class="cash-dot cons-dot" cx="'+coord(x(t))+'" cy="'+coord(y(p.cons))+'" r="3.5"><title>Mês '+t+' · Consórcio: '+escapeHtml(money(p.cons))+'</title></circle>'+
+        '<circle class="cash-dot fin-dot" cx="'+coord(x(t))+'" cy="'+coord(y(p.fin))+'" r="3.5"><title>Mês '+t+' · Financiamento: '+escapeHtml(money(p.fin))+'</title></circle>';
+    }).join("");
+    const rows=milestoneMonths.map(t=>["Mês "+t,money(points[t].cons),money(points[t].fin)]);
+    const chart='<div class="cash-line-wrap"><svg class="cash-line-svg" viewBox="0 0 760 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cash-chart-title cash-chart-description">'+
+      '<title id="cash-chart-title">Evolução do desembolso acumulado</title>'+
+      '<desc id="cash-chart-description">Linhas comparando o dinheiro acumulado desembolsado no consórcio e no financiamento, incluindo entrada, lances, parcelas e reajuste projetado, do mês zero até '+maxMonth+'.</desc>'+
+      grid+
+      '<path class="cash-line cash-line-cons" d="'+makePath("cons")+'"'+(d.comparable?"":' stroke-dasharray="7 5"')+'/>'+
+      '<path class="cash-line cash-line-fin" d="'+makePath("fin")+'"/>'+
+      markers+
+      '<text class="cash-axis-label" x="'+coord((left+right)/2)+'" y="344" text-anchor="middle">Meses desde a contratação</text>'+
+      '</svg></div>';
+    return '<section class="cash-flow-section"><div class="cash-chart-top">'+
+      '<h4>Crescimento dos desembolsos ao longo do tempo</h4>'+
+      '<p>Valores nominais acumulados desde o mês zero. Cada linha mostra a soma dos pagamentos feitos até aquele mês.</p></div>'+
+      '<div class="cash-legend"><span class="cash-legend-item"><i class="cash-legend-line cons"></i>Consórcio'+(d.comparable?"":" (parcial)")+'</span>'+
+      '<span class="cash-legend-item"><i class="cash-legend-line fin"></i>Financiamento</span></div>'+
+      chart+
+      '<p class="cash-chart-note">O financiamento considera entrada e despesas à vista no mês zero. O lance próprio e o complemento da compra no consórcio são lançados no mês '+d.monthContemplation+' (contemplação hipotética). O reajuste do consórcio é uma projeção anual simplificada. O gráfico não mostra saldo devedor nem custo a valor presente.</p>'+
+      '<details class="technical-disclosure cash-milestones"><summary>Ver valores acumulados em meses selecionados</summary>'+
+      table(["Marco","Consórcio","Financiamento"],rows).replace('<table class="compare-table">','<table class="compare-table cash-milestone-table">')+
+      '</details></section>';
+  }
+
   function technicalComparison(data, extraWarnings) {
     const d=data.comparisonData;
     const roundPct=(x)=>Number(x).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+"%";
@@ -160,7 +216,7 @@
       ["Crédito líquido / principal",money(d.consLiquid),money(d.finPrincipal)],
       ["Complemento para compra / custos à vista",money(d.consComplement),money(d.finExternal)],
       ["Custo de juros", "Não há juros remuneratórios; há taxas contratuais",money(d.finInterest)],
-      ["IOF estimado", "Não calculado",money(d.finIof)],
+      ["IOF", "Não incide no consórcio",money(d.finIof)+" (estimativa do financiamento)"],
       ["Custos/seguro no financiamento","—",money(d.finFees)+" tarifas; "+money(d.finInsuranceTotal)+" seguros"],
       ["Total nominal",money(d.consTotal),money(d.finTotal)],
       ["Diferença sobre preço de referência",money(d.consPriceGap),money(d.finPriceGap)]
@@ -169,12 +225,12 @@
     const monthlyGap=Math.abs(d.finFirst-d.monthlyCons);
     if(monthlyGap<.01)insights.push("A primeira prestação é equivalente nas duas modalidades, antes de possíveis mudanças contratuais.");
     else insights.push("Na primeira prestação, o "+(d.finFirst>d.monthlyCons?"financiamento":"consórcio")+
-      " exige "+money(monthlyGap)+" a mais. No SAC, a prestação normalmente diminui ao longo do prazo.");
+      " exige "+money(monthlyGap)+" a mais."+(d.finSystem==="sac"?" No SAC, a prestação normalmente diminui ao longo do prazo.":" No CDC/Price, a prestação contratada permanece nominalmente fixa, salvo custos não modelados."));
     const deltaMonths=Math.abs(d.consTerm-d.finTerm);
     insights.push("Prazo: "+d.consTerm+" meses no consórcio e "+d.finTerm+" no financiamento"+
       (deltaMonths?" — diferença de "+deltaMonths+" meses.":" — mesma duração informada."));
     insights.push("No financiamento, os juros estimados somam "+money(d.finInterest)+
-      ", além de IOF de "+money(d.finIof)+". O consórcio cobra administração e demais encargos dentro das parcelas informadas.");
+      " e o IOF estimado é "+money(d.finIof)+". O consórcio não tem IOF: sua estrutura de custo envolve administração, reserva e demais encargos contratuais.");
     if(d.monthlyPost!==null)
       insights.push("Após o lance, a prestação do consórcio foi considerada em "+money(d.monthlyPost)+
         " durante "+d.postCount+" prestações"+(d.monthlyPostInferred?" (valor calculado por hipótese, não homologado).":"."));
@@ -196,22 +252,14 @@
         '<div class="technical-line"><span>Capital próprio</span><strong>'+escapeHtml(money(d.consOwn))+'</strong></div>'+
         '<div class="technical-line"><span>Acima do valor de referência</span><strong>'+escapeHtml(money(d.consPriceGap))+'</strong></div>'+
       '</section>'+
-      '<section class="technical-card"><div class="technical-card-title">Financiamento <span>'+escapeHtml(d.finSystem==="sac"?"SAC":"Price")+'</span></div>'+
+      '<section class="technical-card"><div class="technical-card-title">Financiamento <span>'+escapeHtml(d.finSystem==="sac"?"SAC":d.mode==="veiculos"?"CDC / Price":"Price")+'</span></div>'+
         '<div class="technical-main">'+escapeHtml(money(d.finTotal))+'</div>'+
         '<div class="technical-line"><span>Prestação</span><strong>'+financePayment+'</strong></div>'+
         '<div class="technical-line"><span>Prazo</span><strong>'+d.finTerm+' meses</strong></div>'+
         '<div class="technical-line"><span>Entrada</span><strong>'+escapeHtml(money(d.finEntry))+'</strong></div>'+
         '<div class="technical-line"><span>Juros estimados</span><strong>'+escapeHtml(money(d.finInterest))+'</strong></div>'+
       '</section></div>';
-    const chart='<div class="technical-chart">'+
-      '<div class="technical-chart-head"><h4>Desembolso nominal projetado</h4><p>Escala comum; valores não trazidos a valor presente.</p></div>'+
-      '<div class="technical-bar-row"><span>Consórcio'+(d.comparable?"":" *")+'</span><div class="technical-bar-track"><div class="technical-bar cons" style="width:'+width(d.consTotal)+'"></div></div><strong>'+escapeHtml(money(d.consTotal))+'</strong></div>'+
-      '<div class="technical-bar-row"><span>Financiamento</span><div class="technical-bar-track"><div class="technical-bar fin" style="width:'+width(d.finTotal)+'"></div></div><strong>'+escapeHtml(money(d.finTotal))+'</strong></div>'+
-      (!d.comparable?'<p class="technical-footnote">* Estimativa parcial sem cronograma validado de amortização do lance.</p>':'')+
-      '<div class="technical-chart-head technical-installments"><h4>Primeira prestação</h4><p>O SAC inicia com parcela maior e decrescente; os valores futuros podem mudar.</p></div>'+
-      '<div class="technical-bar-row"><span>Consórcio</span><div class="technical-bar-track"><div class="technical-bar cons" style="width:'+((d.monthlyCons/Math.max(d.monthlyCons,d.finFirst,1))*100).toFixed(2)+'%"></div></div><strong>'+escapeHtml(money(d.monthlyCons))+'</strong></div>'+
-      '<div class="technical-bar-row"><span>Financiamento</span><div class="technical-bar-track"><div class="technical-bar fin" style="width:'+((d.finFirst/Math.max(d.monthlyCons,d.finFirst,1))*100).toFixed(2)+'%"></div></div><strong>'+escapeHtml(money(d.finFirst))+'</strong></div>'+
-      '</div>';
+    const chart=cumulativeLineChart(d);
     const analyzed=insights.map(x=>'<li>'+escapeHtml(x)+'</li>').join("");
     const notices=extraWarnings.map(x=>note(x,true)).join("");
     return '<div class="technical-dashboard">'+
