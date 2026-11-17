@@ -249,3 +249,60 @@ O eixo Y mostra **quanto foi pago ao longo do tempo**, não saldo devedor, renta
 - [x] Financiamento sem juros trata a última prestação residual sem gerar juros negativos e concilia os fluxos.
 - [x] Consórcio não contém cobrança de IOF em nenhum componente de sua soma de caixa.
 - [x] Verificação pública concluída na versão `v=20261117-08`: gráfico SVG com duas linhas, legenda e tabela de marcos, sem barras; seleção CDC/Price em veículos, SAC/Price em imóveis; IOF somente no financiamento. Testado em desktop e celular (390 px), sem corte horizontal.
+
+## 10. Simplificação definitiva do lance e da atualização (17/11/2026)
+
+**Esta seção prevalece sobre as seções anteriores quando houver conflito.** O comparador é uma **fotografia atual** da oferta e não uma previsão de assembleias futuras. A interface **não possui mais campo de mês de contemplação**.
+
+### 10.1. Lance na assembleia seguinte: primeira prestação integral
+
+- **Sem lance:** não há hipótese de contemplação, nem estimativa de data para acesso ao bem. O fluxo nominal usa as prestações informadas, sem avaliar custo de esperar.
+- **Com lance próprio, embutido ou ambos:** somente para cálculo, considerar que o lance será **ofertado na assembleia seguinte**. Isso **não garante que será vencedor**.
+- A **primeira prestação é sempre integral**, calculada com as condições atuais; o lance **não** reduz essa prestação.
+- O lance, se contemplado, é contabilizado no **mês 1**, junto à primeira prestação. A partir do **mês 2** aplica-se o efeito estimado da amortização.
+- A entrada do financiamento permanece igual ao **lance com recursos próprios**; o embutido não gera caixa e reduz o crédito disponível para a compra.
+
+**Cálculo simplificado para lance com redução de prestação:**
+
+```text
+N = prestações inicialmente a pagar (inclui a primeira integral)
+L = lance próprio + lance embutido
+P = prestação integral inicial
+
+primeira_prestacao = P
+prestacoes_apos_lance = N - 1
+nova_prestacao_estimada = P - L / (N - 1)
+
+fluxo_consorcio_mes_1 = primeira_prestacao + lance_proprio
+                       + max(0,valor_bem - credito_liquido) + custos_externos
+fluxo_consorcio_mes_t (>1) = nova_prestacao_estimada ×
+                              fator_reajuste_do_credito(t)
+```
+
+- Se o operador informar **nova prestação pós-lance**, o modelo **substitui a estimativa por esse valor**, sem exigir mês de contemplação.
+- Se informar apenas **prazo pós-lance menor que N-1**, considera-se **redução de prazo** com prestações posteriores iguais à prestação integral, salvo informação da nova parcela. A existência de possível prestação residual exige conferência com o simulador real.
+- Se informar ambas, esses dados são a fotografia da simulação existente; o modelo usa **1 prestação integral + o número informado de prestações posteriores**. A contagem não pode superar N-1 sem dados contratuais adicionais.
+- Na ausência de informações pós-lance, o aplicativo **não deixa a operação parcial**: projeta redução linear das prestações posteriores e explicita que o número é uma **hipótese**, não valor contratual. Casos inviáveis (lance maior que a soma linear das prestações futuras) pedem dados reais.
+- Nenhuma amortização do lance é aplicada à primeira prestação. A soma total nominal considera prestações pós-lance, lance próprio desembolsado e eventual complemento do bem quando o lance é embutido. **Não existe IOF de consórcio.**
+
+### 10.2. Índices: hipóteses simples em vez de previsão de preços
+
+- **Veículos:** usar **IPCA médio histórico de 4,69% ao ano**, como *proxy* de reajuste, mesmo quando o grupo tenha contrato atrelado à FIPE. Isso torna a projeção mais estável, mas **não implica que o IPCA prevê a FIPE com maior precisão estatística**. A escolha é metodológica e editável.
+- **Imóveis:** usar **INCC-M médio histórico de 6,35% ao ano**, editável, na ausência da série específica do plano.
+- O valor de referência da carta é atualizado por hipótese a cada **12 prestações futuras**. Como não se informa a data-base do grupo, o modelo não reproduz o mês efetivo do reajuste de grupos já em andamento.
+- Em **planos de contribuição linear**, atualizar o crédito de referência e recalcular o valor proporcional de cada prestação equivale matematicamente a multiplicar as prestações pelo fator acumulado. Para distribuições não lineares, administração antecipada, diferenças de assembleia, seguros e mudanças de crédito, a aproximação pode não representar a cobrança real.
+- A **primeira prestação integral** e as demais após lance são atualizadas nos ciclos de 12 meses pela mesma proxy anual. O gráfico reconcilia os desembolsos com os totais usando essas hipóteses.
+- Os contratos de bens móveis e imóveis examinados são de **dezembro de 2024**; a proposta de cada grupo pode prever condições diferentes. O projeto usa essas regras **como referência geral simplificada**, não como regulamento universal ou espelho oficial da oferta.
+
+### 10.3. Testes de regressão
+
+- [x] Mês de contemplação removido de HTML, JavaScript e exemplo.
+- [x] Sem lance: nenhuma data de contemplação ou disponibilidade do bem é presumida.
+- [x] Com lance: primeira prestação integral e posterior abatimento; caso ilustrativo R$ 100 mil / 100 meses / taxa total 20% / lance próprio R$ 20 mil resulta em primeira prestação de R$ 1.200 e **99 prestações estimadas em R$ 997,98 antes de reajustes**.
+- [x] Lance embutido de R$ 30 mil reduz o crédito disponível para R$ 70 mil, sem se transformar em entrada no financiamento.
+- [x] Lance combinado: primeira integral, capital próprio lançado somente uma vez e complemento por embutido lançado na hipótese de aquisição.
+- [x] Prazo pós-lance explicitamente menor: mantém a primeira prestação integral e passa a usar o prazo informado.
+- [x] Nova prestação pós-lance informada: tem prioridade sobre cálculo automático.
+- [x] Cenários sem lance ignoram dados pós-lance soltos e avisam sobre essa inconsistência.
+- [x] Gráfico de evolução nominal e totais dos cartões reconciliados para os cenários testados.
+- [ ] Validar o novo cenário com dados reais de uma proposta e de seu demonstrativo de amortização após lance.
