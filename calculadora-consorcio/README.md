@@ -83,7 +83,7 @@ A neutralidade visual e nominal **não elimina** a necessidade de declarar as pr
 
 **Entradas:**
 - Crédito nominal, valor líquido desejado para aquisição e recursos próprios disponíveis.
-- Lance próprio, lance embutido, percentual máximo admitido e base contratual de cálculo.
+- Lance próprio, lance embutido, percentual máximo admitido e base contratual de cálculo. Para o cenário operacional informado, adotar teto de **30% da carta para o componente embutido**; capital próprio pode ser somado. O percentual efetivo precisa ser verificado para cada grupo.
 - Prazo e prestações de referência; regras de amortização pós-lance.
 - Uso de FGTS **somente quando admitido** para a operação e observadas as condições aplicáveis.
 
@@ -96,6 +96,7 @@ A neutralidade visual e nominal **não elimina** a necessidade de declarar as pr
 
 **Regras críticas:**
 - **Lance embutido não é dinheiro adicional disponível**: utiliza parte do próprio crédito e reduz o valor líquido para adquirir o bem.
+- **Regra operacional informada:** o lance embutido pode chegar a **30% da própria carta**, somado a lance de capital próprio. O limite de 30% é exclusivo do componente embutido e não é teto do lance total; verificar limites mais restritivos do grupo.
 - Não contar lance embutido como desembolso de recursos próprios.
 - O efeito financeiro do lance depende de contemplação efetiva e das regras de amortização.
 - Percentual de lance, lance embutido e cálculo de prestações não devem usar fórmulas universais quando forem regras particulares de um plano.
@@ -157,12 +158,13 @@ Separar o **motor matemático** das **regras contratuais configuráveis** e da *
 
 - Modalidade e finalidade: veículo, imóvel ou outras.
 - Preço do bem; valor do crédito nominal; crédito líquido efetivamente utilizável.
-- Prazo, data-base e cronograma de prestações informadas ou projetadas.
-- Taxa de administração (base de incidência, total, eventual antecipação ou distribuição temporal).
-- Fundo de reserva (base, cobrança e eventual restituição conforme contrato).
+- Prazo, data-base e cronograma de prestações informadas ou projetadas. Registrar **data de constituição do grupo**, pois ela pode determinar o regime normativo aplicável.
+- Taxa de administração **definida para cada proposta/grupo** (base de incidência, percentual total, eventual cobrança antecipada e distribuição temporal); nenhum percentual global será presumido.
+- Fundo comum: **percentuais mensais e distribuição definidos pela proposta/grupo**, não necessariamente lineares; histórico, saldos e base de cálculo.
+- Fundo de reserva (base, cobrança, distribuição temporal e eventual restituição conforme contrato).
 - Seguro e outros encargos, quando existirem.
 - Critério e periodicidade de reajuste; índice de referência, se previsto.
-- Regras de lance, lance embutido e amortização aplicáveis.
+- Regras de lance, lance embutido e amortização aplicáveis; separar o teto do embutido da soma com capital próprio.
 - Recursos próprios, entrada e objetivos financeiros do cliente.
 
 ### 6.2. Dados da comparação
@@ -325,9 +327,9 @@ O MVP estará pronto quando:
 
 Os contratos analisados preveem os seguintes componentes, que deverão ser calculados em linhas separadas:
 
-- **Fundo comum:** percentual de aquisição do crédito, com integralização contratual de 100% ao longo do plano.
-- **Taxa de administração:** percentual contratado, podendo ser distribuído de modo linear ou não linear ao longo das prestações.
-- **Taxa de administração antecipada:** componente eventual de antecipação, com cronograma próprio; **não somar duas vezes** ao percentual total contratado.
+- **Fundo comum:** percentual de aquisição do crédito, com integralização contratual de 100% ao longo do plano e distribuição variável definida pela proposta. O contrato histórico de 2018 admite percentuais não lineares.
+- **Taxa de administração:** percentual total definido por proposta/grupo, podendo variar inclusive entre participantes, conforme as condições aplicáveis. O contrato histórico de 2018 admite distribuição não linear; **para grupos constituídos a partir de 01/07/2024**, considerar a exigência regulatória de percentual proporcional/fixo, com possibilidade de cobrança antecipada, conforme Resolução BCB nº 285, art. 19. Não extrapolar cláusulas antigas para grupos novos.
+- **Taxa de administração antecipada:** parcela eventual **integrante e dedutível da taxa total**, com cronograma próprio nos casos contratualmente permitidos; **não somar duas vezes**. O contrato histórico de 2018 menciona os campos 42 (antecipada), 43 (total) e 44 (quantidade de primeiras prestações com antecipação).
 - **Fundo de reserva:** percentual de acordo com a proposta, com cronograma próprio, potencialmente não linear.
 - **Seguro:** facultativo/conforme plano; na versão pública analisada de bens móveis, prêmio proporcional ao saldo devedor.
 - **Diferenças de prestação, reajustes, tarifas e encargos eventuais:** separados da prestação ordinária.
@@ -348,9 +350,9 @@ reserva_t        = base_reserva_t × percentual_fr_t
 seguro_t         = base_seguro_t × aliquota_seguro_t
 ```
 
-- Armazenar **cronogramas de percentuais**, não apenas taxa total e prazo.
+- Armazenar **cronogramas de percentuais por parcela**, não apenas taxa total e prazo; registrar também o regime do grupo e os percentuais efetivamente indicados na proposta ou demonstrativo.
 - A base e o instante de atualização de cada componente devem ser configuráveis.
-- Nunca supor `percentual_fc_t = 1 / prazo` quando houver fator de redução, adesão a grupo em andamento ou parcelas não lineares.
+- Nunca supor `percentual_fc_t = 1 / prazo` quando houver fator de redução, adesão a grupo em andamento ou parcelas não lineares. **Também não supor taxa de administração linear para grupos antigos nem aplicar distribuição não linear arbitrária a grupos novos.**
 - Diferenciar **taxa total contratada**, **taxa antecipada** e **fluxo efetivo de cobrança**.
 
 ### 13.2. Reajustes por modalidade
@@ -369,6 +371,16 @@ Materiais públicos mais recentes mencionam, para certas modalidades:
 **Não fixar esses índices universalmente.** Implementar `tipo_indice`, `periodicidade`, `data_base_reajuste`, `historico_valores`, `reajusta_credito` e `reajusta_parcelas_pos_contemplacao` como parâmetros. Em projeções, admitir curva definida pelo usuário; resultados futuros são hipóteses, não valores garantidos.
 
 ### 13.3. Lances e contemplação
+
+**Parâmetro operacional informado em 17/11/2026:** é permitido compor o lance com até **30% do valor da própria carta em lance embutido**, acrescido de capital próprio, conforme condições aplicáveis ao grupo.
+
+```text
+limite_embutido = valor_carta × 0,30
+lance_total = lance_embutido + lance_proprio
+credito_liquido_preliminar = valor_carta - lance_embutido
+```
+
+Exemplo puramente aritmético: carta R$ 100.000, embutido R$ 30.000, capital próprio R$ 20.000. Lance total R$ 50.000 (50% da carta); crédito líquido preliminar R$ 70.000. O capital próprio **não é adicionado ao crédito** e o teto de 30% **não limita o lance total**. A base para a classificação do lance na assembleia pode ser diferente da carta: validar as regras.
 
 - Modalidades a suportar, conforme disponibilidade no grupo: **livre, fixo, próprio, embutido e combinado**.
 - Lance expresso por percentual da **base vigente na assembleia**, parametrizada pela regra do grupo.
@@ -413,6 +425,9 @@ Materiais públicos mais recentes mencionam, para certas modalidades:
 - Lance próprio: consumo de recursos do cliente, sem redução da carta disponível.
 - Lance embutido: desconto do crédito, sem consumi-lo como aporte próprio.
 - Lance combinado: soma das origens para oferta, abatimentos discriminados.
+- Carta R$ 100.000: embutido R$ 30.000 permitido; R$ 30.000,01 bloqueado pelo teto operacional.
+- Acrescentar R$ 20.000 próprios ao embutido de R$ 30.000 sem disparar bloqueio de limite de embutido; crédito preliminar R$ 70.000.
+- Comparar propostas de dois grupos com mesma carta e prazo, mas taxa de administração total, cronograma de fundo comum e antecipação de administração diferentes.
 - Lance vencedor com redução de prazo versus redução proporcional de prestações.
 - Quitação de prestações sem contemplação imediata.
 - Simulações com informações insuficientes ou limites de lance não confirmados.
@@ -421,10 +436,59 @@ Materiais públicos mais recentes mencionam, para certas modalidades:
 
 - [ ] Obter texto atualizado das cláusulas gerais dos grupos comercializados atualmente.
 - [ ] Verificar proposta de participação modelo com **todos os campos comerciais**, sem informações pessoais.
-- [ ] Confirmar **percentual máximo de lance embutido**, base de cálculo e possibilidade de combinação por modalidade/grupo.
+- [x] Registrar regra operacional informada: até 30% da própria carta em lance embutido, podendo adicionar capital próprio (17/11/2026).
+- [ ] Confirmar no plano o limite efetivo e o método de classificação do lance, inclusive a base de cálculo da assembleia.
 - [ ] Confirmar valores mínimos de lance, modalidades de disputa e eventual lance fixo.
-- [ ] Confirmar regras de distribuição das taxas e condições de parcelas reduzidas.
+- [ ] Obter por proposta/grupo o **cronograma de fundo comum e da taxa de administração** e identificar cobrança antecipada, distribuição do fundo de reserva e condições de parcelas reduzidas.
 - [ ] Confirmar periodicidade e base do índice para **cada modalidade atual**.
 - [ ] Confirmar se seguros e fundo de reserva variam por oferta.
 - [ ] Validar no mínimo **três casos reais anonimizados**: sem lance, lance próprio e embutido; incluir amortização pós-lance.
 - [ ] Somente após validação, registrar perfil contratual homologado sem identificadores institucionais.
+### 13.9. Distribuição das contribuições nas parcelas — verificação regulatória de 17/11/2026
+
+**Conclusão principal:** a cobrança mensal **não pode ser reconstruída com segurança a partir da taxa total e do prazo apenas**. É necessário conhecer o cronograma contratual dos componentes, a data de constituição do grupo e a existência de antecipações ou reduções.
+
+**Evidência de regras históricas:** o contrato de bens móveis de fevereiro de 2018 admite distribuição não linear de **fundo comum**, **fundo de reserva** e **taxa de administração** quando definida na Proposta de Participação (cláusulas 11.3, 11.4 e 11.5). Sua cláusula 11.7.17 trata da administração antecipada cobrada nas primeiras prestações com percentual e período definidos na proposta.
+
+**Mudança regulatória posterior:** a **Resolução BCB nº 285, art. 19**, determina que a taxa de administração seja cobrada proporcionalmente aos meses, mediante percentual fixo, ressalvada a cobrança antecipada legalmente permitida. Os **arts. 56, 57 e 59** estabelecem a aplicação aos grupos constituídos a partir de **01/07/2024** e regra de transição para grupos anteriores. Portanto, cláusulas de 2018 **não devem ser aplicadas automaticamente a novos grupos**. A situação jurídica e os fluxos de cada grupo precisam ser conferidos.
+
+**Antecipação de taxa:** nos termos da **Lei nº 11.795/2008, art. 27, § 3º**, e da orientação pública do regulador, valores antecipados da taxa de administração devem ser **deduzidos da taxa total contratada**, nunca adicionados ao total. O cronograma de cobrança deve respeitar o regime e a proposta efetiva.
+
+**Informação verificável:** a Resolução BCB nº 285, **art. 2º, IX**, prevê discriminação da prestação inicial em tabela de valores e percentuais. O **art. 49** prevê demonstrativo individual com componentes da prestação, percentual de amortização mensal e histórico recente de pagamentos. Usar propostas e demonstrativos **anonimizados** para homologar os cálculos, sem coleta de dados identificáveis de consorciados.
+
+#### Estrutura de dados sugerida
+
+```text
+perfil_de_calculo:
+  constituicao_grupo: AAAA-MM-DD
+  modalidade: tipo_de_bem
+  base_reajuste: conforme_proposta
+  taxa_administracao_total_pct: fornecida
+  taxa_administracao_antecipada_pct: fornecida_ou_zero_comprovado
+  fonte_regras: proposta_ou_demonstrativo_anonimizado
+  cronograma:
+    mes_1:
+      fundo_comum_pct: fornecido
+      administracao_regular_pct: fornecido
+      administracao_antecipada_pct: fornecido
+      fundo_reserva_pct: fornecido
+      seguro: conforme_proposta
+    mes_2_ate_N:
+      ...: percentuais_verificados_por_periodo
+```
+
+**Forma de implementação preferida:**
+1. **Modo comercial rápido:** usar o valor e a estrutura de parcelas já retornados pelo simulador operacional, sem tentar reconstruí-los quando faltarem taxas por período.
+2. **Modo detalhado validado:** importar/informar uma agenda de percentuais por mês ou faixas de meses comprovadas na proposta, com atualização da base de crédito conforme o contrato.
+3. **Modo para grupos com cobrança proporcional:** projetar componente regular de administração como percentual fixo por período, separado da antecipação prevista, respeitando a taxa total e a base atualizada.
+4. **Sem dados de distribuição:** bloquear estimativas de evolução de parcela que dependam desses percentuais; permitir apenas comparações explicitamente parciais.
+
+**Verificações obrigatórias:**
+- Somatório dos percentuais do **fundo comum** deve corresponder à integralização contratual prevista, descontadas amortizações e ajustes aplicáveis.
+- Somatório dos percentuais de **administração regular + antecipada** deve ser reconciliado com a **taxa de administração total**, sem dupla cobrança.
+- Percentuais de **fundo de reserva** devem conciliar com o total contratual, sob suas regras de reajuste e cobrança.
+- Distinguir percentual sobre a carta-base de valor efetivamente pago após reajustes; **somar reais históricos não substitui a conferência dos percentuais**.
+- Testar primeira, segunda, última e prestações imediatamente antes/depois de mudança de faixa ou término de cobrança antecipada.
+- Exibir diferenças de arredondamento, componentes adicionais e eventuais parcelas residuais.
+
+**Dados ainda necessários para aferir a distribuição real:** pelo menos **uma proposta atual anonimizada** acompanhada de demonstrativo de parcelas ou extrato com componentes de cobrança. Sem isso, **não há fundamento para inventar percentuais mensais específicos**.
