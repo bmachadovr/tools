@@ -15,6 +15,7 @@ window.ConsorcioCompareV2 = (function () {
     if(s.includes(",")&&s.includes(".")) s=s.lastIndexOf(",")>s.lastIndexOf(".")?s.replace(/\./g,"").replace(",","."):s.replace(/,/g,"");
     else if(s.includes(","))s=s.replace(",",".");
     else if(/^\d{1,3}(\.\d{3})+$/.test(s))s=s.replace(/\./g,"");
+    if(s.endsWith("."))s=s.slice(0,-1); // permitir vírgula decimal ainda em digitação
     const v=Number(s);
     return /^\d+(\.\d+)?$/.test(s)&&Number.isFinite(v)?v:NaN;
   };
