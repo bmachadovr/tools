@@ -8,7 +8,7 @@ window.ConsorcioCompareV2 = (function () {
   const round = (v) => Math.round((v+Number.EPSILON)*100)/100;
   const CORE=["c-prazo","c-taxa","c-parcela"];
   const LOAN=["c-entrada","c-fintaxa","c-finprazo","c-finparcela"];
-  const state={mode:"veiculos",coreHistory:[],loanHistory:[],netManual:false,rateManual:false,termManual:false,priceLinked:true,reajManual:false};
+  const state={mode:"veiculos",coreHistory:[],loanHistory:[],netManual:false,rateManual:false,termManual:false,reajManual:false};
   const asValue=(id)=>{
     let s=String(get(id).value||"").trim().replace(/R\$|%|\s/g,"");
     if(!s) return null;
@@ -117,7 +117,7 @@ window.ConsorcioCompareV2 = (function () {
   }
   function buildLoan(entry,rateInput,n){
     if(!(n>=1&&n<=600&&Number.isInteger(n))||rateInput<0||rateInput>(state.mode==="imoveis"?200:100))return null;
-    const bem=value("c-bem"),fees=value("c-fintarifas"),insurance=value("c-finseguro");
+    const bem=value("c-carta"),fees=value("c-fintarifas"),insurance=value("c-finseguro");
     if(!(bem>0)||entry<0||entry>=bem)return null;
     const rate=effectiveMonthly(rateInput), financedPrice=bem-entry,base=financedPrice+fees;
     const iof=isExempt()?0:round(base*ioFCoefficient(rate,n,get("c-sistema").value));
@@ -156,7 +156,7 @@ window.ConsorcioCompareV2 = (function () {
     let target=LOAN.find(id=>!present(id));
     if(!target)target=LOAN.find(id=>!state.loanHistory.slice(-3).includes(id))||"c-finparcela";
     let rate=value("c-fintaxa"),n=value("c-finprazo"),entry=value("c-entrada"),installment=value("c-finparcela");
-    const bem=value("c-bem");
+    const bem=value("c-carta");
     if(!(bem>0)){note("c-finstatus","Informe o preço do bem.");return null;}
     if(target!=="c-finprazo"&&(!Number.isInteger(n)||n<1||n>600)){note("c-finstatus","Prazo deve ser inteiro de 1 a 600 meses.");return null;}
     const evalLoan=(e,r,t)=>buildLoan(e,r,t);
@@ -260,11 +260,7 @@ window.ConsorcioCompareV2 = (function () {
     document.querySelectorAll(".mode-card").forEach(btn=>btn.addEventListener("click",()=>setMode(btn.dataset.mode,true)));
     CORE.forEach(id=>get(id).addEventListener("input",()=>onCoreChange(id)));
     LOAN.forEach(id=>get(id).addEventListener("input",()=>onLoanChange(id)));
-    get("c-bem").addEventListener("input",()=>{
-      if(state.priceLinked){get("c-carta").value=get("c-bem").value;deriveCore();}
-      autoLoan();
-    });
-    get("c-carta").addEventListener("input",()=>{state.priceLinked=false;deriveCore();deriveNet();});
+    get("c-carta").addEventListener("input",()=>{deriveCore();deriveNet();autoLoan();});
     get("c-lance").addEventListener("input",synchronizeOwn);
     get("c-embutido").addEventListener("input",deriveNet);
     get("c-reajuste").addEventListener("input",()=>{state.reajManual=true;});
@@ -275,7 +271,7 @@ window.ConsorcioCompareV2 = (function () {
     });
     get("form-comparar").addEventListener("reset",()=>{
       window.setTimeout(()=>{
-        const fields=["c-bem","c-carta","c-contemplacao","c-prazo","c-taxa","c-parcela",
+        const fields=["c-carta","c-contemplacao","c-prazo","c-taxa","c-parcela",
           "c-lance","c-embutido","c-liquida","c-apos-parcela","c-apos-prazo","c-extras",
           "c-entrada","c-fintaxa","c-finprazo","c-finparcela",
           "c-fintarifas","c-finseguro","c-finextras","c-contratacao","c-primeiro-vencimento"];
@@ -290,7 +286,7 @@ window.ConsorcioCompareV2 = (function () {
         state.coreHistory=[];
         state.loanHistory=[];
         state.netManual=false;state.rateManual=false;state.termManual=false;
-        state.priceLinked=true;state.reajManual=false;
+        state.reajManual=false;
         setMode("veiculos",false);
         deriveCore();autoLoan();
       },0);
@@ -301,14 +297,14 @@ window.ConsorcioCompareV2 = (function () {
     state.coreHistory=["c-prazo","c-taxa"];
     state.loanHistory=["c-entrada","c-fintaxa","c-finprazo"];
     state.netManual=false;state.rateManual=false;state.termManual=false;
-    state.priceLinked=true;state.reajManual=false;
+    state.reajManual=false;
     setMode("veiculos",false);
     deriveCore();deriveNet();autoLoan();
   }
   function calculate(){
     if(!deriveCore())throw Error("No consórcio, informe dois valores coerentes entre prazo, taxa total e parcela.");
     deriveNet();
-    const carta=value("c-carta"),bem=value("c-bem"),n=value("c-prazo"),taxa=value("c-taxa"),pmt=value("c-parcela");
+    const carta=value("c-carta"),bem=carta,n=value("c-prazo"),taxa=value("c-taxa"),pmt=value("c-parcela");
     const own=value("c-lance"),embedded=value("c-embutido"),liquid=value("c-liquida");
     const cost=value("c-extras"),reaj=value("c-reajuste"),month=value("c-contemplacao");
     if(!(bem>0&&carta>0&&n>=1&&n<=600&&Number.isInteger(n)&&pmt>0&&taxa<=200))throw Error("Confira carta, prazo, taxa e parcela do consórcio.");
@@ -419,13 +415,35 @@ window.ConsorcioCompareV2 = (function () {
       ["Diferença nominal",currency(diff)+(comparable?" — menor em "+winner:" — não conclusiva")],
       ["Contemplação hipotética","Mês "+month]
     ];
+    // Dados numéricos para análise técnica e comparação visual, sem recálculos na interface.
+    const consPriceGap=round(totalCons-bem),finPriceGap=round(totalFin-bem);
+    const financeAnnualEffective=Math.expm1(12*Math.log1p(finance.monthlyRate))*100;
+    const comparisonData={
+      comparable, winner, referenceValue:bem,
+      consTotal:totalCons, finTotal:totalFin, difference:diff,
+      consPriceGap,finPriceGap,
+      costDiffPercentOfFin:totalFin>0?diff/totalFin*100:0,
+      monthlyCons:pmt,monthlyPost:(postCount!==null?finalPay:null),
+      monthlyPostInferred:inferredPost, postCount,preCount,consTerm:n,
+      consInstallments:installmentTotal,consUpfront:own,
+      consOwn:own,embedded,consLiquid:liquid,consComplement:priceDifference,
+      consOtherCosts:cost,consReaj:reaj,
+      finFirst:finance.first,finLast:finance.last,finTerm:finance.term,
+      finInterest:finance.interest,finIof:finance.iof,finFees:finance.fees,
+      finInsuranceTotal:round(finance.insurance*finance.term),
+      finInstallments:finance.installmentTotal,finPrincipal:finance.principal,
+      finEntry:finance.entrada,finExternal:finance.external+finance.upfrontIOF,
+      finSystem:finance.system,finMonthlyRate:finance.monthlyRate*100,
+      finAnnualEffective:financeAnnualEffective,
+      monthContemplation:month
+    };
     return {
       main:comparable?currency(diff):"Comparação parcial",
       heading:comparable?"diferença nominal — menor em "+winner:"amortização pós-lance não informada",
       sub:"Financiamento calculado pelo "+(finance.system==="sac"?"SAC":"sistema Price")+"; entrada igual ao lance próprio. Totais nominais, sem desconto a valor presente ou garantia de contemplação.",
       metrics:[["Carta líquida",currency(liquid)],["Entrada = lance próprio",currency(own)],["Parcela financiamento",currency(finance.first)],["Juros do financiamento",currency(finance.interest)]],
       comparison:[["Consórcio",currency(totalCons)+(incompleteBid?" (parcial)":"")],["Financiamento",currency(totalFin)],["Compra à vista",currency(bem)]],
-      details,consortiumDetails,rows,warnings, finance, totalCons,totalFin
+      details,consortiumDetails,rows,warnings, finance, totalCons,totalFin,comparisonData
     };
   }
   return {init,calculate,afterExample,setMode};
