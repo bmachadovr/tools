@@ -253,3 +253,4 @@ footer p{margin:0;max-width:620px}
  .technical-bar-row{grid-template-columns:72px minmax(0,1fr)}
  .technical-section .compare-table{min-width:450px}
 }
+.technical-chart-head.technical-installments{border-top:1px solid #dbe7ea;padding-top:15px;margin-top:18px}
