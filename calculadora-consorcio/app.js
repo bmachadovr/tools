@@ -186,7 +186,7 @@
       '<div class="cash-legend"><span class="cash-legend-item"><i class="cash-legend-line cons"></i>Consórcio'+(d.comparable?"":" (parcial)")+'</span>'+
       '<span class="cash-legend-item"><i class="cash-legend-line fin"></i>Financiamento</span></div>'+
       chart+
-      '<p class="cash-chart-note">O financiamento considera entrada e despesas à vista no mês zero. O lance próprio e o complemento da compra no consórcio são lançados no mês '+d.monthContemplation+' (contemplação hipotética). O reajuste do consórcio é uma projeção anual simplificada. O gráfico não mostra saldo devedor nem custo a valor presente.</p>'+
+      '<p class="cash-chart-note">O financiamento considera entrada e despesas à vista no mês zero. '+(d.hasBid?'No consórcio, a primeira prestação é integral; o lance próprio e eventual complemento são contabilizados no mês 1, supondo contemplação na próxima assembleia, sem garanti-la. O abatimento começa na segunda prestação.':'Sem lance, o consórcio não possui previsão de contemplação; custos acessórios são registrados no primeiro mês apenas como convenção de fluxo.')+' O IPCA/INCC é hipótese anualizada, não previsão do índice contratual. O gráfico não mostra saldo devedor nem valor presente.</p>'+
       '<details class="technical-disclosure cash-milestones"><summary>Ver valores acumulados em meses selecionados</summary>'+
       table(["Marco","Consórcio","Financiamento"],rows).replace('<table class="compare-table">','<table class="compare-table cash-milestone-table">')+
       '</details></section>';
@@ -195,12 +195,7 @@
   function technicalComparison(data, extraWarnings) {
     const d=data.comparisonData;
     const roundPct=(x)=>Number(x).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+"%";
-    const scale=Math.max(d.consTotal,d.finTotal,d.referenceValue,1);
-    const width=(amount)=>Math.max(2,Math.min(100,amount/scale*100)).toFixed(2)+"%";
-    const nominalWinner=d.comparable
-      ? (Math.abs(d.consTotal-d.finTotal)<.01?"Desembolsos nominais equivalentes":
-          "Menor desembolso nominal: "+(d.consTotal<d.finTotal?"consórcio":"financiamento"))
-      : "Análise parcial — lance sem amortização validada";
+    const nominalWinner=Math.abs(d.consTotal-d.finTotal)<.01?"Desembolsos nominais equivalentes":"Menor desembolso nominal projetado: "+(d.consTotal<d.finTotal?"consórcio":"financiamento");
     const consPayment=d.monthlyPost!==null
       ? money(d.monthlyPost)+" <span class='technical-muted'>após o lance"+(d.monthlyPostInferred?" · estimativa":"")+"</span>"
       : money(d.monthlyCons)+" <span class='technical-muted'>parcela inicial</span>";
@@ -210,7 +205,7 @@
     const technicalRows=[
       ["Taxas informadas / juros do financiamento",roundPct(d.consFeesPct)+" (administração + reserva)",roundPct(d.finMonthlyRate)+" a.m. · "+roundPct(d.finAnnualEffective)+" a.a. efetivos"],
       ["Parcela inicial",money(d.monthlyCons),money(d.finFirst)],
-      ["Parcela pós-lance / final",d.monthlyPost===null?"Não informada":money(d.monthlyPost)+(d.monthlyPostInferred?" (estimada)":""),money(d.finLast)],
+      ["Parcela após lance / final",d.monthlyPost===null?"Sem lance":money(d.monthlyPost)+(d.monthlyPostInferred?" (estimada)":""),money(d.finLast)],
       ["Prestações",d.consTerm+" meses",d.finTerm+" meses"],
       ["Recursos próprios no início",money(d.consOwn),money(d.finEntry)],
       ["Crédito líquido / principal",money(d.consLiquid),money(d.finPrincipal)],
@@ -231,9 +226,8 @@
       (deltaMonths?" — diferença de "+deltaMonths+" meses.":" — mesma duração informada."));
     insights.push("No financiamento, os juros estimados somam "+money(d.finInterest)+
       " e o IOF estimado é "+money(d.finIof)+". O consórcio não tem IOF: sua estrutura de custo envolve administração, reserva e demais encargos contratuais.");
-    if(d.monthlyPost!==null)
-      insights.push("Após o lance, a prestação do consórcio foi considerada em "+money(d.monthlyPost)+
-        " durante "+d.postCount+" prestações"+(d.monthlyPostInferred?" (valor calculado por hipótese, não homologado).":"."));
+    if(d.hasBid)
+      insights.push("Na hipótese de lance vencedor na próxima assembleia, a 1ª prestação é integral ("+money(d.monthlyCons)+"). As "+d.postCount+" posteriores são projetadas em "+money(d.monthlyPost)+(d.monthlyPostInferred?" (abatimento linear estimado).":" (valor informado)."));
     if(d.consReaj>0)
       insights.push("O consórcio inclui hipótese de reajuste de "+roundPct(d.consReaj)+
         " ao ano. O modelo não reproduz integralmente reajustes do saldo imobiliário ou as datas reais das assembleias.");
@@ -243,11 +237,12 @@
         " Isso não representa economia a valor presente, nem vantagem assegurada pela contemplação.");
     else
       insights.push("Com lance e prazo pós-lance desconhecido, o custo do consórcio está incompleto. A diferença exibida não define qual alternativa custa menos.");
-    insights.push("Acesso ao bem: financiamento após contratação e aprovação; consórcio apenas após contemplação e liberação. Mês "+d.monthContemplation+" é cenário hipotético.");
+    insights.push(d.hasBid?"Acesso ao bem: o lance só permite a aquisição se vencer na próxima assembleia e ocorrer a liberação do crédito. O cenário não garante contemplação.":"Acesso ao bem: financiamento após aprovação; sem lance no consórcio, não se projeta data de contemplação ou liberação do crédito.");
     const cards='<div class="technical-cards">'+
       '<section class="technical-card"><div class="technical-card-title">Consórcio <span>Fluxo projetado</span></div>'+
         '<div class="technical-main">'+escapeHtml(money(d.consTotal))+'</div>'+
-        '<div class="technical-line"><span>Prestação</span><strong>'+consPayment+'</strong></div>'+
+        '<div class="technical-line"><span>1ª prestação (integral)</span><strong>'+escapeHtml(money(d.monthlyCons))+'</strong></div>'+ 
+        (d.hasBid?'<div class="technical-line"><span>Prestação após lance</span><strong>'+consPayment+'</strong></div>':'')+
         '<div class="technical-line"><span>Prazo</span><strong>'+d.consTerm+' meses</strong></div>'+
         '<div class="technical-line"><span>Capital próprio</span><strong>'+escapeHtml(money(d.consOwn))+'</strong></div>'+
         '<div class="technical-line"><span>Acima do valor de referência</span><strong>'+escapeHtml(money(d.consPriceGap))+'</strong></div>'+
@@ -434,7 +429,7 @@
   }
   const samples = {
     comparar: {
-      "c-carta":"100.000,00", "c-contemplacao":"1",
+      "c-carta":"100.000,00",
       "c-prazo":"100", "c-taxa":"20", "c-parcela":"",
       "c-lance":"0", "c-embutido":"0", "c-liquida":"",
       "c-apos-parcela":"", "c-apos-prazo":"", "c-extras":"", "c-reajuste":"4,69",
