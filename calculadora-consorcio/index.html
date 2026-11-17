@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#f5f7fa">
   <meta name="description" content="Compare alternativas de aquisição, analise lances e propostas e gere resumos de consórcio com cálculos transparentes.">
   <title>Calculadora de Consórcio | Central de Estratégias</title>
-  <link rel="stylesheet" href="styles.css?v=20261117-05">
-  <script src="input-masks.js?v=20261117-05" defer></script>
-  <script src="compare-v2.js?v=20261117-05" defer></script>
-  <script src="app.js?v=20261117-05" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20261117-06">
+  <script src="input-masks.js?v=20261117-06" defer></script>
+  <script src="compare-v2.js?v=20261117-06" defer></script>
+  <script src="app.js?v=20261117-06" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -37,12 +37,11 @@
     <section class="panel active" id="painel-comparar" role="tabpanel" aria-labelledby="tab-comparar">
       <div class="panel-head"><div><span class="section-kicker">ANÁLISE FINANCEIRA</span><h2>Consórcio ou financiamento?</h2><p>O mesmo bem, duas formas de aquisição. Calcule uma prestação a partir dos campos disponíveis, compare o dinheiro investido e considere a espera pela contemplação.</p></div><div class="panel-tools"><button type="button" class="example" data-example="comparar">Preencher exemplo</button><button type="reset" form="form-comparar" class="example" aria-label="Limpar todos os dados da comparação">Limpar</button></div></div>
       <div class="content-grid"><form id="form-comparar" class="form-card" autocomplete="off" novalidate>
-        <div class="how"><strong>Como usar</strong><p>Escolha <b>Veículos</b> ou <b>Imóveis</b> acima e informe o preço do bem e a carta. No consórcio, preencha dois entre prazo, taxa total e parcela. No financiamento, preencha três entre entrada, juros, prazo e parcela. <b>Entrada = lance com recursos próprios.</b> Use <b>Preencher exemplo</b> para ver uma demonstração ou <b>Limpar</b> para começar de novo.</p></div>
+        <div class="how"><strong>Como usar</strong><p>Escolha <b>Veículos</b> ou <b>Imóveis</b> acima e informe o valor do bem/carta. No consórcio, preencha dois entre prazo, taxa total e parcela. No financiamento, preencha três entre entrada, juros, prazo e parcela. <b>Entrada = lance com recursos próprios.</b> Use <b>Preencher exemplo</b> para ver uma demonstração ou <b>Limpar</b> para começar de novo.</p></div>
         <div class="form-section"><h3>Valores de referência</h3><div class="fields">
-          <label>Preço do bem <span>R$</span><input id="c-bem" inputmode="decimal" required></label>
-          <label>Carta de crédito <span>R$</span><input id="c-carta" inputmode="decimal" required></label>
+          <label>Valor do bem / carta de crédito <span>R$</span><input id="c-carta" inputmode="decimal" placeholder="0,00" required></label>
           <label>Contemplação hipotética <span>mês</span><input id="c-contemplacao" type="number" min="1" max="600" required></label>
-        </div><p class="hint">No botão <strong>Preencher exemplo</strong> você pode carregar uma carta de R$ 100.000 e contemplação hipotética no 1º mês. Sem clicar, os campos começam vazios. A contemplação é apenas hipótese, não previsão.</p></div>
+        </div><p class="hint">Um único valor serve de referência para o bem e a carta. O botão <strong>Preencher exemplo</strong> carrega R$ 100.000 e contemplação hipotética no mês 1. A contemplação não é previsão.</p></div>
         <div class="form-section"><h3>Consórcio <span class="inline-tag">preencha 2 campos</span></h3><div class="fields">
           <label>Prestações a pagar <span>meses</span><input id="c-prazo" type="number" min="1" max="600" placeholder="Ex.: 100"></label>
           <label>Taxa de administração + fundo reserva <span>% total</span><input id="c-taxa" inputmode="decimal" placeholder="Ex.: 20,00"></label>
