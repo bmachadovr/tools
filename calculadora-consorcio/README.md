@@ -1,9 +1,9 @@
 # Calculadora de Consórcio — Central de Estratégias Comerciais
 
-> **Status:** MVP funcional implementado em 17/11/2026; interface e lógica publicadas para teste de uso, com ressalvas matemáticas e contratuais explícitas.  
+> **Status:** Comparador V2 implementado em 17/11/2026, com modalidades ilustradas, campos reversíveis, entrada vinculada ao lance próprio e cálculo estimado de IOF. As demais três funcionalidades do MVP permanecem disponíveis.  
 > **Local:** `tools/calculadora-consorcio/` (pasta `calculadora-consorcio/` na raiz do repositório `tools`).  
 > **Produto:** aplicação web independente, estática, responsiva e orientada ao apoio à negociação.  
-> **Implementação atual:** `index.html`, `styles.css` e `app.js`; aplicação estática sem backend, acessível a partir da página inicial das ferramentas.
+> **Implementação atual:** `index.html`, `styles.css`, `compare-v2.js` e `app.js`; aplicação estática sem backend, acessível pela página inicial. Consulte **[SPEC_V2.md](SPEC_V2.md)** para a especificação consolidada do comparador.
 
 ## 1. Propósito
 
@@ -1150,3 +1150,64 @@ desembolso_consorcio = soma_prestacoes_a_pagar +
 **Exemplo ilustrativo:** bem de R$ 110.026, entrada R$ 22.005,20, saldo do bem de R$ 88.020,80, taxa de 1,60% a.m. e 60 meses. Ao preencher os custos reais, conferir a prestação calculada pelo método selecionado; não associar o exemplo a qualquer oferta institucional.
 
 **Estado da validação:** lógica implementada em JavaScript no navegador; não se trata de cotação bancária oficial ou pré-aprovação do financiamento.
+
+## 23. Comparador V2 implementado — modalidade, campos reversíveis e IOF (17/11/2026)
+
+**Especificação de referência:** **[SPEC_V2.md](SPEC_V2.md)**, contendo apresentação, sequência dos campos, fórmulas, sincronização de dados, tratamento tributário, limitações e testes.
+
+### 23.1. Alterações efetivas
+
+1. **Modalidade no topo:** dois cartões visuais, **Veículos** e **Imóveis**, com desenhos vetoriais editáveis. Serviços foi removido da seleção do comparador; as demais ferramentas seguem disponíveis.
+2. **Valores iniciais:** bem e carta em **R$ 100.000,00**; contemplação **hipotética no primeiro mês**, devidamente sinalizada.
+3. **Consórcio:** ordem dos campos principais: **prestações a pagar → taxa total de administração + reserva → valor da parcela**. Com dois campos preenchidos, o terceiro é resolvido automaticamente; prazo calculado é inteiro, com aviso se aproximado.
+4. **Detalhamento opcional do consórcio:** lance próprio → embutido → crédito líquido após embutido → nova prestação após lance → prazo após lance → outros custos → reajuste anual.
+5. **Regra central:** **entrada do financiamento = lance com recursos próprios**. Edição de qualquer lado atualiza imediatamente o outro. Embutido diminui crédito líquido, não aumenta entrada.
+6. **Financiamento:** entrada → juros → prazo → parcela. Com três valores válidos, calcular o quarto; juros e entrada são resolvidos numericamente quando ausentes, prazo arredondado ao inteiro mais próximo, prestação calculada pelo método escolhido. Prestação SAC é a **primeira prestação**.
+7. **Taxa por modalidade:** veículos utilizam taxa de juros **mensal**; imóveis recebem taxa **anual efetiva**, transformada em equivalente mensal para amortização.
+8. **IOF estimado automaticamente:** alíquotas gerais de pessoa física de **0,0082% ao dia por amortização**, limitadas a 365 dias, mais **0,38% adicional**, quando tributável. Em finalidade **habitacional**, indicação de isenção conforme Decreto nº 6.306/2007, art. 9º. Incluir possibilidade de outras isenções confirmadas, ajuste de datas, IOF financiado ou pago à vista. **Estimativa ≠ IOF oficial.**
+9. **SAC/Price e seguro:** método Price padrão, SAC opcional; tarifas financiadas, seguro mensal e custos à vista ficam recolhidos em `details`.
+10. **Resultado discriminado:** resumo do custo nominal de cada alternativa e tabelas separadas de componentes de consórcio e financiamento.
+11. **Lance sem cronograma validado:** se não houver quantidade de prestações após lance, não declarar vencedor; o quadro passa a ser **comparação parcial**.
+12. **Preservação:** as abas Estratégia de lances, Analisar concorrente e Gerar proposta continuam integradas e inalteradas em seu escopo.
+
+### 23.2. Fórmulas resumidas
+
+```text
+carta_inicial = 100000                    # referência editável
+contemplacao_hipotetica = mes_1           # não é previsão
+
+parcela_consorcio = carta × (1 + taxa_total/100) / prestacoes
+taxa_total = 100 × (parcela × prestacoes / carta - 1)
+prestacoes = carta × (1 + taxa_total/100) / parcela
+
+entrada_financiamento = lance_proprio
+credito_liquido = carta - lance_embutido
+saldo_compra_financiado = preco_bem - entrada
+principal = saldo_compra_financiado + custos_financiados + iof_se_financiado
+
+taxa_mensal_imoveis = (1 + taxa_anual_efetiva/100)^(1/12) - 1
+taxa_mensal_veiculos = taxa_mensal_informada/100
+
+parcela_price = principal × juros_mensal / (1 - (1+juros_mensal)^(-n))
+parcela_sac_t = principal/n + saldo_inicial_t × juros_mensal
+```
+
+### 23.3. Validações executadas
+
+- [x] Sintaxe e inicialização dos dois scripts, com os IDs reais da página.
+- [x] Carta R$ 100 mil, prazo 100, administração + reserva de 20% → **parcela R$ 1.200,00**.
+- [x] Dada a parcela de R$ 1.500,00 e taxa de 20%, prazo calculado **80 meses**.
+- [x] Dada a parcela de R$ 1.300,00 e prazo de 100, taxa calculada **30%**.
+- [x] Entrada de financiamento editada atualiza lance próprio, e lance próprio editado atualiza entrada.
+- [x] Cálculo inverso do financiamento para **entrada, juros e prazo**, além de prestação direta.
+- [x] Selecionar imóveis converte taxa anual efetiva e sinaliza IOF habitacional como isento.
+- [x] Selecionar imóvel não habitacional gera cenário tributável.
+- [x] Combinado de lance de R$ 20 mil próprio e R$ 30 mil embutido numa carta de R$ 100 mil → crédito líquido **R$ 70 mil**, entrada **R$ 20 mil**.
+- [x] Quando o lance não tem prazo posterior informado, sinaliza **comparação parcial**.
+- [x] Manter exemplos como ilustrativos, sem enviar por WhatsApp como oferta real.
+- [ ] Homologar visualização em navegador real desktop e Android; incluindo abertura de `details` e espaçamento dos cartões ilustrados.
+- [ ] Verificar externamente publicação pelo Pages; a consulta pública não estava disponível no ambiente de testes.
+- [ ] Conciliar com propostas reais o IOF calculado a partir dos prazos e datas específicos.
+- [ ] Validar cálculos com IOF financiado em múltiplos regimes, incluindo valores arredondados e possíveis diferenças de centavos.
+
+**Atenção:** o fluxo completo de um consórcio com lance, amortização e reajustes não pode ser reproduzido fielmente sem o cronograma real. A diferença exibida continua sendo **nominal** e não captura risco de contemplação, custo de espera e valor presente.
