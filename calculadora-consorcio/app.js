@@ -300,7 +300,7 @@
       "c-bem":"100.000,00", "c-carta":"100.000,00", "c-contemplacao":"1",
       "c-prazo":"100", "c-taxa":"20", "c-parcela":"",
       "c-lance":"0", "c-embutido":"0", "c-liquida":"",
-      "c-apos-parcela":"", "c-apos-prazo":"", "c-extras":"", "c-reajuste":"",
+      "c-apos-parcela":"", "c-apos-prazo":"", "c-extras":"", "c-reajuste":"4,69",
       "c-entrada":"0", "c-fintaxa":"1,50", "c-finprazo":"60", "c-finparcela":"",
       "c-sistema":"price", "c-fintarifas":"", "c-finseguro":"", "c-finextras":""
     },
@@ -336,6 +336,7 @@
       const kind = button.dataset.example;
       Object.entries(samples[kind]).forEach(([id, value]) => { $(id).value = value; });
       if (kind === "comparar" && window.ConsorcioCompareV2) window.ConsorcioCompareV2.afterExample();
+      if (window.ConsorcioMasks) window.ConsorcioMasks.formatAll();
       examplesUsed[kind] = true;
       const el = $("erro-" + kind);
       el.textContent = "Exemplo ilustrativo carregado. Para informar uma operação real, clique em Limpar e preencha novamente.";
