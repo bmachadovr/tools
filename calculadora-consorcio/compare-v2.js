@@ -282,7 +282,7 @@ window.ConsorcioCompareV2 = (function () {
     });
     get("form-comparar").addEventListener("reset",()=>{
       window.setTimeout(()=>{
-        const fields=["c-carta","c-contemplacao","c-prazo","c-taxa","c-parcela",
+        const fields=["c-carta","c-prazo","c-taxa","c-parcela",
           "c-lance","c-embutido","c-liquida","c-apos-parcela","c-apos-prazo","c-extras",
           "c-entrada","c-fintaxa","c-finprazo","c-finparcela",
           "c-fintarifas","c-finseguro","c-finextras","c-contratacao","c-primeiro-vencimento"];
@@ -317,9 +317,8 @@ window.ConsorcioCompareV2 = (function () {
     deriveNet();
     const carta=value("c-carta"),bem=carta,n=value("c-prazo"),taxa=value("c-taxa"),pmt=value("c-parcela");
     const own=value("c-lance"),embedded=value("c-embutido"),liquid=value("c-liquida");
-    const cost=value("c-extras"),reaj=value("c-reajuste"),month=value("c-contemplacao");
+    const cost=value("c-extras"),reaj=value("c-reajuste");
     if(!(bem>0&&carta>0&&n>=1&&n<=600&&Number.isInteger(n)&&pmt>0&&taxa<=200))throw Error("Confira carta, prazo, taxa e parcela do consórcio.");
-    if(!Number.isInteger(month)||month<1||month>n)throw Error("A contemplação hipotética deve ocorrer entre o mês 1 e o prazo informado.");
     if(embedded>carta*.30+.01)throw Error("O lance embutido não pode superar 30% da carta neste perfil de referência.");
     if(embedded>carta||liquid<0||reaj>100)throw Error("Confira lance embutido, crédito líquido e reajuste.");
     if(!present("c-entrada")||Math.abs(value("c-entrada")-own)>.01){
@@ -332,86 +331,98 @@ window.ConsorcioCompareV2 = (function () {
     const warnings=[];
     const calculatedNet=round(carta-embedded);
     if(Math.abs(liquid-calculatedNet)>.02)warnings.push("O crédito líquido informado difere de carta menos lance embutido. Verifique outras deduções contratuais antes de apresentar o resultado.");
-    const totalBid=own+embedded;
-    let postCount=present("c-apos-prazo")?value("c-apos-prazo"):null;
-    if(postCount!==null&&(!Number.isInteger(postCount)||postCount<1||postCount>n))throw Error("As prestações após lance devem ser inteiras e não superar o prazo informado.");
-    let postPay=present("c-apos-parcela")?value("c-apos-parcela"):null;
-    let inferredPost=false, incompleteBid=false;
-    if(totalBid>0&&postCount!==null&&postPay===null){
-      postPay=round(pmt-totalBid/postCount);
-      if(postPay<=0)throw Error("O lance informado supera o saldo amortizável do cenário simplificado. Informe a nova parcela real.");
-      inferredPost=true;
-      warnings.push("Parcela após lance estimada pela divisão do lance entre "+postCount+" prestações; confirme no simulador do grupo.");
-    }
-    if(totalBid>0&&postCount===null){
-      incompleteBid=true;
-      warnings.push("Foi informado lance, mas não a quantidade de prestações após lance. O desembolso calculado mantém as parcelas originais e NÃO desconta a amortização do lance: comparação parcial.");
-    }
-    if(postPay!==null&&postCount===null){
-      warnings.push("A nova parcela foi informada, mas falta o prazo após lance. Não é possível usar esse valor na soma de prestações.");
-    }
-    if(totalBid===0&&postPay!==null&&postCount!==null){
-      warnings.push("Os valores após lance foram informados sem lance correspondente; confira se a cota já tinha amortizações anteriores.");
+    const totalBid=round(own+embedded);
+    const hasBid=totalBid>.005;
+    // A hipótese com lance é sempre a assembleia seguinte; primeiro vence
+    // uma prestação integral, e só as demais recebem a amortização do lance.
+    const month=hasBid?1:null;
+    const inputPostCount=present("c-apos-prazo")?value("c-apos-prazo"):null;
+    const inputPostPay=present("c-apos-parcela")?value("c-apos-parcela"):null;
+    if(inputPostCount!==null&&(!Number.isInteger(inputPostCount)||inputPostCount<1||inputPostCount>600))
+      throw Error("As prestações após lance devem ser um número inteiro entre 1 e 600.");
+    if(hasBid&&n<2)throw Error("Com uma única prestação restante não há parcelas posteriores para amortizar o lance. Informe o cronograma real.");
+    let postCount=null,postPay=null,inferredPost=false,inferredCount=false,termReduction=false;
+    if(hasBid){
+      postCount=inputPostCount===null?n-1:inputPostCount;
+      inferredCount=inputPostCount===null;
+      if(postCount>n-1)throw Error("As prestações após lance não podem superar o prazo restante menos a primeira parcela integral.");
+      termReduction=postCount<n-1;
+      if(inputPostPay!==null){
+        if(!(inputPostPay>0))throw Error("A prestação após lance precisa ser positiva.");
+        postPay=inputPostPay;
+      }else if(termReduction){
+        // Se o operador informou prazo menor (redução de prazo), manter a
+        // prestação original na projeção; sem cronograma real não supor resíduo.
+        postPay=pmt;
+        inferredPost=true;
+        warnings.push("Prazo após lance informado sem nova parcela: a simulação mantém a prestação original após o primeiro vencimento. Confira eventual parcela residual no demonstrativo.");
+      }else{
+        // Projeção linear: lance amortiza exclusivamente obrigações futuras;
+        // taxas e diferenças por distribuição não linear dependem do grupo.
+        postPay=round(pmt-totalBid/postCount);
+        inferredPost=true;
+        if(!(postPay>0))throw Error("O lance supera a soma das prestações futuras no modelo linear. Informe o cronograma após lance fornecido pelo simulador.");
+        warnings.push("Parcela pós-lance estimada por amortização linear do lance nas "+postCount+" prestações posteriores à primeira integral. A prestação real pode diferir.");
+      }
+      if(inferredCount)warnings.push("Prazo após lance não informado: preservadas "+postCount+" prestações após a primeira, como hipótese de redução da parcela.");
+      warnings.push("O lance é considerado na assembleia seguinte, apenas se vencedor. A primeira prestação é integral; o abatimento começa na segunda.");
+    }else{
+      if(inputPostCount!==null||inputPostPay!==null)
+        warnings.push("Valores após lance preenchidos sem lance próprio ou embutido: foram desconsiderados nesta comparação.");
+      warnings.push("Sem lance informado: nenhuma data de contemplação é prevista ou presumida pela ferramenta.");
     }
     const priceDifference=Math.max(0,bem-liquid);
     const excess=Math.max(0,liquid-bem);
-    const totalCount=postCount===null?n:postCount;
-    const preCount=postCount===null?0:n-postCount;
-    // Sem prazo pós-lance validado, não aplicar a nova parcela ao prazo inteiro.
-    const finalPay=(postCount===null||postPay===null?pmt:postPay);
+    const totalCount=hasBid?postCount:n;
+    const preCount=hasBid?1:0;
+    const consTerm=hasBid?1+postCount:n;
+    const finalPay=hasBid?postPay:pmt;
     let installmentTotal=0;
-    // A distribuição real de taxas e reajustes é obtida da proposta; aqui o
-    // crescimento anual é apenas uma projeção transparente em blocos de 12 meses.
-    for(let t=1;t<=preCount;t++)installmentTotal+=pmt*Math.pow(1+reaj/100,Math.floor((t-1)/12));
-    for(let t=1;t<=totalCount;t++)installmentTotal+=finalPay*Math.pow(1+reaj/100,Math.floor((preCount+t-1)/12));
+    // Em planos lineares: a prestação é uma fração fixa da carta de
+    // referência; sua atualização hipotética acompanha o índice anual.
+    // Isso não reproduz a distribuição de taxas de planos não lineares.
+    const installmentAt=(t)=>{
+      const base=hasBid&&t>1?finalPay:pmt;
+      return base*Math.pow(1+reaj/100,Math.floor((t-1)/12));
+    };
+    for(let t=1;t<=consTerm;t++)installmentTotal+=installmentAt(t);
     installmentTotal=round(installmentTotal);
     const totalCons=round(installmentTotal+own+cost+priceDifference);
     const totalFin=finance.total,diff=round(Math.abs(totalCons-totalFin));
-    // Séries de caixa acumulado. O financiamento tem entrada e despesas à vista no mês zero.
-    // No consórcio, lance próprio, complemento do bem e custos são colocados no mês
-    // hipotético da contemplação, sem implicar data garantida de aquisição.
-    // As prestações reproduzem exatamente as hipóteses usadas nos totais.
-    const finalMonth=Math.max(n,finance.term);
+    // O desembolso do financiamento inclui entrada no mês zero.
+    // Com lance, no primeiro mês o consorciado paga a prestação integral e
+    // hipoteticamente o lance vencedor; sem lance, não se prevê contemplação.
+    const finalMonth=Math.max(consTerm,finance.term);
     const flow=[];
-    let runningCons=0, runningFin=round(finance.entrada+finance.external+finance.upfrontIOF);
+    let runningCons=0,runningFin=round(finance.entrada+finance.external+finance.upfrontIOF);
     flow.push({month:0,cons:0,fin:runningFin});
     for(let t=1;t<=finalMonth;t++){
-      if(t<=n){
-        const paymentBase=t<=preCount?pmt:finalPay;
-        runningCons+=paymentBase*Math.pow(1+reaj/100,Math.floor((t-1)/12));
-        if(t===month)runningCons+=own+cost+priceDifference;
-      }
+      if(t<=consTerm)runningCons+=installmentAt(t);
+      if(t===1)runningCons+=own+cost+priceDifference;
       if(t<=finance.term){
         let loanPayment;
         if(finance.system==="sac"){
-          const balanceBefore=Math.max(0,finance.principal-finance.principal*(t-1)/finance.term);
-          loanPayment=round(finance.principal/finance.term+balanceBefore*finance.monthlyRate+finance.insurance);
-        }else{
-          loanPayment=t===finance.term?finance.last:finance.first;
-        }
+          const before=Math.max(0,finance.principal-finance.principal*(t-1)/finance.term);
+          loanPayment=round(finance.principal/finance.term+before*finance.monthlyRate+finance.insurance);
+        }else loanPayment=t===finance.term?finance.last:finance.first;
         runningFin+=loanPayment;
       }
       flow.push({month:t,cons:round(runningCons),fin:round(runningFin)});
     }
-    // Verificar que os custos do último ponto correspondem à memória de cálculo.
     const lastFlow=flow[flow.length-1];
-    if(Math.abs(lastFlow.cons-totalCons)>.02||Math.abs(lastFlow.fin-totalFin)>.02){
+    if(Math.abs(lastFlow.cons-totalCons)>.02||Math.abs(lastFlow.fin-totalFin)>.02)
       throw Error("Inconsistência no fluxo acumulado. Confira parcelas e custos antes de comparar.");
-    }
 
-    if(totalBid>0&&postCount!==null&&n-postCount!==month)warnings.push("O cronograma pós-lance informado sugere início após o mês "+(n-postCount)+", diferente da contemplação hipotética no mês "+month+". Confirme as datas reais do grupo.");
-    if(month!==1)warnings.push("A contemplação no mês "+month+" é somente hipótese; custos de espera não foram incluídos.");
-    else warnings.push("Contemplação no primeiro mês é hipótese de comparação, sem promessa de ocorrência.");
     if(excess>0)warnings.push("Crédito líquido excede o preço do bem em "+brMoney(excess)+". Não se considera a diferença dinheiro livre.");
-    if(reaj>0)warnings.push("Reajuste anual de "+brNum(reaj)+"% é uma hipótese aplicada em blocos de 12 prestações, sem vinculação às assembleias.");
+    if(reaj>0)warnings.push("Reajuste de "+brNum(reaj)+"% ao ano aplicado sobre a carta de referência em ciclos de 12 meses, por hipótese de plano linear. Não representa FIPE futura ou data-base real do grupo.");
     if(finance.daysApprox&&finance.iof>0)warnings.push("IOF estimado com intervalos de 30 dias e condições gerais de pessoa física. Confirme datas, eventual isenção e tributo oficial.");
     if(finance.mode==="imoveis"){
       warnings.push("Simulação imobiliária com taxa anual efetiva convertida para mensal; não inclui TR, índice do saldo devedor, seguros variáveis ou eventual evolução de obra.");
       if(get("c-habitacional").checked)warnings.push("IOF tratado como isento por finalidade habitacional. Se o imóvel não se enquadrar, desmarque essa opção no detalhamento.");
     }else if(finance.iof>0) warnings.push("IOF de veículo calculado como estimativa; isenções ou enquadramentos especiais podem alterar o valor oficial.");
-    if(incompleteBid)warnings.push("Não declare vencedor pelo custo nominal enquanto a amortização pós-lance estiver ausente.");
-    const comparable=!incompleteBid;
-    const winner=!comparable?"Comparação parcial":(Math.abs(totalCons-totalFin)<.01?"Mesmo desembolso":(totalCons<totalFin?"Consórcio":"Financiamento"));
+    if(hasBid&&inferredPost)warnings.push("Para maior fidelidade, substitua a prestação pós-lance estimada pelo valor informado no simulador real.");
+    const comparable=true;
+    const winner=Math.abs(totalCons-totalFin)<.01?"Mesmo desembolso":(totalCons<totalFin?"Consórcio":"Financiamento");
     const currency=brMoney;
     const financePayment=finance.system==="sac"?currency(finance.first)+" (1ª) / "+currency(finance.last)+" (última)":currency(finance.first)+(finance.first!==finance.last?" / última ajustada "+currency(finance.last):"");
     const consortiumDetails=[
@@ -422,12 +433,13 @@ window.ConsorcioCompareV2 = (function () {
       ["Crédito disponível após embutido",currency(liquid)],
       ["Prestação inicial",currency(pmt)],
       ["Prestações originais",String(n)],
-      ["Prestações após lance",postCount===null?"Não informadas":String(postCount)],
-      ["Nova prestação após lance",postCount===null?"Não aplicada":(postPay===null?"Não informada":currency(finalPay)+(inferredPost?" (estimada)":""))],
+      ["Prestações após lance",postCount===null?"Não há lance":String(postCount)],
+      ["Primeira prestação integral",currency(pmt)],
+      ["Nova prestação após lance",postCount===null?"Não há lance":currency(finalPay)+(inferredPost?" (estimada)":"")],
       ["Total em prestações",currency(installmentTotal)],
       ["Complemento para adquirir o bem",currency(priceDifference)],
       ["Custos adicionais",currency(cost)],
-      ["Desembolso nominal do consórcio",currency(totalCons)+(incompleteBid?" (parcial)":"")]
+      ["Desembolso nominal do consórcio",currency(totalCons)]
     ];
     const details=[
       ["Financiamento do bem",currency(finance.financedPrice)],
@@ -449,15 +461,15 @@ window.ConsorcioCompareV2 = (function () {
       ["Prestações originais",n+" × "+currency(pmt)],
       ["Lance com capital próprio / entrada",currency(own)],
       ["Lance embutido",currency(embedded)],
-      ["Prestações pós-lance",postCount==null?"Não informadas":postCount+" × "+currency(finalPay)+(inferredPost?" (estimada)":"")],
-      ["Desembolso consórcio",currency(totalCons)+(incompleteBid?" (parcial)":"")],
+      ["Prestações pós-lance",postCount==null?"Sem lance":postCount+" × "+currency(finalPay)+(inferredPost?" (estimada)":"")],
+      ["Desembolso consórcio",currency(totalCons)],
       ["Sistema do financiamento",finance.system==="sac"?"SAC":"Price"],
       ["Prestação do financiamento",financePayment],
       ["IOF estimado",currency(finance.iof)],
       ["Juros do financiamento",currency(finance.interest)],
       ["Desembolso financiamento",currency(totalFin)],
-      ["Diferença nominal",currency(diff)+(comparable?" — menor em "+winner:" — não conclusiva")],
-      ["Contemplação hipotética","Mês "+month]
+      ["Diferença nominal",currency(diff)+" — menor em "+winner],
+      ["Cenário com lance",hasBid?"Assembleia seguinte (hipótese), após a 1ª parcela integral":"Sem data de contemplação estimada"]
     ];
     // Dados numéricos para análise técnica e comparação visual, sem recálculos na interface.
     const consPriceGap=round(totalCons-bem),finPriceGap=round(totalFin-bem);
@@ -468,7 +480,7 @@ window.ConsorcioCompareV2 = (function () {
       consPriceGap,finPriceGap,
       costDiffPercentOfFin:totalFin>0?diff/totalFin*100:0,
       monthlyCons:pmt,monthlyPost:(postCount!==null?finalPay:null),
-      monthlyPostInferred:inferredPost, postCount,preCount,consTerm:n,
+      monthlyPostInferred:inferredPost, postCount,preCount,consTerm,originalConsTerm:n,
       consInstallments:installmentTotal,consUpfront:own,
       consOwn:own,embedded,consLiquid:liquid,consComplement:priceDifference,
       consOtherCosts:cost,consReaj:reaj,consFeesPct:taxa,
@@ -479,14 +491,14 @@ window.ConsorcioCompareV2 = (function () {
       finEntry:finance.entrada,finExternal:finance.external+finance.upfrontIOF,
       finSystem:finance.system,finMonthlyRate:finance.monthlyRate*100,
       finAnnualEffective:financeAnnualEffective,
-      monthContemplation:month,flow
+      hasBid,monthContemplation:month,flow
     };
     return {
-      main:comparable?currency(diff):"Comparação parcial",
-      heading:comparable?"diferença nominal — menor em "+winner:"amortização pós-lance não informada",
-      sub:"Financiamento calculado pelo "+(finance.system==="sac"?"SAC":"sistema Price")+"; entrada igual ao lance próprio. Totais nominais, sem desconto a valor presente ou garantia de contemplação.",
+      main:currency(diff),
+      heading:"diferença nominal projetada — menor em "+winner,
+      sub:"Financiamento calculado pelo "+(finance.system==="sac"?"SAC":"sistema Price")+"; entrada igual ao lance próprio. Com lance, primeira parcela integral e abatimento nas posteriores. Totais nominais, sem valor presente.",
       metrics:[["Carta líquida",currency(liquid)],["Entrada = lance próprio",currency(own)],["Parcela financiamento",currency(finance.first)],["Juros do financiamento",currency(finance.interest)]],
-      comparison:[["Consórcio",currency(totalCons)+(incompleteBid?" (parcial)":"")],["Financiamento",currency(totalFin)],["Compra à vista",currency(bem)]],
+      comparison:[["Consórcio",currency(totalCons)],["Financiamento",currency(totalFin)],["Compra à vista",currency(bem)]],
       details,consortiumDetails,rows,warnings, finance, totalCons,totalFin,comparisonData
     };
   }
