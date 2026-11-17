@@ -78,7 +78,7 @@ Quando taxa = zero, usar `principal/prazo` e corrigir eventual resíduo de arred
 
 ### Opcionais do financiamento (recolhidos)
 
-- Regime **Price/SAC** (Price por padrão).
+- Regime de financiamento por modalidade: **CDC/Price obrigatório no comparador de veículos**, e **Price ou SAC configurável para imóveis**.
 - Tarifas financiadas.
 - Seguro mensal.
 - Custos pagos à vista.
@@ -99,7 +99,7 @@ iof = 0,38% × base_financiada
     + 0,0082% × SOMA[pagamento_principal_t × min(dias_ate_vencimento_t, 365)]
 ```
 
-- Distribuir amortizações pelo sistema escolhido (Price/SAC).
+- Distribuir amortizações conforme o financiamento: **Price em veículos**, **Price ou SAC em imóveis**.
 - Quando datas não forem fornecidas, aproximar vencimentos a cada 30 dias. A ferramenta **não garante cálculo tributário oficial** nem contempla todas as particularidades fiscais.
 - Para **imóvel habitacional elegível**, aplicar **isenção** (art. 9º, I), se a opção estiver marcada. Imóveis não habitacionais podem ser tributáveis.
 - Também existem isenções especiais em outras operações, inclusive hipóteses específicas para veículos (art. 9º, VI). Disponibilizar marcação manual de isenção para casos confirmados.
@@ -126,7 +126,7 @@ Exibir:
 | Preencher entrada 15.000 | Lance próprio = **R$ 15.000,00** |
 | Carta 100.000; lance embutido 30.000 | Crédito líquido = **R$ 70.000,00**; entrada não aumenta |
 | Veículos: Price com entrada, taxa e prazo | Prestação e IOF estimados calculados |
-| Veículos: SAC | Mostrar primeira e última prestações, não uma fixa |
+| Imóveis: SAC | Mostrar primeira e última prestações, não uma fixa |
 | Imóveis: 12% a.a. efetiva | Converter para taxa mensal equivalente; prestação mensal |
 | Imóvel habitacional | IOF isento **condicional ao enquadramento** |
 | Financiamento com três de quatro campos | Resolver campo faltante: entrada, juros, prazo ou parcela |
@@ -192,7 +192,7 @@ O índice é **referência histórica estática**, não previsão e não consult
 
 1. **Diagnóstico nominal**, com diferença projetada e identificação explícita de **comparação parcial** quando faltar cronograma de lance.
 2. **Dois cartões**, apresentando total pago, prestação, prazo e recursos necessários no consórcio/financiamento.
-3. **Gráficos em escala comum** para valores totais e primeiras prestações; valores exibidos ao lado das barras. Não são gráficos de custo presente.
+3. **Gráfico de linhas de desembolso nominal acumulado**, do mês zero até o último vencimento, com ambas as alternativas na mesma escala, linha estabilizando após o fim do pagamento e valores de marcos selecionados. Não é gráfico de saldo devedor ou de custo presente.
 4. **Tabela técnica** com taxas totais (não comparáveis diretamente à taxa de juros), parcelas inicial e após lance/final, prazos, capital próprio/entrada, crédito líquido/principal, juros, IOF, custos e total.
 5. **Leitura técnica** em linguagem acessível, com diferença de prestações, duração, estrutura de custos e riscos de contemplação e reajuste.
 6. **Memória de cálculo expansível** preservando componentes detalhados por alternativa e premissas.
@@ -212,3 +212,40 @@ O índice é **referência histórica estática**, não previsão e não consult
 - [ ] Homologar o comportamento visual real no navegador do computador e no teclado Android.
 
 O fluxo atual permanece **uma ferramenta de apoio comercial**, e não um cálculo automático e completo de contrato de consórcio ou de CET do financiamento.
+
+## 9. Evolução temporal dos desembolsos e modalidades de financiamento (17/11/2026)
+
+### 9.1. Modalidades de financiamento fixadas no produto
+
+- **Veículos:** modelar a comparação com financiamento **CDC de prestações fixas pelo sistema Price**. A opção SAC fica **oculta e desativada** e o motor impõe Price mesmo se o seletor for alterado fora do fluxo visual.
+- **Imóveis:** permitir **Price** e **SAC** no bloco de detalhes, mantendo juros **anuais efetivos** como entrada e convertendo-os em taxa mensal equivalente. Em SAC, as prestações decrescem segundo a amortização constante.
+- Ao trocar modalidade, o sistema retorna o seletor a Price, preservando coerência e não reutilizando taxa de juros anual como mensal.
+- **Consórcio não possui IOF**; o IOF mostrado é **somente do financiamento**, quando devido, e nunca entra no fluxo do consórcio.
+
+### 9.2. Gráfico de linhas de desembolso acumulado
+
+Substituir as barras de custos por um gráfico com **duas linhas temporais**:
+
+- Eixo X: **mês 0** até `max(prestacoes_consorcio, prazo_financiamento)`.
+- Eixo Y: **desembolso nominal acumulado em reais**; escala idêntica para ambas as alternativas.
+- **Financiamento no mês 0:** entrada (= lance próprio), despesas à vista e IOF pago à vista, se aplicável; **a cada mês** somar a prestação Price ou SAC, com seguro mensal já incluído quando informado.
+- **Consórcio no mês 0:** zero por padrão; em cada mês somar prestação do cenário e o reajuste anual hipotético. O **lance próprio, complemento para compra e outros custos** são contabilizados no **mês hipotético da contemplação**, e não necessariamente na contratação. Se for informado cronograma após lance, respeitar as prestações iniciais e posteriores à amortização.
+- Após o encerramento do prazo de uma alternativa, sua linha fica **horizontal**, enquanto a outra segue acumulando pagamentos.
+- Se existir lance sem cronograma pós-lance, a linha de consórcio deve ser **tracejada** e sinalizada como **parcial**, sem declarar vencedor.
+- Exibir legenda, valores ao passar sobre marcos selecionados e tabela expansível de valores acumulados nos meses selecionados.
+- **Reconciliação obrigatória:** os últimos pontos das duas séries precisam coincidir com os totais dos cartões de resultados. Erro de conciliação impede apresentação de um resultado aparentemente preciso.
+
+### 9.3. Limites de interpretação
+
+O eixo Y mostra **quanto foi pago ao longo do tempo**, não saldo devedor, rentabilidade, inflação acumulada ou CET. O mês de contemplação é hipótese, sem garantia; o tempo até liberação do bem não é precificado. A entrada do financiamento no mês zero e o lance do consórcio no mês da contemplação são **premissas explícitas**. O índice de reajuste é estático, editável e não reproduz cronograma contratual completo.
+
+### 9.4. Testes automatizados desta versão
+
+- [x] Veículos: apenas Price disponível e usado pelo motor; tentativa de selecionar SAC fora da interface é ignorada.
+- [x] Imóveis: Price ou SAC; teste com SAC mostrou primeira prestação maior que a última.
+- [x] Exemplo com carta de R$ 100.000: último ponto de ambas as linhas coincide com os desembolsos totais exibidos.
+- [x] Lance próprio com entrada equivalente; fluxo do financiamento começa com a entrada no mês zero, e consórcio contabiliza lance no mês hipotético da contemplação.
+- [x] Lance embutido reduz o crédito, sem criar entrada adicional no financiamento.
+- [x] Financiamento sem juros trata a última prestação residual sem gerar juros negativos e concilia os fluxos.
+- [x] Consórcio não contém cobrança de IOF em nenhum componente de sua soma de caixa.
+- [ ] Verificar renderização efetiva do novo gráfico de linhas em desktop e celular após a publicação dos arquivos.
