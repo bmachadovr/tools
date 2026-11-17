@@ -463,7 +463,7 @@ window.ConsorcioCompareV2 = (function () {
     const consPriceGap=round(totalCons-bem),finPriceGap=round(totalFin-bem);
     const financeAnnualEffective=Math.expm1(12*Math.log1p(finance.monthlyRate))*100;
     const comparisonData={
-      comparable, winner, referenceValue:bem,
+      mode:state.mode, comparable, winner, referenceValue:bem,
       consTotal:totalCons, finTotal:totalFin, difference:diff,
       consPriceGap,finPriceGap,
       costDiffPercentOfFin:totalFin>0?diff/totalFin*100:0,
