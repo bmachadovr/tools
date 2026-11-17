@@ -561,7 +561,80 @@ A **média nominal aritmética arredondada** coincide com a **primeira parcela**
 - [ ] Obter composição discriminada da primeira parcela (fundo comum, administração regular, administração antecipada, reserva, seguro e eventuais encargos).
 - [ ] Obter o cronograma de cobrança por mês/faixa ou parcelas de referência em diferentes etapas do grupo.
 - [ ] Identificar possíveis antecipações de administração e a regra efetiva para este grupo.
-- [ ] Obter simulação do **mesmo plano** com lance próprio, embutido ou combinado para aferir efeito sobre prazo e prestação.
+- [x] Obter uma segunda simulação do **mesmo plano** com lance de 30% da carta, com redução da parcela informada. A **origem do lance** ainda não foi confirmada.
+- [ ] Obter exemplos com **lance próprio e embutido identificados separadamente**, inclusive mudança de prazo e cronogramas das parcelas posteriores.
 - [ ] Confirmar o calendário e a base dos reajustes FIPE.
 
-**Decisão de produto:** o exemplo valida a **reconciliação do custo nominal** e fornece um caso concreto para entrada de dados. **Não homologar ainda projeções de parcelas mensais ou redução pós-lance** sem conhecer o cronograma do grupo.
+**Decisão de produto:** o primeiro exemplo valida a **reconciliação do custo nominal**. Uma segunda simulação do mesmo plano, documentada na seção 15, reproduz a parcela após lance por uma divisão em **99 prestações**. Isso valida a hipótese **neste caso observado**, mas **não homologa uma regra universal de redução pós-lance**, nem permite projetar reajustes e parcelas de outros grupos sem contrato ou exemplos adicionais.
+
+
+## 15. Segundo caso de referência — mesmo plano com lance de 30% (17/11/2026)
+
+**Origem:** segunda imagem operacional, referente ao **mesmo plano** do caso 14. A imagem não discrimina a origem do lance (próprio, embutido ou combinado) nem mostra o fluxo mensal das prestações. Registrar valores sem identificadores institucionais.
+
+### 15.1. Valores observados
+
+| Campo | Sem lance | Segundo cenário |
+| --- | ---: | ---: |
+| Carta de crédito nominal | R$ 110.026,00 | R$ 110.026,00 |
+| Prazo inicial | 100 meses | 100 meses |
+| Taxa de administração total | 20,90% | 20,90% |
+| Fundo de reserva total | 3,00% | 3,00% |
+| Primeira parcela | R$ 1.363,22 | R$ 1.363,22 |
+| Valor do lance | R$ 0,00 | **R$ 33.007,80** |
+| Nova parcela após lance | R$ 1.363,22 | **R$ 1.029,81** |
+
+O lance equivale exatamente a `33.007,80 / 110.026,00 = 30,00%` do valor da carta.
+
+### 15.2. Descoberta matemática: divisão por 99 parcelas
+
+```text
+reducao_mensal_observada = 1.363,22 - 1.029,81
+                         = 333,41
+
+lance / 99               = 33.007,80 / 99
+                         = 333,412121...
+
+primeira_parcela - (lance / 99)
+                         = 1.363,22 - 333,412121...
+                         = 1.029,807878...
+arredondamento_2_casas  = 1.029,81  (valor idêntico à tela)
+
+controle_alternativo:
+primeira_parcela - (lance / 100)
+                         = 1.033,142
+                         = 1.033,14  (NÃO coincide com a tela)
+```
+
+**Evidência:** a nova parcela coincide exatamente, depois de arredondamento, com uma **redução distribuída em 99 parcelas**, e não 100. Isso sugere que **a primeira parcela fica fora do abatimento ou que o simulador considera 99 obrigações remanescentes**. Não é possível concluir apenas das imagens **por que** são 99 prestações (por exemplo, primeira parcela já paga), se existe algum encargo separado ou qual é a regra para grupos com prazos distintos.
+
+**Grau de confiança:**
+- **Confirmado por imagem:** valores, mesmo plano, lance de 30% da carta, parcela de R$ 1.029,81.
+- **Reproduzido matematicamente:** `nova_parcela = arredondar(parcela_inicial - lance / 99, 2)` para **este caso**.
+- **Hipótese a verificar:** usar `prazo_original - 1` como divisor é regra contratual geral; a primeira parcela estaria paga ou excluída da amortização.
+- **Não comprovado:** se o lance de 30% é embutido, próprio ou combinação; se a redução é aplicada ao fundo comum ou a outros componentes; e se o prazo é mantido em outras modalidades.
+
+### 15.3. Implicações para a aplicação comercial
+
+- Criar teste automatizado que recebe **R$ 110.026,00**, prazo **100**, parcela **R$ 1.363,22**, lance **R$ 33.007,80** e espera parcela **R$ 1.029,81** na hipótese de **99 prestações remanescentes**.
+- O número de parcelas **sujeitas a amortização deve ser uma entrada/variável do cálculo**, não derivado automaticamente do prazo inicial em todos os grupos.
+- Separar três informações: **parcela inicial informada**, **parcelas remanescentes elegíveis ao abatimento** e **saldo/obrigação amortizável**.
+- Continuar permitindo modo comercial que calcula a redução por parcelas remanescentes **somente com confirmação da regra**, mostrando a hipótese e a data-base.
+- Não extrapolar a redução de `lance / parcelas_restantes` para amortização por **prazo** sem regra contratual específica.
+- Não deduzir o lance da carta para calcular o crédito líquido **enquanto a origem do lance não for informada**:
+  - **Se próprio:** o desembolso do cliente inclui o lance; o crédito disponível para comprar o bem não é reduzido por esse componente.
+  - **Se embutido:** o valor embutido é descontado da carta, diminuindo o crédito líquido disponível para aquisição.
+  - **Se combinado:** descontar apenas a parte embutida, mantendo o capital próprio separado.
+- O limite operacional informado de **30% da carta** continua sendo aplicado **somente ao lance embutido**, e não deve ser usado para inferir que todo lance de 30% é embutido.
+
+### 15.4. Validações pendentes
+
+- [x] Reproduzir a redução da parcela do segundo cenário: **R$ 1.029,81** com divisor 99.
+- [ ] Confirmar se as **99 prestações** decorrem de primeira parcela já paga/excluída ou de regra diferente.
+- [ ] Identificar a origem exata dos **R$ 33.007,80** e o crédito efetivamente disponível após contemplação.
+- [ ] Repetir no mesmo plano com **outro valor de lance** para testar a linearidade do abatimento.
+- [ ] Validar lance próprio, embutido e combinado, de modo independente.
+- [ ] Conferir as condições de redução **de prazo**, além da redução do valor da prestação.
+- [ ] Obter cronograma de parcelas por componente e regras de reajuste para testar amortizações posteriores.
+
+**Critério de aceite:** nenhuma fórmula inferida de **um único par de simulações** deve se tornar regra permanente sem confirmação adicional em propostas ou demonstrações de outros valores e grupos.
