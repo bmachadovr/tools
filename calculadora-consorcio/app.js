@@ -136,20 +136,104 @@
     };
   }
 
+  function technicalComparison(data, extraWarnings) {
+    const d=data.comparisonData;
+    const roundPct=(x)=>Number(x).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+"%";
+    const scale=Math.max(d.consTotal,d.finTotal,d.referenceValue,1);
+    const width=(amount)=>Math.max(2,Math.min(100,amount/scale*100)).toFixed(2)+"%";
+    const nominalWinner=d.comparable
+      ? (Math.abs(d.consTotal-d.finTotal)<.01?"Desembolsos nominais equivalentes":
+          "Menor desembolso nominal: "+(d.consTotal<d.finTotal?"consórcio":"financiamento"))
+      : "Análise parcial — lance sem amortização validada";
+    const consPayment=d.monthlyPost!==null
+      ? money(d.monthlyPost)+" <span class='technical-muted'>após o lance"+(d.monthlyPostInferred?" · estimativa":"")+"</span>"
+      : money(d.monthlyCons)+" <span class='technical-muted'>parcela inicial</span>";
+    const financePayment=money(d.finFirst)+(d.finSystem==="sac"
+      ?" <span class='technical-muted'>primeira (última "+escapeHtml(money(d.finLast))+")</span>"
+      :" <span class='technical-muted'>mensal"+(d.finFirst!==d.finLast?" (última ajustada)":"")+"</span>");
+    const technicalRows=[
+      ["Parcela inicial",money(d.monthlyCons),money(d.finFirst)],
+      ["Parcela pós-lance / final",d.monthlyPost===null?"Não informada":money(d.monthlyPost)+(d.monthlyPostInferred?" (estimada)":""),money(d.finLast)],
+      ["Prestações",d.consTerm+" meses",d.finTerm+" meses"],
+      ["Recursos próprios no início",money(d.consOwn),money(d.finEntry)],
+      ["Crédito líquido / principal",money(d.consLiquid),money(d.finPrincipal)],
+      ["Custo de juros", "Não há juros remuneratórios; há taxas contratuais",money(d.finInterest)],
+      ["IOF estimado", "Não calculado",money(d.finIof)],
+      ["Custos/seguro no financiamento","—",money(d.finFees)+" tarifas; "+money(d.finInsuranceTotal)+" seguros"],
+      ["Total nominal",money(d.consTotal),money(d.finTotal)],
+      ["Diferença sobre preço de referência",money(d.consPriceGap),money(d.finPriceGap)]
+    ];
+    const insights=[];
+    const monthlyGap=Math.abs(d.finFirst-d.monthlyCons);
+    insights.push("Na primeira prestação, o "+(d.finFirst>=d.monthlyCons?"financiamento":"consórcio")+
+      " exige "+money(monthlyGap)+" "+(monthlyGap<.01?"(praticamente o mesmo valor)":"a mais")+
+      " por mês. Para SAC, o valor financiado diminui ao longo do prazo.");
+    const deltaMonths=Math.abs(d.consTerm-d.finTerm);
+    insights.push("Prazo: "+d.consTerm+" meses no consórcio e "+d.finTerm+" no financiamento"+
+      (deltaMonths?" — diferença de "+deltaMonths+" meses.":" — mesma duração informada."));
+    insights.push("No financiamento, os juros estimados somam "+money(d.finInterest)+
+      ", além de IOF de "+money(d.finIof)+". O consórcio cobra administração e demais encargos dentro das parcelas informadas.");
+    if(d.monthlyPost!==null)
+      insights.push("Após o lance, a prestação do consórcio foi considerada em "+money(d.monthlyPost)+
+        " durante "+d.postCount+" prestações"+(d.monthlyPostInferred?" (valor calculado por hipótese, não homologado).":"."));
+    if(d.consReaj>0)
+      insights.push("O consórcio inclui hipótese de reajuste de "+roundPct(d.consReaj)+
+        " ao ano. O modelo não reproduz integralmente reajustes do saldo imobiliário ou as datas reais das assembleias.");
+    if(d.comparable)
+      insights.push("Diferença de desembolso: "+money(d.difference)+
+        " ("+roundPct(d.costDiffPercentOfFin)+" do total projetado do financiamento)."+
+        " Isso não representa economia a valor presente, nem vantagem assegurada pela contemplação.");
+    else
+      insights.push("Com lance e prazo pós-lance desconhecido, o custo do consórcio está incompleto. A diferença exibida não define qual alternativa custa menos.");
+    insights.push("Acesso ao bem: financiamento após contratação e aprovação; consórcio apenas após contemplação e liberação. Mês "+d.monthContemplation+" é cenário hipotético.");
+    const cards='<div class="technical-cards">'+
+      '<section class="technical-card"><div class="technical-card-title">Consórcio <span>Fluxo projetado</span></div>'+
+        '<div class="technical-main">'+escapeHtml(money(d.consTotal))+'</div>'+
+        '<div class="technical-line"><span>Prestação</span><strong>'+consPayment+'</strong></div>'+
+        '<div class="technical-line"><span>Prazo</span><strong>'+d.consTerm+' meses</strong></div>'+
+        '<div class="technical-line"><span>Capital próprio</span><strong>'+escapeHtml(money(d.consOwn))+'</strong></div>'+
+        '<div class="technical-line"><span>Acima do valor de referência</span><strong>'+escapeHtml(money(d.consPriceGap))+'</strong></div>'+
+      '</section>'+
+      '<section class="technical-card"><div class="technical-card-title">Financiamento <span>'+escapeHtml(d.finSystem==="sac"?"SAC":"Price")+'</span></div>'+
+        '<div class="technical-main">'+escapeHtml(money(d.finTotal))+'</div>'+
+        '<div class="technical-line"><span>Prestação</span><strong>'+financePayment+'</strong></div>'+
+        '<div class="technical-line"><span>Prazo</span><strong>'+d.finTerm+' meses</strong></div>'+
+        '<div class="technical-line"><span>Entrada</span><strong>'+escapeHtml(money(d.finEntry))+'</strong></div>'+
+        '<div class="technical-line"><span>Juros estimados</span><strong>'+escapeHtml(money(d.finInterest))+'</strong></div>'+
+      '</section></div>';
+    const chart='<div class="technical-chart">'+
+      '<div class="technical-chart-head"><h4>Desembolso nominal projetado</h4><p>Escala comum; valores não trazidos a valor presente.</p></div>'+
+      '<div class="technical-bar-row"><span>Consórcio'+(d.comparable?"":" *")+'</span><div class="technical-bar-track"><div class="technical-bar cons" style="width:'+width(d.consTotal)+'"></div></div><strong>'+escapeHtml(money(d.consTotal))+'</strong></div>'+
+      '<div class="technical-bar-row"><span>Financiamento</span><div class="technical-bar-track"><div class="technical-bar fin" style="width:'+width(d.finTotal)+'"></div></div><strong>'+escapeHtml(money(d.finTotal))+'</strong></div>'+
+      (!d.comparable?'<p class="technical-footnote">* Estimativa parcial sem cronograma validado de amortização do lance.</p>':'')+
+      '</div>';
+    const analyzed=insights.map(x=>'<li>'+escapeHtml(x)+'</li>').join("");
+    const notices=extraWarnings.map(x=>note(x,true)).join("");
+    return '<div class="technical-dashboard">'+
+      '<div class="result-top"><span class="result-kicker">ANÁLISE FINANCEIRA COMPARATIVA</span><span class="status-pill">Estimativa matemática</span></div>'+
+      '<div class="technical-verdict"><span class="technical-flag">'+escapeHtml(nominalWinner)+'</span>'+
+       '<div class="hero-number">'+escapeHtml(data.main)+'<small>'+escapeHtml(data.heading)+'</small></div>'+
+       '<p class="result-copy">Comparação do desembolso e das prestações com as condições informadas. Não é CET nem cálculo de valor presente.</p></div>'+
+      cards+chart+
+      '<div class="technical-section"><h4>Indicadores lado a lado</h4>'+table(["Indicador","Consórcio","Financiamento"],technicalRows)+'</div>'+
+      '<div class="technical-section"><h4>Leitura técnica do cenário</h4><ol class="technical-insights">'+analyzed+'</ol></div>'+
+      '<details class="technical-disclosure"><summary>Memória de cálculo e premissas</summary>'+
+        '<div class="technical-section">'+table(["Composição do consórcio","Valor"],data.consortiumDetails)+'</div>'+
+        '<div class="technical-section">'+table(["Composição do financiamento","Valor"],data.details)+'</div>'+
+      '</details>'+
+      '<div class="technical-section"><h4>Ressalvas contratuais e da simulação</h4>'+notices+'</div>'+
+      '<div class="result-actions"><button type="button" class="to-offer">Gerar proposta com esta análise →</button></div>'+
+    '</div>';
+  }
+
   function compare() {
     const engine = window.ConsorcioCompareV2;
     if (!engine) throw Error("O módulo de cálculo comparativo não foi carregado. Recarregue a página.");
     const data = engine.calculate();
-    const comparison = table(["Alternativa", "Desembolso nominal"], data.comparison);
-    const finance = table(["Componente do financiamento", "Valor calculado"], data.details);
-    const notices = data.warnings.map((warning) => ({ text: warning, warn: true }));
-    if (examplesUsed.comparar) notices.push({
-      text: "EXEMPLO ILUSTRATIVO: números de demonstração. Não encaminhe como proposta comercial real.",
-      warn: true
-    });
-    updateResult("resultado-comparar", data.heading, data.main, data.sub, data.metrics,
-      [explain("Consórcio x financiamento", comparison), explain("Como foi calculado o consórcio", table(["Componente do consórcio", "Valor"], data.consortiumDetails)), explain("Como foi calculado o financiamento", finance)], notices);
-    setAnalysis("comparar", data.rows, notices.map((x) => x.text));
+    const warnings=data.warnings.slice();
+    if(examplesUsed.comparar)warnings.push("EXEMPLO ILUSTRATIVO: valores demonstrativos. Não encaminhar como oferta real.");
+    $("resultado-comparar").innerHTML=technicalComparison(data,warnings);
+    setAnalysis("comparar",data.rows,warnings);
   }
 
     function bids() {
@@ -297,7 +381,7 @@
   }
   const samples = {
     comparar: {
-      "c-bem":"100.000,00", "c-carta":"100.000,00", "c-contemplacao":"1",
+      "c-carta":"100.000,00", "c-contemplacao":"1",
       "c-prazo":"100", "c-taxa":"20", "c-parcela":"",
       "c-lance":"0", "c-embutido":"0", "c-liquida":"",
       "c-apos-parcela":"", "c-apos-prazo":"", "c-extras":"", "c-reajuste":"4,69",
