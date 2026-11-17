@@ -496,46 +496,72 @@ perfil_de_calculo:
 
 ## 14. Caso de referência recebido — simulação operacional de automóvel (17/11/2026)
 
-**Origem:** imagem de simulação fornecida pelo usuário para conferência de regras e entrada de dados. Não inclui, neste repositório, marca, código do grupo ou código do bem; os resultados a seguir são **dados observados**, não fórmulas homologadas.
+**Origem:** imagem de simulação e esclarecimentos posteriores fornecidos pelo usuário. Por regra do projeto, o repositório não armazena marca nem identificadores operacionais específicos. Os dados foram fornecidos para validação de fórmulas, **não representam condições universais**.
 
-| Campo exibido | Valor observado |
+### 14.1. Dados confirmados pelo usuário
+
+| Campo | Valor |
 | --- | ---: |
 | Segmento | Automóvel |
 | Situação do grupo | Formação |
 | Atualização do bem | FIPE |
-| Prazo atual | 100 |
-| Taxa de administração geral | 20,90% |
-| Total contratado (rótulo literal da tela) | R$ 110.026,00 |
-| Primeira parcela | R$ 1.363,22 |
-| Lance | R$ 0,00 |
-| Nova parcela após lance | R$ 1.363,22 |
+| Prazo | 100 meses |
+| **Valor da carta / crédito disponível antes de lance** | **R$ 110.026,00** |
+| Rótulo correspondente na tela | «Total contratado» |
+| **Taxa total de administração do grupo** | **20,90%** |
+| **Fundo de reserva do grupo** | **3,00%** |
+| Primeira parcela exibida | R$ 1.363,22 |
+| Lance simulado | R$ 0,00 |
+| Parcela após lance | R$ 1.363,22 |
 
-### 14.1. O que é possível afirmar
+**Observação:** este é um cenário sem lance; o valor nominal da carta coincide com o crédito disponível para a compra **antes de outras condições ou despesas eventualmente aplicáveis**. Se o cliente utilizar lance embutido, o crédito líquido para aquisição deverá ser recalculado.
 
-- Com lance zero, a parcela após lance coincide com a primeira parcela exibida: **R$ 1.363,22**. Não é possível inferir a fórmula da parcela após lance sem um segundo exemplo com lance diferente de zero.
-- **R$ 1.363,22 × 100 = R$ 136.322,00** é somente uma extrapolação aritmética da primeira parcela, **não** uma previsão válida de custo total.
-- A diferença aritmética em relação ao campo «Total contratado» é **R$ 26.296,00**; ela **não demonstra** isoladamente distribuição não linear nem comprova o significado contratual do valor informado.
-- Não assumir que «Total contratado» representa a carta de crédito, o custo total do plano ou o valor líquido de compra, porque a tela **não define esse campo**.
-- A tela não discrimina fundo comum, reserva, seguro ou administração antecipada e **não mostra parcelas 2 a 100**. Portanto, ela não identifica o cronograma real dos componentes, tampouco comprova se há prestações não lineares nesse caso.
-- A indicação de atualização por **FIPE** deve ser preservada como atributo do cenário; sem datas de reajuste e base contratual não projetar índice automaticamente.
-- A indicação **grupo em formação** não autoriza tratar valores como condições definitivas nem inferir contemplação ou data de início.
+### 14.2. Reconciliação matemática do exemplo
 
-### 14.2. Como usar esse caso no desenvolvimento
+```text
+carta = 110.026,00
+fundo_comum_total_pct = 100,00%
+administracao_total_pct = 20,90%
+fundo_reserva_total_pct = 3,00%
+prazo = 100
 
-1. Criar um **teste de importação/digitação** dos campos observados, preservando seus rótulos e separando valores contratados de valores calculados.
-2. Implementar validação do cenário **sem lance**, verificando se «parcela após lance» = «primeira parcela» sem alterações.
-3. **Não** fazer «parcela inicial × prazo» como custo total exibido sem explicitar que é apenas hipótese de parcela constante.
-4. **Não** inferir crédito nominal, taxas de reserva/seguro ou percentuais mensais a partir de «Total contratado» sem documentação.
-5. No módulo comercial, permitir inserir a parcela real diretamente enquanto a distribuição mensal não estiver homologada.
-6. Solicitar apenas dados **anonimizados** do demonstrativo mensal ou de uma proposta detalhada, evitando dados de consorciados e qualquer identificação institucional.
+fundo_comum_nominal   = 110.026,00
+administracao_nominal = 110.026,00 × 0,209 = 22.995,434
+reserva_nominal       = 110.026,00 × 0,03  =  3.300,78
+soma_nominal          = 110.026,00 × (1 + 0,209 + 0,03)
+                      = 136.322,214
+media_mensal_nominal  = 136.322,214 ÷ 100 = 1.363,22214
+primeira_parcela_exibida = 1.363,22
+```
 
-### 14.3. Evidências ainda necessárias
+A **média nominal aritmética arredondada** coincide com a **primeira parcela** exibida, com as taxas totais declaradas. Isso é um **teste de consistência**, não comprova a composição discriminada da primeira prestação nem que o cronograma de cobrança dos componentes seja linear.
 
-- [ ] Confirmar o significado contratual do campo **Total contratado** e identificar separadamente **valor da carta/crédito nominal**.
-- [ ] Obter o quadro de composição da **primeira parcela** em fundo comum, taxa de administração, reserva, seguro e outras cobranças.
-- [ ] Obter **cronograma de prestações/percentuais** ou ao menos uma parcela intermediária e a última, bem como faixas de mudança das cobranças.
-- [ ] Obter um segundo exemplo **do mesmo grupo e carta** com lance próprio, embutido ou combinado para conferir o cálculo após lance.
-- [ ] Confirmar eventuais taxas antecipadas, periodicidade e base de atualização.
-- [ ] Registrar os valores como condições observadas de uma simulação, sem afirmar que valem universalmente para outros grupos.
+- O total nominal **R$ 136.322,21** é o resultado matemático da soma de 100% do crédito, 20,90% de administração e 3% de reserva, **sem projetar FIPE, seguro ou encargos adicionais**.
+- A diferença nominal entre esse total e o crédito é **R$ 26.296,21**, correspondendo a 23,90% da carta, e **não** a diferença causada por distribuição não linear.
+- O produto `1.363,22 × 100 = 136.322,00` perde R$ 0,21 em relação ao cálculo com precisão completa por **arredondamento mensal**; não é projeção de pagamento.
+- A igualdade **não** demonstra que as próximas 99 parcelas serão R$ 1.363,22 nem que fundo comum, administração e reserva estarão distribuídos de forma uniforme.
+- Os percentuais **20,90% e 3,00% são dados deste grupo**, não valores padrão de outros grupos.
+- O cenário usa FIPE como atualização de referência, mas datas e mecanismos de reajuste não são conhecidos; nenhuma projeção automática pode ser homologada com esses dados isolados.
 
-**Decisão de produto:** este caso valida os campos básicos da entrada comercial, mas **não aprova ainda o motor de projeção de parcelas**.
+### 14.3. Casos de teste resultantes
+
+1. Entrada: carta **R$ 110.026,00**, administração **20,90%**, reserva **3,00%**, prazo **100 meses**, lance **zero**.
+2. Calcular a soma nominal **R$ 136.322,214** antes de arredondamento e média nominal **R$ 1.363,22214**.
+3. Comparar a média arredondada com a parcela observada **R$ 1.363,22**, **sem inferir cronograma mensal**.
+4. Se lance embutido = zero, verificar que o crédito líquido preliminar coincide com a carta.
+5. Se lance combinado for simulado, aplicar teto operacional informado de **30% da carta ao componente embutido**, somando recursos próprios separadamente, sem alterar a base de 20,90% + 3% sem justificativa contratual.
+6. Testar dois grupos com cartas iguais e **taxa total de administração e/ou reserva diferentes**; o motor deve usar percentuais informados para cada grupo.
+7. Se a distribuição mensal não for fornecida, exibir **custo nominal de referência** e parcela efetivamente informada, mas não fabricar cronograma de prestações.
+
+### 14.4. Evidências ainda necessárias
+
+- [x] Confirmar que o campo «Total contratado» corresponde ao **valor da carta** neste exemplo.
+- [x] Confirmar as taxas totais **20,90% de administração** e **3,00% de reserva** deste grupo.
+- [x] Reconciliar aritmeticamente a **média nominal** com a primeira parcela exibida.
+- [ ] Obter composição discriminada da primeira parcela (fundo comum, administração regular, administração antecipada, reserva, seguro e eventuais encargos).
+- [ ] Obter o cronograma de cobrança por mês/faixa ou parcelas de referência em diferentes etapas do grupo.
+- [ ] Identificar possíveis antecipações de administração e a regra efetiva para este grupo.
+- [ ] Obter simulação do **mesmo plano** com lance próprio, embutido ou combinado para aferir efeito sobre prazo e prestação.
+- [ ] Confirmar o calendário e a base dos reajustes FIPE.
+
+**Decisão de produto:** o exemplo valida a **reconciliação do custo nominal** e fornece um caso concreto para entrada de dados. **Não homologar ainda projeções de parcelas mensais ou redução pós-lance** sem conhecer o cronograma do grupo.
