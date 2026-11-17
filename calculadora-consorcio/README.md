@@ -1261,7 +1261,10 @@ O resultado da primeira aba foi reestruturado com:
 - [x] Dashboard produz parcelas comparadas, custos nominais, juros e análise técnica.
 - [x] Testes de lance próprio com entrada vinculada, lance embutido com crédito líquido e bloqueio de conclusão definitiva em comparação parcial.
 - [x] Botão `Limpar` remove os valores e o resultado.
-- [ ] Validar o visual e posição do cursor no navegador real do computador e no Android.
+- [x] Verificar em navegador público desktop: cartões, barras de desembolso e parcelas, tabela e análise técnica foram apresentados.
+- [x] Identificar e corrigir no código problemas de responsividade em tela de 390 px: abas agora em grade 2×2 e tabela técnica convertida em indicadores empilhados.
+- [ ] Confirmar no navegador público a segunda publicação da correção mobile, sem recorte lateral.
+- [ ] Verificar posição do cursor e teclados físicos/virtuais reais ao digitar e apagar valores monetários.
 - [ ] Confirmar o processamento da publicação no GitHub Pages.
 
 **Especificação atualizada:** [SPEC_V2.md](SPEC_V2.md#8-refinamento-do-comparador--campo-único-e-análise-técnica-17112026).
