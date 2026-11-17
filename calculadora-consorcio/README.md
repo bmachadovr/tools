@@ -1,6 +1,6 @@
 # Calculadora de Consórcio — Central de Estratégias Comerciais
 
-> **Status:** Comparador aprimorado em 17/11/2026: campo único de valor do bem/carta, máscara monetária com centavos em tempo real e resultados técnicos comparativos; demais funcionalidades preservadas.  
+> **Status:** Comparador com gráfico de linhas de desembolso acumulado, CDC/Price para veículos, Price/SAC para imóveis e IOF somente no financiamento (17/11/2026).  
 > **Local:** `tools/calculadora-consorcio/` (pasta `calculadora-consorcio/` na raiz do repositório `tools`).  
 > **Produto:** aplicação web independente, estática, responsiva e orientada ao apoio à negociação.  
 > **Implementação atual:** `index.html`, `styles.css`, `compare-v2.js` e `app.js`; aplicação estática sem backend, acessível pela página inicial. Consulte **[SPEC_V2.md](SPEC_V2.md)** para a especificação consolidada do comparador.
@@ -63,7 +63,7 @@ A neutralidade visual e nominal **não elimina** a necessidade de declarar as pr
 **Entradas essenciais:**
 - Valor efetivo do bem e valor de crédito utilizável.
 - Condições obtidas no simulador operacional: crédito nominal, prestação(ões), prazo restante, taxa total de administração, fundo de reserva, seguros e outros custos aplicáveis.
-- Alternativa de financiamento: entrada, prazo e **taxa de juros mensal** para cálculo das prestações **Price ou SAC**; IOF, tarifas financiadas e custos à vista como entradas opcionais, conforme proposta.
+- Alternativa de financiamento: entrada, prazo e taxa de juros, com **CDC/Price em veículos** e **Price ou SAC em imóveis**; IOF estimado apenas no financiamento, tarifas e despesas extras conforme proposta.
 - Horizonte de comparação e cenários **hipotéticos** de contemplação (sem previsão nem garantia).
 - Premissas de reajuste do bem e das prestações, se aplicáveis.
 
@@ -1245,7 +1245,7 @@ O resultado da primeira aba foi reestruturado com:
 
 1. **Diagnóstico nominal** e indicação de comparação parcial quando uma oferta de lance não inclui o cronograma de amortização.
 2. **Cartões de consórcio e financiamento** com total projetado, parcela mensal, prazo e capital próprio ou entrada.
-3. **Barras proporcionais** de desembolso nominal total e primeira prestação, cada uma com valores monetários explícitos e escala comum.
+3. **Gráfico de linhas de desembolso acumulado** com ambas as alternativas ao longo dos meses, valores de marcos selecionados e última posição reconciliada com os totais. Não representa saldo devedor nem valor presente.
 4. **Tabela técnica** confrontando taxa de administração + reserva do consórcio, taxa efetiva de juros do financiamento, parcelas iniciais e finais/pós-lance, prazos, recursos próprios, crédito disponível, principal, juros, IOF, custos adicionais e desembolso total.
 5. **Leitura técnica do cenário**, destacando diferenças de prestações, prazo, custo de juros, reajuste hipotético e disponibilidade do bem.
 6. **Memória de cálculo expansível** e ressalvas contratuais visíveis.
@@ -1268,3 +1268,37 @@ O resultado da primeira aba foi reestruturado com:
 - [ ] Confirmar o processamento da publicação no GitHub Pages.
 
 **Especificação atualizada:** [SPEC_V2.md](SPEC_V2.md#8-refinamento-do-comparador--campo-único-e-análise-técnica-17112026).
+
+## 26. Gráfico temporal e regras de financiamento por modalidade (17/11/2026)
+
+### 26.1. Gráfico de linhas: crescimento do desembolso mês a mês
+
+Substituído o comparativo por barras pelo **gráfico de linhas acumuladas**. A aplicação gera os pontos a partir dos mesmos cálculos usados nos totais, sem inventar evolução independente:
+
+- Eixo horizontal: meses desde a contratação, iniciando em **0** e avançando até o último pagamento entre consórcio e financiamento.
+- Eixo vertical: total **nominal efetivamente desembolsado até cada mês**, em reais.
+- Financiamento: entrada, IOF não financiado e custos pagos à vista aparecem **no mês zero**; mensalmente são adicionadas as prestações calculadas pelo método contratual escolhido.
+- Consórcio: mensalmente são adicionadas as prestações e o reajuste hipotético; **lance próprio, complemento para adquirir o bem e custos externos** são alocados **no mês hipotético da contemplação**.
+- Quando uma alternativa quita suas prestações antes da outra, a linha permanece horizontal. Uma tabela expansível apresenta marcos de desembolso.
+- Na ausência do cronograma pós-lance, a linha do consórcio é tracejada e o resultado, **parcial**, sem conclusão definitiva de qual custa menos.
+- **Verificação matemática em runtime:** o último valor de cada série deve coincidir com o total financeiro exibido (tolerância de dois centavos). Divergência bloqueia a análise.
+
+**Interpretação:** isso compara fluxo de caixa acumulado, **não saldo devedor ou valor presente**. A contemplação não está garantida; os gastos de espera e os índices contratuais específicos continuam fora do modelo.
+
+### 26.2. Veículos: financiamento CDC/Price
+
+- **Veículos:** a ferramenta modela o financiamento como **CDC de prestações fixas, calculadas pelo sistema Price**. O seletor SAC foi desabilitado e ocultado para essa modalidade, inclusive com proteção de cálculo caso o seletor seja manipulado.
+- **Imóveis:** permanecem disponíveis **Price ou SAC**, selecionáveis pelo usuário; as taxas são informadas em **% ao ano efetivo** e convertidas para equivalente mensal para calcular as prestações.
+- **Consórcio não sofre incidência de IOF**. O comparador indica isso expressamente e calcula o IOF **somente na operação de financiamento**, quando tributável. Não somar IOF ao fluxo nem aos custos de consórcio.
+
+### 26.3. Evidências de teste
+
+- [x] Veículos com Price obrigatório, inclusive quando se tenta selecionar SAC fora da interface.
+- [x] Imóveis com SAC apresentam prestações decrescentes e também aceitam Price.
+- [x] Exemplo R$ 100 mil, prazo consórcio 100, financiamento 60: duas séries até o mês 100 e valores finais reconciliados.
+- [x] Lance próprio pago no mês hipotético de contemplação; entrada do financiamento lançada no mês zero.
+- [x] Crédito líquido após lance embutido e entrada com capital próprio conservam as regras aprovadas.
+- [x] Caso com taxa de juros zero conciliado sem distorção de centavos.
+- [ ] Verificação visual pública em desktop e celular da versão do gráfico de linhas.
+
+**Documento detalhado:** [SPEC_V2.md](SPEC_V2.md#9-evolução-temporal-dos-desembolsos-e-modalidades-de-financiamento-17112026).
