@@ -3,12 +3,12 @@
 **Implementação:** `index.html` + `styles.css` + `compare-v2.js`, integrados a `app.js`.  
 **Escopo:** comparador responsivo de **veículos** e **imóveis**, executado integralmente no navegador, sem backend.  
 **Prioridade:** primeiro uso no computador e adaptação ao celular.  
-**Referências iniciais:** carta e preço do bem de **R$ 100.000,00**; contemplação **hipotética no primeiro mês**.
+**Referências no botão “Preencher exemplo”:** carta e preço do bem de **R$ 100.000,00**; contemplação **hipotética no primeiro mês**. **Na abertura real os campos estão vazios**, exceto o reajuste anual sugerido para a modalidade.
 
 ## 1. Experiência visual
 
 - No cabeçalho, **dois cartões grandes clicáveis**, com desenhos vetoriais de veículo e imóvel, indicação selecionada e textos curtos explicativos. Não exibir uma terceira modalidade.
-- Alternar a modalidade sem sair da página. O estado escolhido determina rótulo, unidade da taxa de juros e tratamento inicial do IOF.
+- Alternar a modalidade sem sair da página. O estado escolhido determina rótulo, unidade da taxa de juros, tratamento inicial do IOF e **índice sugerido de reajuste (IPCA/INCC-M)**.
 - Valores de referência ficam em um bloco separado do consórcio: **preço do bem**, **carta de crédito** e **mês hipotético de contemplação**.
 - Consórcio e financiamento têm campos principais visíveis e um bloco `<details>` recolhido para informações de maior precisão.
 - Resultado fica lado a lado com o formulário no desktop e abaixo no celular. Mostrar uma explicação do cálculo e seus componentes.
@@ -141,3 +141,44 @@ Exibir:
 - Não projetar amortização pós-lance como valor contratual quando deduzida apenas de uma hipótese.
 - Não calcular automaticamente correções monetárias de imóveis, seguro variável, tarifas contratuais desconhecidas ou CET.
 - Não tratar a diferença de **desembolso nominal** como decisão financeira completa sem momento de aquisição e custo de oportunidade.
+
+## 7. Ajustes de usabilidade — campos vazios, limpar e máscaras (17/11/2026)
+
+**Regra central:** não carregar a simulação fictícia automaticamente. Os campos de valor do bem, carta, contemplação, prazo, taxa de administração, parcela, lance próprio, entrada, juros do financiamento e prestações do financiamento devem ficar **vazios até interação do usuário**. O botão `Preencher exemplo` é a única forma de carregar a referência de carta de R$ 100 mil, contemplação no primeiro mês e condições numéricas de exemplo.
+
+**Limpar:** disponibilizar botão visível ao lado de `Preencher exemplo` e no final do formulário. A limpeza deve apagar campos informados e calculados, limpar resultado/gerador de proposta da análise, recolher os dois blocos opcionais e restaurar a modalidade Veículos com a taxa sugerida de IPCA. Não reintroduzir números fictícios.
+
+**Máscara de valores:** entrada de valores em padrão português do Brasil, separando milhar por ponto e casas decimais por vírgula; **duas casas** para valores monetários e demais percentuais (quatro casas para a taxa de juros do financiamento calculada inversamente). Ao digitar `100000`, preservar a grandeza e apresentar `100.000,00` ao sair do campo. Ao digitar `20,5`, completar para `20,50` ao sair. Não transformar `100000` em `1.000,00`. A máscara se aplica também aos campos monetários e percentuais das outras ferramentas.
+
+### 7.1. Taxas sugeridas para cenários de reajuste
+
+O único campo financeiro pré-preenchido na abertura é `reajuste_anual_hipotetico`, com percentual anualizado a partir de **36 meses consecutivos encerrados em outubro de 2026**:
+
+| Modalidade | Índice escolhido para a hipótese | 12 meses até out/2024 | 12 meses até out/2025 | 12 meses até out/2026 | Média anualizada composta |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Veículos | **IPCA (IBGE)** | 4,76% | 4,68% | 4,63% | **4,69% a.a.** |
+| Imóveis | **INCC-M (FGV)** | 5,72% | 6,58% | 6,75% | **6,35% a.a.** |
+
+```text
+media_anualizada =
+  100 × [ ((1 + r_2024/100) × (1 + r_2025/100) × (1 + r_2026/100))^(1/3) − 1 ]
+```
+
+**Fontes primárias dos acumulados:**
+- IPCA: [IBGE, outubro de 2024](https://agenciadenoticias.ibge.gov.br/agencia-sala-de-imprensa/2013-agencia-de-noticias/releases/41795-ipca-foi-de-0-56-em-outubro); [IBGE, outubro de 2025](https://agenciadenoticias.ibge.gov.br/agencia-sala-de-imprensa/2013-agencia-de-noticias/releases/45033-ipca-fica-em-0-09-em-outubro); [IBGE, painel de indicadores atualizado em outubro de 2026](https://www.ibge.gov.br/indicadores-e-sistemas/indices-e-certificados/16855-ipca.html).
+- INCC-M: [FGV, outubro de 2024](https://portal.fgv.br/noticias/incc-m-outubro-2024); [FGV, outubro de 2025](https://portal.fgv.br/noticias/incc-m-outubro-2025); [FGV, outubro de 2026](https://portal.fgv.br/noticias/incc-m-outubro-2026).
+
+O índice é **referência histórica estática**, não previsão e não consulta automática em tempo real. Ao mudar de veículo para imóvel, substituir a sugestão **somente se o usuário ainda não a tiver alterado manualmente**. Quando alterada manualmente, preservar sua escolha. Em imóvel, **INCC-M é uma aproximação**, não comprovação de que essa variante é a contratada no grupo — verificar proposta, versão do INCC e data-base. Nos veículos, o reajuste pode seguir FIPE ou outro parâmetro contratual, não necessariamente IPCA.
+
+### 7.2. Critérios de teste adicionados
+
+- [x] Abrir a ferramenta sem exemplo: campos comerciais vazios, taxa sugerida do veículo em **4,69%**.
+- [x] Selecionar imóvel sem preencher demais campos: sugerir **6,35%**, mantendo o restante vazio.
+- [x] Editar reajuste manualmente e trocar modalidade: não sobrescrever o valor informado.
+- [x] Clicar em `Preencher exemplo`: carregar carta de R$ 100.000 e calcular prestação de R$ 1.200 (100 × 20% total).
+- [x] Clicar em `Limpar`: apagar campos e resultado; deixar apenas índice sugerido, blocos recolhidos e modalidade inicial.
+- [x] Digitar `100000` em campo monetário e desfocar: exibir `100.000,00`.
+- [x] Digitar `20,5` em percentual e desfocar: exibir `20,50`.
+- [x] Digitar separador decimal parcial: não interromper cálculos por erro de parsing.
+- [ ] Validar as máscaras e posição do cursor em teclados físicos e virtuais reais.
+- [ ] Comparar o visual desktop e Android após o processamento do GitHub Pages.
