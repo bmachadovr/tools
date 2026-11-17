@@ -139,7 +139,7 @@
       ["Entrada do financiamento", money(entrada)],
       ["Prestação atual do consórcio", money(parcela)]
     ];
-    updateResult("resultado-comparar", heading, headline, "Os totais representam desembolsos ao longo de toda a operação. Não equivalem a valor presente, CET ou garantia de contemplação.", metrics, [explain("Visão lado a lado", tableHtml)], notices);
+    updateResult("resultado-comparar", heading, headline, "Os totais consideram as prestações a pagar e desembolsos futuros informados. Não incluem pagamentos passados nem equivalem a valor presente, CET ou garantia de contemplação.", metrics, [explain("Visão lado a lado", tableHtml)], notices);
     setAnalysis("comparar", [
       ["Preço do bem", money(bem)],
       ["Crédito líquido do consórcio", money(carta)],
