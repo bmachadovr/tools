@@ -316,3 +316,115 @@ O MVP estará pronto quando:
 ---
 
 **Princípio orientador:** esta ferramenta não precisa calcular tudo; precisa **esclarecer as escolhas do cliente com comparações corretas** e apoiar uma oferta comercial responsável.
+
+## 13. Levantamento preliminar de regras contratuais — 17/11/2026
+
+> **Status:** pesquisa documental preliminar, **não homologada para cálculo de oferta real**. As cláusulas gerais públicas analisadas incluem uma versão de bens móveis de **fevereiro de 2018**, além de informações públicas mais recentes sobre modalidades de consórcio. O conteúdo serve para modelar campos e mecanismos de cálculo, **não** para presumir que uma regra, índice, prazo ou percentual se aplica a todos os grupos atuais. Antes da publicação, validar com as condições do plano e a proposta de participação vigente. Por decisão de identidade do projeto, a fonte institucional não é nomeada nem vinculada neste repositório.
+
+### 13.1. Componentes da prestação
+
+Os contratos analisados preveem os seguintes componentes, que deverão ser calculados em linhas separadas:
+
+- **Fundo comum:** percentual de aquisição do crédito, com integralização contratual de 100% ao longo do plano.
+- **Taxa de administração:** percentual contratado, podendo ser distribuído de modo linear ou não linear ao longo das prestações.
+- **Taxa de administração antecipada:** componente eventual de antecipação, com cronograma próprio; **não somar duas vezes** ao percentual total contratado.
+- **Fundo de reserva:** percentual de acordo com a proposta, com cronograma próprio, potencialmente não linear.
+- **Seguro:** facultativo/conforme plano; na versão pública analisada de bens móveis, prêmio proporcional ao saldo devedor.
+- **Diferenças de prestação, reajustes, tarifas e encargos eventuais:** separados da prestação ordinária.
+
+**Modelo de cálculo genérico por período `t` (sujeito à validação contratual):**
+
+```text
+prestacao_t =
+    fundo_comum_t
+  + administracao_t
+  + reserva_t
+  + seguro_t
+  + diferencas_e_encargos_t
+
+fundo_comum_t    = base_atualizada_t × percentual_fc_t
+administracao_t  = base_administracao_t × percentual_ta_t
+reserva_t        = base_reserva_t × percentual_fr_t
+seguro_t         = base_seguro_t × aliquota_seguro_t
+```
+
+- Armazenar **cronogramas de percentuais**, não apenas taxa total e prazo.
+- A base e o instante de atualização de cada componente devem ser configuráveis.
+- Nunca supor `percentual_fc_t = 1 / prazo` quando houver fator de redução, adesão a grupo em andamento ou parcelas não lineares.
+- Diferenciar **taxa total contratada**, **taxa antecipada** e **fluxo efetivo de cobrança**.
+
+### 13.2. Reajustes por modalidade
+
+O contrato público histórico de bens móveis analisado mencionava:
+
+- Automóveis, camionetas e motocicletas: **tabela de preço de referência de veículos (FIPE)**.
+- Caminhões, tratores, implementos agrícolas e eletroeletrônicos: **IPCA**.
+- Possibilidade de critério diferente na assembleia de constituição do grupo.
+
+Materiais públicos mais recentes mencionam, para certas modalidades:
+
+- Imóveis: atualização anual pelo **INCC**.
+- Serviços: atualização do crédito pelo **IPCA** até a contemplação.
+
+**Não fixar esses índices universalmente.** Implementar `tipo_indice`, `periodicidade`, `data_base_reajuste`, `historico_valores`, `reajusta_credito` e `reajusta_parcelas_pos_contemplacao` como parâmetros. Em projeções, admitir curva definida pelo usuário; resultados futuros são hipóteses, não valores garantidos.
+
+### 13.3. Lances e contemplação
+
+- Modalidades a suportar, conforme disponibilidade no grupo: **livre, fixo, próprio, embutido e combinado**.
+- Lance expresso por percentual da **base vigente na assembleia**, parametrizada pela regra do grupo.
+- Crédito líquido após lance embutido: `credito_utilizavel = credito_vigente - lance_embutido - deducoes_permitidas` (evitar dupla dedução).
+- Um lance vencedor pode permitir amortizar prestações mediante **redução do prazo**, em ordem inversa de vencimento, ou **diluição proporcional nas prestações vincendas**, quando admitido.
+- Nas cláusulas históricas analisadas, a amortização proporcional considera **fundo comum, taxa de administração e fundo de reserva**.
+- A confirmação e liquidação do lance dependem de **aprovação, pagamento e condições da assembleia**.
+- **Não generalizar** o percentual mínimo de 10% ou o prazo de liquidação em dias úteis encontrados no contrato antigo: são exemplos históricos, não defaults homologados.
+- Sem acesso a resultados e regras atualizados da assembleia, **não estimar uma chance objetiva de contemplação**; dados históricos de lances não são garantia.
+
+### 13.4. Antecipação e quitação
+
+- O contrato histórico estudado previa opções de amortizar prestações com **redução proporcional da prestação** ou **antecipação das últimas prestações**.
+- **Quitar prestações não assegura contemplação imediata**; continuar distinguindo quitação da obrigação e obtenção do crédito.
+- Se houver correções ou diferenças de prestação futuras previstas em contrato, indicar que projeções de quitação podem depender de apuração posterior.
+- Não aplicar automaticamente descontos financeiros de juros típicos de financiamento sobre valores de consórcio. A redução resulta dos componentes e das regras de amortização.
+
+### 13.5. Disponibilização e uso do crédito
+
+- Atribuição de crédito depende de contemplação, recursos do grupo e cumprimento das condições documentais/contratuais.
+- Distinção indispensável entre **carta nominal**, **crédito vigente na assembleia**, **crédito líquido após lance embutido** e **valor efetivamente liberado para a compra**.
+- Aprovação documental, análise de capacidade de pagamento, garantias e prazos operacionais **não devem ser tratados como automáticos**.
+- Possíveis usos de saldo excedente ou despesas de aquisição, inclusive limitações percentuais, dependem da modalidade e das regras vigentes.
+
+### 13.6. Decisões de engenharia derivadas
+
+1. Definir uma estrutura `plano` com **parâmetros opcionais**, validação e status de confirmação de cada regra.
+2. Implementar um **motor de fluxo de caixa mensal** separado do gerador de textos e da UI.
+3. Oferecer um **modo simplificado** por entradas totais da proposta e um **modo detalhado** para refletir cronogramas e reajustes reais.
+4. Nunca completar dado ausente com parâmetro histórico sem sinalização; mostrar **comparação parcial**.
+5. Exibir em cada resultado: **data-base**, hipóteses, grau de confiabilidade e diferença entre resultado nominal e projetado.
+6. Tratar **redução de prestações** e **redução do prazo** como rotinas diferentes, testadas contra exemplos anonimizados do simulador operacional.
+7. Para comparação com financiamento, usar fluxos na **mesma data-base**, registrar CET e simular **cenários hipotéticos** de contemplação.
+8. Não incluir nome, sigla, marca ou outro identificador institucional em nenhum arquivo, mesmo em referências de pesquisa ou comentários.
+
+### 13.7. Casos de teste adicionais identificados
+
+- Distribuição linear versus **não linear** dos percentuais de fundo comum e encargos.
+- Meses iniciais com componente de administração antecipada.
+- Atualização periódica do preço-base com parcelas futuras reajustadas.
+- Alteração do valor de referência após a contemplação, conforme a regra de amortização vigente.
+- Lance próprio: consumo de recursos do cliente, sem redução da carta disponível.
+- Lance embutido: desconto do crédito, sem consumi-lo como aporte próprio.
+- Lance combinado: soma das origens para oferta, abatimentos discriminados.
+- Lance vencedor com redução de prazo versus redução proporcional de prestações.
+- Quitação de prestações sem contemplação imediata.
+- Simulações com informações insuficientes ou limites de lance não confirmados.
+
+### 13.8. Pendências de homologação antes de desenvolver regras específicas
+
+- [ ] Obter texto atualizado das cláusulas gerais dos grupos comercializados atualmente.
+- [ ] Verificar proposta de participação modelo com **todos os campos comerciais**, sem informações pessoais.
+- [ ] Confirmar **percentual máximo de lance embutido**, base de cálculo e possibilidade de combinação por modalidade/grupo.
+- [ ] Confirmar valores mínimos de lance, modalidades de disputa e eventual lance fixo.
+- [ ] Confirmar regras de distribuição das taxas e condições de parcelas reduzidas.
+- [ ] Confirmar periodicidade e base do índice para **cada modalidade atual**.
+- [ ] Confirmar se seguros e fundo de reserva variam por oferta.
+- [ ] Validar no mínimo **três casos reais anonimizados**: sem lance, lance próprio e embutido; incluir amortização pós-lance.
+- [ ] Somente após validação, registrar perfil contratual homologado sem identificadores institucionais.
