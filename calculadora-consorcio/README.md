@@ -388,7 +388,7 @@ Exemplo puramente aritmético: carta R$ 100.000, embutido R$ 30.000, capital pr�
 - Um lance vencedor pode permitir amortizar prestações mediante **redução do prazo**, em ordem inversa de vencimento, ou **diluição proporcional nas prestações vincendas**, quando admitido.
 - Nas cláusulas históricas analisadas, a amortização proporcional considera **fundo comum, taxa de administração e fundo de reserva**.
 - A confirmação e liquidação do lance dependem de **aprovação, pagamento e condições da assembleia**.
-- **Não generalizar** o percentual mínimo de 10% ou o prazo de liquidação em dias úteis encontrados no contrato antigo: são exemplos históricos, não defaults homologados.
+- O percentual mínimo de **10%** aparece no contrato histórico e **também nos três regulamentos recentes examinados**, com exceção nos últimos 12 meses. A aplicabilidade à cota deve ser validada no regulamento do grupo, sem adotar automaticamente em planos de outras gerações.
 - Sem acesso a resultados e regras atualizados da assembleia, **não estimar uma chance objetiva de contemplação**; dados históricos de lances não são garantia.
 
 ### 13.4. Antecipação e quitação
@@ -873,7 +873,7 @@ prestacao_t = soma_de_componentes_arredondados_ou_regra_de_arredondamento_verifi
 ### 18.3. O que o portal NÃO comprovou
 
 - Não forneceu percentuais **mensais reais de fundo comum, administração e amortização** para os grupos das imagens.
-- Não confirmou por documentação pública acessada o teto de **30% do lance embutido** para todos os grupos. Esse percentual está registrado como **regra operacional informada pelo usuário**, sujeito às condições da proposta.
+- **Atualização posterior (seção 21):** os três contratos recentes examinados efetivamente estabelecem teto de **30% do crédito vigente na assembleia para o lance embutido**, quando essa modalidade estiver prevista. Isso **não comprova** aplicação universal a grupos regidos por outras versões ou contratos de outras administradoras.
 - Não definiu o motivo exato de usar **99 prestações** no abatimento mostrado no caso de 100 meses.
 - Não comprovou por fonte pública acessada o algoritmo de **compensação da administração pela amortização** no caso específico do fator de redução. Esse mecanismo está documentado nas imagens e na explicação do usuário.
 - Não disponibilizou um banco público de **taxas e ofertas comerciais de todas as administradoras** em tempo real.
@@ -981,15 +981,81 @@ Ao acessar o conteúdo integral da versão pertinente, extrair com referência d
 5. **Eventos extraordinários:** adesão em andamento, mudança do bem, inadimplência, cancelamento, restituição, antecipação de parcelas e encerramento.
 6. **Modalidades específicas:** FGTS e regras do imóvel, classificação do bem móvel e regras dos serviços.
 
-**Ainda não feito:** leitura integral comparativa de 31 PDFs. A localização e abertura de metadados **não significam que seu conteúdo foi validado**. Não homologar percentuais ou procedimentos específicos de grupo com base somente na listagem.
+**Atualização em 17/11/2026:** foram examinados os textos integrais dos **três regulamentos recentes priorizados** de bens móveis, imóveis e serviços, com cláusulas identificadas na seção 21. **As demais versões do catálogo (31 PDFs encontrados) ainda não foram integralmente comparadas.** Não aplicar cláusulas de uma geração a outra apenas por semelhança de modalidade.
 
 ### 20.4. Impacto no roadmap
 
 - [x] Identificar que há **versões diferentes de cláusulas gerais** por modalidade e geração do grupo.
 - [x] Registrar catálogo de gerações e tratamento de grupos em andamento.
 - [x] Preservar neutralidade dos arquivos e nomes técnicos.
-- [ ] Ler integralmente e comparar, **na ordem de relevância do uso**, a versão aplicável a bens móveis, imóveis e serviços.
+- [x] Ler os **três regulamentos recentes prioritários** de bens móveis, imóveis e serviços e registrar cláusulas e páginas na seção 21.
+- [ ] Comparar **versões anteriores aplicáveis a grupos já em andamento** à medida que houver casos comerciais reais.
 - [ ] Cruzar cada versão pertinente com as simulações operacionais anonimizadas.
 - [ ] Só depois parametrizar as regras de vencimento, reajuste, amortização e lances cujo resultado dependa da versão do contrato.
 
 **Decisão final:** o contrato escolhido não é função apenas da modalidade; depende também da **geração do grupo e de suas condições de adesão**. Para o MVP comercial, usar dados reais informados como entrada; deixar projeções detalhadas dependentes da confirmação da versão contratual.
+
+## 21. Leitura de cláusulas gerais recentes por modalidade — 17/11/2026
+
+**Status:** texto dos três PDFs recentes examinado em fonte pública, com identificação de cláusulas e **páginas impressas** dos contratos. Trata-se de **regulamentos de gerações de grupo**, não de propostas comerciais individuais. **Não acrescentar identificadores ou links institucionais da fonte de referência ao repositório público.** Conservar as referências detalhadas de cláusula/página para auditoria, com os textos vigentes a serem conferidos novamente antes de codificação.
+
+**Documentos examinados:**
+- **Bens móveis:** versão datada de **09/12/2024**, indicada como aplicável a grupos constituídos após sua disponibilização; contrato com certificado registral na primeira página do PDF.
+- **Bens imóveis:** versão datada de **09/12/2024**, indicada como aplicável a grupos posteriores à disponibilização; também possui certificado registral antes da paginação impressa.
+- **Serviços:** contrato identificado no corpo como **012026** e datado de **25/06/2026** (o nome público do arquivo indica 29/06/2026); sem deslocamento de certificado nas páginas mencionadas.
+
+**Diferença de paginação:** nos documentos de móveis e imóveis, geralmente **página exibida no PDF = página impressa + 1**; em serviços os números coincidem. As referências abaixo são à **página impressa**.
+
+### 21.1. Matriz de regras com referência contratual
+
+| Tema | Bens móveis | Imóveis | Serviços |
+| --- | --- | --- | --- |
+| **Composição da prestação** | 11.1, 11.3–11.5 e 11.7.17, pp. 14–15: fundo comum, administração, eventual antecipação, reserva, seguro e encargos | 5.2–5.5, 12.1 e 12.5–12.7, pp. 9, 14–15: componentes e taxa antecipada na proposta | 10.2–10.5, 11.1 e 11.3–11.5, pp. 13–14: componentes, antecipação e condições da proposta |
+| **Taxa total e distribuição** | Campos 42 (antecipada), 43 (total) e 44 (período nas primeiras parcelas); 11.7.17, p. 15 | Percentuais e antecipação informados na proposta; 5.2–5.5 e 12.5–12.7 | Percentuais e antecipação informados na proposta; 10.2–10.5 e 11.3–11.5 |
+| **Fundo comum** | 2.14, 2.18, 2.20 e 11.3, pp. 5–6, 14–15: cálculo e possibilidade de distribuição não linear quando prevista | 2.14–2.16, p. 5: inclui condição específica de fator de redução | 2.16, 2.20–2.21 e 11.3, pp. 4–5, 13: possibilidade de distribuição não linear |
+| **Lance embutido** | 17.1.4–17.1.8, pp. 20–21: até **30% do crédito vigente na AGO** quando previsto; excedente do lance com recursos próprios | 18.4.3–18.4.8, pp. 21–27: até **30%** quando previsto | 17.1.4–17.1.8, pp. 19–25: até **30%** quando previsto |
+| **Lance livre e fixo** | 19.3.4–19.3.6, pp. 20–26: livre com mínimo de **10%**, ressalva nos últimos 12 meses; fixo conforme proposta | 20.2–20.8, pp. 21–27: mínimo de **10%**, ressalva nos últimos 12 meses, teto associado a saldo devedor; fixo conforme proposta | 19.2–19.3.6, pp. 19–25: mínimo de **10%**, ressalva nos últimos 12 meses; fixo disciplinado em cláusulas seguintes |
+| **Amortização do lance vencedor** | 19.3.8, p. 26: reduzir prazo pelas últimas prestações ou reduzir proporcionalmente as prestações vincendas | 20.10, p. 27: reduzir prazo pelas últimas ou diluir proporcionalmente nas vincendas | 19.3.8, p. 24: reduzir prazo ou diluir proporcionalmente nas vincendas |
+| **Reajustes** | 11.2–11.2.1, 14.1–14.3 e 21.1, pp. 14, 17–18, 28: FIPE, IPCA ou outro índice previsto para a categoria na adesão | 12.3 e 16.1–16.4, pp. 14, 17–18: **INCC-FGV a cada 12 meses desde a primeira AGO** e ajuste de diferenças | 11.2 e 21.1, pp. 13–14, 26: **IPCA-IBGE anual desde a primeira AGO**; substituição conforme procedimento contratual |
+
+**Nota:** mínimo de 10% não significa automaticamente que a oferta será aceita/vencedora; prazos, limite de lance e modalidades válidos variam conforme as condições do grupo. Para móveis e serviços, os regulamentos recentes examinados admitem mínimo equivalente a **uma prestação nos últimos 12 meses**. Para imóveis, também existe regra particular para oferta exclusivamente com FGTS, limitada ao saldo do fundo comum, além do teto do saldo devedor para outras ofertas.
+
+### 21.2. Descobertas que impactam diretamente os cálculos
+
+**A. O limite de 30% está escrito nos três contratos recentes.**
+- Na versão recente de bens móveis, a cláusula 17.1 estabelece **30% do crédito vigente na assembleia** como limite do componente embutido. Se a oferta total superar esse limite, a diferença vem de recursos próprios.
+- No caso de embutido, **a carta disponível diminui**, mas a base contratual de contribuição ao fundo comum, reserva, taxa de administração e eventuais seguros **permanece o crédito integral**, salvo regra aplicável diferente.
+- **Não confundir:** percentual do lance embutido sobre crédito vigente, percentual de lance total da assembleia e crédito líquido para aquisição; podem ter bases temporais diferentes quando houver reajuste.
+
+**B. O cálculo da parcela depende da proposta individual.**
+- Percentuais numéricos de taxa total e taxa antecipada **não são fornecidos nos contratos gerais**: devem ser lidos na **Proposta de Participação** do grupo/cota.
+- Bens móveis citam expressamente os campos **42, 43 e 44** para taxa antecipada, total e número de primeiras parcelas com antecipação.
+- A antecipação **não autoriza somar a taxa duas vezes**; manter cronograma de cobrança, taxa total e amortização do fundo comum reconciliados.
+- A composição observada anteriormente para um automóvel, com administração de **0,12%**, reserva de **0,03%** e fundo comum de **1,058%** no mesmo período, deve continuar como **evidência operacional específica**; nenhum desses percentuais consta como universal nos contratos gerais.
+- **Atenção ao termo fator de redução:** no contrato recente de **imóveis**, cláusulas 2.14–2.16, está explicitado fator entre **0% e 50% do fundo comum**, aplicável até a contemplação ou metade do prazo, com integralização posterior da diferença. **Não localizar fator equivalente nos textos recentes de móveis e serviços não prova que a opção exibida na interface de um plano de veículo tenha a mesma natureza jurídica/financeira**. Não aplicar fator imobiliário a veículo por simples coincidência de nome.
+
+**C. O índice de reajuste não é universal.**
+- Bens móveis: escolher critério da categoria/grupo (FIPE, IPCA ou outro da proposta); **não presumir atualização anual única**.
+- Imóveis: INCC-FGV a cada **12 meses desde a primeira assembleia ordinária**; diferenças apuradas na AGO subsequente, com compensação/cobrança no prazo contratual indicado.
+- Serviços: IPCA-IBGE **anual desde a primeira assembleia ordinária**.
+- Mesmo depois da contemplação, **não congelar automaticamente as prestações**; observar o regime aplicável.
+
+**D. A amortização do lance tem duas opções, mas não uma fórmula universal.**
+- Os regulamentos permitem **redução do prazo** (antecipando últimas parcelas) ou **redução proporcional das prestações vincendas**.
+- O exemplo operacional anterior de `lance / 99` reproduz um caso particular, mas **não está estipulado como fórmula geral nesses contratos**.
+- O número de prestações vincendas, cronograma dos componentes e data-base do lance precisam ser confirmados; não usar `prazo - 1` automaticamente.
+
+### 21.3. Casos de teste e parâmetros obrigatórios
+
+- [x] Revisar diretamente os três regulamentos recentes prioritários, com cláusulas e páginas.
+- [x] Confirmar teto contratual de **30%** para lance embutido **nessas versões**, quando previsto na proposta.
+- [x] Confirmar as opções contratuais de reduzir **prazo** ou **prestações** nas três modalidades.
+- [x] Registrar diferença dos índices de **móveis, imóveis e serviços**.
+- [x] Registrar fator de redução **explicitado no contrato imobiliário** e a necessidade de regularizar o fundo comum não integralizado.
+- [ ] Validar, por grupo/cota, a **proposta individual** com taxas, distribuições e modalidades habilitadas.
+- [ ] Conferir na fonte contratual aplicável **a data de constituição do grupo**, sem pressupor que o último PDF serve para grupos em andamento.
+- [ ] Validar lances com **crédito vigente após reajuste**, não só carta nominal originalmente contratada.
+- [ ] Obter exemplos adicionais com prazo reduzido e lance embutido em categorias diferentes.
+- [ ] Testar **redutor imobiliário** com momentos de contemplação antes/depois de metade do prazo, sem extrapolar a outras modalidades.
+
+**Resultado de engenharia:** criar **perfis de regras por modalidade e geração de grupo**, com entradas de percentuais individuais e fonte/status da proposta. O MVP deve continuar focado em ferramentas comerciais, mas os detalhes contratuais que afetam cálculos deixam de ser suposições.
