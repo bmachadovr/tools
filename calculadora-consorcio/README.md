@@ -1,6 +1,6 @@
 # Calculadora de Consórcio — Central de Estratégias Comerciais
 
-> **Status:** Comparador com gráfico de linhas de desembolso acumulado, CDC/Price para veículos, Price/SAC para imóveis e IOF somente no financiamento (17/11/2026).  
+> **Status:** Comparador com IPCA como proxy de veículos, INCC-M para imóveis e lance hipotético na assembleia seguinte: primeira prestação integral e abatimento nas posteriores, sem campo de mês de contemplação (17/11/2026).  
 > **Local:** `tools/calculadora-consorcio/` (pasta `calculadora-consorcio/` na raiz do repositório `tools`).  
 > **Produto:** aplicação web independente, estática, responsiva e orientada ao apoio à negociação.  
 > **Implementação atual:** `index.html`, `styles.css`, `compare-v2.js` e `app.js`; aplicação estática sem backend, acessível pela página inicial. Consulte **[SPEC_V2.md](SPEC_V2.md)** para a especificação consolidada do comparador.
@@ -1302,3 +1302,46 @@ Substituído o comparativo por barras pelo **gráfico de linhas acumuladas**. A 
 - [x] Verificação visual pública da versão `v=20261117-08` em desktop e mobile (390 px): gráfico SVG com duas linhas e sem corte; CDC/Price exclusivo de veículos; SAC/Price em imóveis; IOF só no financiamento.
 
 **Documento detalhado:** [SPEC_V2.md](SPEC_V2.md#9-evolução-temporal-dos-desembolsos-e-modalidades-de-financiamento-17112026).
+
+## 27. Foto atual da oferta: índice simplificado e lance na assembleia seguinte (17/11/2026)
+
+**Regra vigente, prevalecendo sobre exemplos antigos:** o comparador deixa de tentar projetar a data de contemplação. Não há mais campo de **mês hipotético**. Em vez disso:
+- **Sem lance**, não se presume contemplação nem prazo de aquisição.
+- **Com lance**, o modelo considera **oferta na assembleia seguinte**, exclusivamente para simulação, sem garantia de vitória.
+- **Primeira prestação integral**, sem qualquer abatimento do lance. **Somente as prestações posteriores são amortizadas** pela hipótese de redução de parcela ou pelos valores efetivos da simulação informada.
+- A entrada do financiamento continua igual ao **lance próprio**; o lance embutido reduz crédito líquido e não é dinheiro disponibilizado como entrada.
+
+### Redução após a primeira parcela
+
+Quando só o lance é informado, aplica-se aproximação linear:
+
+```text
+primeira_prestacao = prestacao_integral
+quantidade_posterior = prestacoes_originais - 1
+prestacao_posterior = prestacao_integral -
+                      (lance_proprio + lance_embutido) / quantidade_posterior
+```
+
+Se o usuário informar **nova parcela pós-lance**, ela prevalece; se informar **prazo após lance**, esse prazo corresponde apenas às prestações futuras, **não incluindo a primeira integral**. Com redução de prazo, se a parcela não for informada, manter a parcela original e avisar que eventual resíduo precisa ser confirmado. Condições impossíveis no modelo simplificado exigem confirmação no simulador.
+
+### Reajuste de referência
+
+- Veículos: **IPCA anualizado histórico de 4,69%** como *proxy* de projeção, não previsão da FIPE; a indexação contratual de carros pode usar outras referências, como o preço FIPE.
+- Imóveis: **INCC-M anualizado histórico de 6,35%**, também editável.
+- O reajuste é simplificado em ciclos de **12 prestações** desde o início da simulação; não representa necessariamente o aniversário contratual do grupo ou sua distribuição não linear de taxas.
+- Não se usa reajuste como juro de financiamento; é correção hipotética do crédito de referência aplicada a contribuições lineares futuras.
+- Para não apresentar o cálculo como reprodução de cada grupo, o modelo adota como referência geral as regras consultadas nos regulamentos registrados de dezembro de 2024, ressalvando diferenças contratuais.
+- **Consórcio não tem IOF**; o imposto estimado incide somente no financiamento.
+
+### Validação
+
+- [x] HTML não possui mais campo de mês de contemplação.
+- [x] Exemplo original de R$ 100.000 / 100 meses / 20% → **R$ 1.200,00** de primeira prestação.
+- [x] Com lance próprio de R$ 20.000, a primeira prestação permanece em **R$ 1.200,00** e as 99 seguintes ficam estimadas em **R$ 997,98**, antes do reajuste.
+- [x] Lance embutido e combinado: crédito líquido, entrada, desembolsos e totais financeiros conciliados no gráfico.
+- [x] Sem lance não produz data inventada.
+- [x] Dados manuais de parcela ou prazo após lance prevalecem quando informados.
+- [x] Seletores CDC/Price (veículos) e SAC/Price (imóveis) preservados.
+- [ ] Conferir aproximação pós-lance com uma proposta real do simulador interno.
+
+**Detalhamento das novas regras e ressalvas:** [SPEC_V2.md](SPEC_V2.md#10-simplificação-definitiva-do-lance-e-da-atualização-17112026). As seções anteriores permanecem como histórico de mudanças e podem descrever comportamentos já substituídos.
