@@ -9,6 +9,7 @@ import { compareCredit } from './features/compare-credit.js';
 import { debtExchange } from './features/debt-exchange.js';
 import { creditToAmortize } from './features/credit-to-amortize.js';
 import { offerInsights } from './features/offer-insights.js';
+import { initGuidedExamples, isExampleContext, explainResult } from './guided-examples.js?v=20261117-02';
 const $=id=>document.getElementById(id); const form=$('calcForm'); let current=null;
 const THEME_KEY='credit-calculator-theme';
 function applyTheme(theme){
@@ -29,21 +30,25 @@ applyTheme(savedTheme);
 document.querySelectorAll('.theme-option').forEach(button=>button.addEventListener('click',()=>applyTheme(button.dataset.theme)));
 
 let lastOfferInsights=[];
+let lastOfferIsExample=false;
 function buildOfferText(){
   if(!lastOfferInsights.length)return 'Faça uma simulação para gerar a oferta.';
   const name=$('offerClientName')?.value.trim();
   const opening=name?'Olá, '+name+'! Preparei uma simulação para você:':'Olá! Preparei uma simulação para você:';
-  return [opening,'',...lastOfferInsights.map(item=>'• '+item.text),'','Valores estimados, esta simulação não constitui proposta.'].join('\n');
+  return [ ...(lastOfferIsExample?['EXEMPLO FICTÍCIO — NÃO UTILIZAR COMO OFERTA','']:[]),opening,'',...lastOfferInsights.map(item=>'• '+item.text),'','Valores estimados, esta simulação não constitui proposta.'].join('\n');
 }
 function refreshOfferPreview(){
   const preview=$('offerPreview');if(!preview)return;
   preview.textContent=buildOfferText();
-  if($('copyOffer'))$('copyOffer').disabled=!lastOfferInsights.length;
-  if($('sendWhatsApp'))$('sendWhatsApp').disabled=!lastOfferInsights.length;
+  if($('copyOffer'))$('copyOffer').disabled=!lastOfferInsights.length||lastOfferIsExample;
+  if($('sendWhatsApp'))$('sendWhatsApp').disabled=!lastOfferInsights.length||lastOfferIsExample;
+  const exampleNote=document.querySelector('[data-example-status="offer"]');
+  if(exampleNote)exampleNote.hidden=!lastOfferIsExample;
 }
 function renderInsights(context,data){
   const insights=offerInsights(context,data),hub=$('insightsHubList'); if(!hub)return;
   lastOfferInsights=insights;
+  lastOfferIsExample=isExampleContext(context);
   hub.innerHTML='';
   for(const item of insights){const box=document.createElement('div');box.className='balance-stat';const span=document.createElement('span');span.textContent=item.title;const b=document.createElement('b');b.textContent=item.text;box.append(span,b);hub.appendChild(box);}
   if(!insights.length)hub.innerHTML='<div class="balance-stat"><span>Sem argumento adicional</span><b>Os dados calculados não produziram um destaque comercial relevante.</b></div>';
@@ -51,14 +56,14 @@ function renderInsights(context,data){
 }
 $('offerClientName')?.addEventListener('input',refreshOfferPreview);
 $('copyOffer')?.addEventListener('click',async()=>{
-  if(!lastOfferInsights.length)return;
+  if(!lastOfferInsights.length||lastOfferIsExample)return;
   const status=$('copyOfferStatus');
   try{await navigator.clipboard.writeText(buildOfferText());status.textContent='Oferta copiada.';}
   catch{status.textContent='Não foi possível copiar automaticamente. Selecione o texto da oferta e copie manualmente.';}
   status.classList.remove('hidden');
 });
 $('sendWhatsApp')?.addEventListener('click',()=>{
-  if(!lastOfferInsights.length)return;
+  if(!lastOfferInsights.length||lastOfferIsExample)return;
   const text=encodeURIComponent(buildOfferText());
   window.open('https://wa.me/?text='+text,'_blank','noopener,noreferrer');
 });
@@ -153,8 +158,8 @@ form.addEventListener('submit',e=>{e.preventDefault();$('error').textContent='';
   if((informedEffective&&!informedDestinationDue)||(!informedEffective&&informedDestinationDue))throw new Error('Para usar as datas do destino, informe a data de efetivação e a data da primeira parcela.');
   const balanceBaseDate=parseDateBR($('baseDate').value);
   if(informedEffective&&!balanceBaseDate)throw new Error('Para atualizar o saldo até a efetivação, informe também a Data do saldo devedor na Instituição origem.');
-  if(informedEffective<=balanceBaseDate)throw new Error('A data de efetivação deve ser posterior à data do saldo devedor.');
-  if(informedDestinationDue<=informedEffective)throw new Error('A primeira parcela deve ser posterior à data de efetivação.');
+  if(informedEffective&&balanceBaseDate&&informedEffective<=balanceBaseDate)throw new Error('A data de efetivação deve ser posterior à data do saldo devedor.');
+  if(informedDestinationDue&&informedEffective&&informedDestinationDue<=informedEffective)throw new Error('A primeira parcela deve ser posterior à data de efetivação.');
   const balanceUpdateDays=informedEffective?daysBetween(balanceBaseDate,informedEffective):0;
   const updatedBalance=informedEffective?current.pv*Math.pow(1+current.i,balanceUpdateDays/30):current.pv;
   const destinationFirstPeriodDays=informedEffective?daysBetween(informedEffective,informedDestinationDue):30;
@@ -169,7 +174,13 @@ form.addEventListener('submit',e=>{e.preventDefault();$('error').textContent='';
   const updateText=informedEffective?' Saldo atualizado por '+balanceUpdateDays.toLocaleString('pt-BR')+' dias até a efetivação.':' Saldo informado usado sem atualização até a efetivação.';
   const paymentText=Math.abs(difference)<0.005?'A parcela estimada permanece igual.':difference<0?'Redução estimada de '+brl.format(-difference)+' por parcela.':'Aumento estimado de '+brl.format(difference)+' por parcela.';
   $('resultExtra').textContent=paymentText+updateText+' Carência de '+destinationFirstPeriodDays.toLocaleString('pt-BR')+' dias projetada na parcela do destino. Portabilidade sem incidência de IOF.';
-  $('result').classList.remove('hidden');focusResult('result');
+  $('result').classList.remove('hidden');
+  explainResult('result',[
+    'A parcela na origem é a estimativa do pagamento atual. A parcela no destino mostra quanto você pagaria com a nova taxa, mantendo o saldo e o prazo da simulação.',
+    Math.abs(difference)<0.005?'Neste cenário, a parcela praticamente não muda.':difference<0?'A diferença indica uma possível redução mensal de '+brl.format(-difference)+'.':'A diferença indica um possível aumento mensal de '+brl.format(difference)+'.',
+    'Para decidir, compare também o custo efetivo total (CET), eventuais serviços agregados e as condições finais da portabilidade.'
+  ],'comparison');
+  focusResult('result');
   renderInsights('comparison',{diff:{payment:difference,totalPaid:difference*current.n,periods:0}});
 }catch(err){$('result').classList.add('hidden');$('error').textContent=err.message;}});
 $('clear').addEventListener('click',()=>{form.reset();['pv','pmt','n','i','portI','portEffectiveDate','portFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('result').classList.add('hidden');$('evolution').classList.add('hidden');$('error').textContent='';current=null;updateCalculateState();});
@@ -284,7 +295,7 @@ function fillUpdateFromCurrent(){
   if(!$('updateDate').value)$('updateDate').value=formatDateBR(new Date());
   validateUpdateForm();
 }
-$('sendToUpdate').addEventListener('click',()=>{fillUpdateFromCurrent();goTool(2);});
+$('sendToUpdate').addEventListener('click',()=>{fillUpdateFromCurrent();goTool(4);});
 
 $('clearUpdate').addEventListener('click',()=>{
   ['upPv','upPmt','upN','upI','upBaseDate','upDue','updateDate'].forEach(id=>{$(id).value='';$(id).classList.remove('field-valid','field-invalid');});
@@ -299,7 +310,13 @@ $('calculateUpdateBalance').addEventListener('click',()=>{
     const updated=updateBalance({principal,monthlyRate,payment:pmt,periods,baseDate,nextDue,targetDate});
     $('updatedBalanceDate').textContent='Saldo em '+formatDateBR(targetDate);$('updatedBalanceValue').textContent=brl.format(updated.balance);
     $('paidPeriods').textContent=updated.paid.toLocaleString('pt-BR');$('remainingPeriods').textContent=informedPeriods===null?'—':updated.remaining.toLocaleString('pt-BR');$('updatedNextDue').innerHTML=formatDateBR(updated.nextDue)+($('upDue').value.trim()===''?'<span class="estimate-label"> estimado</span>':'');
-    $('updatedBalanceResult').classList.remove('hidden');focusResult('updatedBalanceResult');
+    $('updatedBalanceResult').classList.remove('hidden');
+    explainResult('updatedBalanceResult',[
+      'Esse é o saldo estimado que ainda faltará pagar na data escolhida, considerando os pagamentos programados e a taxa informada.',
+      'Parcelas transcorridas indica quantas prestações deveriam ter passado até essa data; não significa que o pagamento foi confirmado.',
+      'A projeção pode mudar por atrasos, antecipações, seguros, tarifas ou diferenças nas condições do contrato.'
+    ],'futureBalance');
+    focusResult('updatedBalanceResult');
     renderInsights('futureBalance',{...updated,targetDateText:formatDateBR(targetDate)});
   }catch(err){$('updateError').textContent=err.message;}
 });
@@ -383,10 +400,23 @@ $('simulateForm').addEventListener('submit',e=>{
     // O campo deixado em branco é a incógnita da simulação e deve permanecer vazio.
     // O valor calculado é exibido somente no card de resultado, preservando os dados
     // informados pelo usuário para permitir novas simulações sem precisar apagar campos.
-    $('simPayment').textContent=brl.format(result.payment);$('simFinanced').textContent=brl.format(result.financedAmount);$('simIof').textContent=brl.format(result.iof);$('simReleased').textContent=brl.format(result.requestedAmount);$('simOldBalanceIof').textContent=brl.format(result.outstandingIof);
+    const calculatedTitle=solved.solved==='amount'?'Valor contratado estimado':solved.solved==='n'?'Prazo estimado':'Parcela estimada';
+    $('simResultTitle').textContent=calculatedTitle;
+    $('simPayment').textContent=solved.solved==='amount'?brl.format(result.requestedAmount):solved.solved==='n'?result.periods.toLocaleString('pt-BR')+' meses':brl.format(result.payment);
+    $('simFinanced').textContent=brl.format(result.financedAmount);$('simIof').textContent=brl.format(result.iof);$('simReleased').textContent=brl.format(result.requestedAmount);$('simOldBalanceIof').textContent=brl.format(result.outstandingIof);
     $('simOldBalanceIofStat').classList.toggle('hidden',simulationKind!=='renewal');$('simReleasedLabel').textContent=simulationKind==='renewal'?'Valor liberado':'Valor contratado';$('simRenewalStat').classList.toggle('hidden',simulationKind==='new');
     $('simAssumption').textContent=simulationKind==='renewal'?(result.outstandingIofMode==='estimated-informed'?'IOF sobre o saldo renovado é uma estimativa refinada pelas datas da operação original e pode divergir do valor real. '+result.complementaryDays+' dias complementares considerados. Primeiro vencimento em '+formatDateBR(firstDue)+'.':'IOF sobre o saldo renovado é uma estimativa. Informe as datas da operação original em “Aumente a precisão” para refinar. Primeiro vencimento em '+formatDateBR(firstDue)+'.'):'IOF estimado incluído no valor financiado. Primeiro vencimento em '+formatDateBR(firstDue)+'.';
-    $('simulationResult').classList.remove('hidden');focusResult('simulationResult');renderInsights('simulation',{...result,periods:result.periods??n,kind:simulationKind,outstandingBalance:simulationKind==='renewal'?parseBRNumber($('simBalance').value):0});validateSimulation();
+    $('simulationResult').classList.remove('hidden');
+    explainResult('simulationResult',[
+      solved.solved==='pmt'
+        ? 'O valor em destaque é a prestação mensal estimada para '+result.periods+' meses, considerando a taxa informada e o IOF calculado.'
+        : solved.solved==='n'
+          ? 'O prazo em destaque é a quantidade estimada de meses necessária para a parcela informada. A parcela calculada é '+brl.format(result.payment)+'.'
+          : 'O valor em destaque é quanto poderia ser contratado com a parcela e o prazo informados. A parcela simulada é '+brl.format(result.payment)+'.',
+      'Valor financiado é a base usada para calcular as prestações. O IOF é um imposto incluído nessa estimativa, por isso o valor financiado pode ser maior do que o valor solicitado.',
+      'O resultado não é o custo efetivo total (CET). Seguros, tarifas e condições reais podem alterar a prestação.'
+    ],'simulation');
+    focusResult('simulationResult');renderInsights('simulation',{...result,periods:result.periods??n,kind:simulationKind,outstandingBalance:simulationKind==='renewal'?parseBRNumber($('simBalance').value):0});validateSimulation();
   }catch(err){$('simulateError').textContent=err.message;}
 });
 $('clearSimulation').addEventListener('click',()=>{$('simulateForm').reset();['simAmount','simBalance','simN','simPmt','simI','simContractDate','simFirstDue','simOriginalContractDate','simOriginalFinalDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('simulateError').textContent='';$('simulationResult').classList.add('hidden');setSimulationKind('new');});
@@ -417,7 +447,13 @@ $('amortizeForm').addEventListener('submit',e=>{
     $('amSavedPmt').textContent='redução de '+brl.format(r.paymentReduction)+' por parcela';
     $('amInterestTerm').textContent=brl.format(r.interestSavingTerm);
     $('amInterestPayment').textContent=brl.format(r.interestSavingPayment);
-    $('amortizationResult').classList.remove('hidden');focusResult('amortizationResult');
+    $('amortizationResult').classList.remove('hidden');
+    explainResult('amortizationResult',[
+      'Ao amortizar, você antecipa parte da dívida. O novo saldo é o valor estimado que ainda restará após esse pagamento extra.',
+      'Reduzindo o prazo, você mantém a parcela e termina antes. Mantendo o prazo, você paga parcelas menores até o vencimento original.',
+      'As duas economias de juros representam alternativas diferentes: não devem ser somadas.'
+    ],'amortization');
+    focusResult('amortizationResult');
     renderInsights('amortization',{...r,extraPayment:parseBRNumber($('amExtra').value)});
   }catch(err){$('amortizeError').textContent=err.message;}
 });
@@ -530,8 +566,17 @@ $('exchangeForm').addEventListener('submit',e=>{
     $('exSummary').textContent=r.operationType==='liquidation'
       ? 'A nova operação liquida integralmente o empréstimo atual'+(r.cashAvailable>0?' e deixa '+brl.format(r.cashAvailable)+' livres para o cliente.':'.')
       : 'A nova operação amortiza '+brl.format(r.appliedAmount)+' do empréstimo atual, mantém saldo de '+brl.format(r.remainingBalance)+' e deixa '+brl.format(r.cashAvailable)+' livres para o cliente.';
-    $('exchangeResult').classList.remove('hidden');focusResult('exchangeResult');renderInsights('exchange',r);
+    $('exchangeResult').classList.remove('hidden');
+    explainResult('exchangeResult',[
+      'Valor destinado à dívida é quanto do novo crédito será usado para quitar ou amortizar o empréstimo antigo. Valor livre é o que sobra do novo crédito para outros usos.',
+      'Saldo remanescente é o que ainda fica para pagar do contrato antigo. A consolidação mostra a soma dos pagamentos restantes dos dois contratos.',
+      'Economia ou aumento nominal compara as somas das parcelas, sem trazer valores futuros a valor presente. Uma parcela menor não garante uma dívida mais barata. Confira também o CET e as condições finais.'
+    ],'exchange');
+    focusResult('exchangeResult');renderInsights('exchange',r);
   }catch(err){$('exchangeError').textContent=err.message;}
 });
 $('clearExchange').addEventListener('click',()=>{$('exchangeForm').reset();['exBalance','exCurrentPayment','exCurrentN','exNewAmount','exNewPayment','exNewN','exAmortizeAmount','exCurrentI','exNewI','exBaseDate','exCurrentDue','exNewContractDate','exNewFirstDue'].forEach(id=>$(id).classList.remove('field-valid','field-invalid'));$('exchangeError').textContent='';$('exchangeResult').classList.add('hidden');validateExchange();});
 validateExchange();
+
+// Eventos de exemplo são adicionados depois dos validadores e dos simuladores.
+initGuidedExamples({goTool});
