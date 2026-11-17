@@ -696,92 +696,128 @@ Exemplo **hipotético** para essa mesma carta: embutido R$ 22.005,20 (20% da car
 
 **Separação de evidências:** simulação em imagem confirma a amortização após lance **próprio**; o comportamento igual do **embutido** foi **informado pelo usuário**, mas ainda não há captura independente desse cenário.
 
-## 17. Terceiro caso de referência — grupo em andamento com administração adicional nas primeiras parcelas (17/11/2026)
+## 17. Terceiro caso — composição compensatória e manutenção do valor nominal da parcela (17/11/2026)
 
-**Origem:** captura fornecida pelo usuário de uma simulação operacional distinta das anteriores. Manter **identificadores institucionais e do plano fora do projeto**. O novo cenário não deve ser confundido com o grupo em formação da seção 14, embora possua a mesma carta e prazo.
+> **Correção importante em relação à interpretação anterior:** foi fornecido um **detalhamento das prestações com fator de redução**, e o usuário esclareceu que a distribuição diferenciada da taxa de administração **não altera, por si só, o valor da parcela**: o componente que muda é a **amortização inicial do fundo comum**. Não tratar a antecipação de administração como acréscimo ao boleto. Não substituir este esclarecimento por hipótese de aumento das cinco primeiras parcelas.
 
-### 17.1. Dados visíveis na captura
+**Origem:** capturas de um grupo em andamento, distintas das simulações do grupo em formação das seções 14–16. Nenhum nome ou identificador institucional deve constar nos arquivos do projeto.
 
-| Campo | Valor observado |
+### 17.1. Condições informadas e composição visível
+
+| Campo | Valor |
 | --- | ---: |
-| Modalidade | Automóvel |
+| Segmento | Automóvel |
 | Situação | Grupo em andamento |
-| Valor do bem e da proposta (carta) | R$ 110.026,00 |
-| Prazo atual | 100 prestações mensais |
-| Parcela exibida | R$ 1.329,12 |
-| Taxa de administração (componentes) | **17,20% + 0,60%** |
-| Taxa de administração total em reais | **R$ 19.584,63** |
-| Fundo de reserva total | **3,00% / R$ 3.300,78** |
-| Seguro de vida total | **0,0000% / R$ 0,00** |
-| Observação literal relevante | **0,60% diluído nas 5 primeiras parcelas** |
+| Carta / crédito nominal | R$ 110.026,00 |
+| Prazo indicado | 100 meses |
+| Administração total | **17,20% + 0,60% = 17,80%** |
+| Administração nominal total | R$ 19.584,63 |
+| Fundo de reserva nominal total | **3,00% / R$ 3.300,78** |
+| Seguro de vida | 0,0000% / R$ 0,00 |
+| Parcela indicada | **R$ 1.329,12** |
+| Observação da proposta | **0,60% diluído nas 5 primeiras parcelas** |
+| Modo da tela detalhada | **Com fator de redução de prestação** |
 
-**Importante:** os 0,60% integram a soma da taxa de administração, totalizando **17,80%** neste cenário. Não adicionar os 0,60% novamente ao custo contratual depois de incluí-los no total.
+**Detalhamento mensal exibido na nova captura:**
 
-### 17.2. Reconciliação aritmética — não confundir média com calendário real
+| Componente da prestação exibida | Percentual mensal | Valor mensal |
+| --- | ---: | ---: |
+| Taxa de administração | **0,1200%** | **R$ 132,03** |
+| Fundo de reserva | **0,0300%** | **R$ 33,01** |
+| Amortização do fundo comum | **1,0580%** | **R$ 1.164,08** |
+| Seguro | **0,0000%** | **R$ 0,00** |
+| **Total** | **1,2080%** | **R$ 1.329,12** |
+
+Este detalhamento **confirma diretamente** o percentual de administração de 0,1200%, correspondente a **0,60% ÷ 5**, e que o fundo comum absorve, neste período exibido, **1,0580%**. O percentual mensal do fundo comum **não é 1% constante**. A soma reproduz exatamente a prestação observada.
+
+### 17.2. Reconciliação matemática comprovada
 
 ```text
-carta                       = 110026,00
-taxa_administracao_regular  = 17,20%
-taxa_administracao_adicional=  0,60%
-taxa_administracao_total    = 17,80%
-fundo_reserva_total         =  3,00%
-seguro                     =  0,00%
+valor_carta = 110026,00
+taxa_administracao_total = 17,80%
+taxa_administracao_normal = 17,20%
+taxa_administracao_5_iniciais = 0,60%
+fundo_reserva_total = 3,00%
+seguro = 0,00%
+prestacoes = 100
 
-administracao_regular_nominal  = 110026 × 0,172 = 18924,472  -> 18924,47
-administracao_adicional_nominal= 110026 × 0,006 =   660,156  ->   660,16
-administracao_total_nominal    = 110026 × 0,178 = 19584,628  -> 19584,63
-fundo_reserva_nominal          = 110026 × 0,03  =  3300,78
-total_nominal_sem_reajustes    = 110026 × 1,208 = 132911,408 -> 132911,41
+composicao_mensal_exibida:
+  administracao = 0,1200% × 110026 = 132,0312  -> 132,03
+  reserva       = 0,0300% × 110026 =  33,0078  ->  33,01
+  fundo_comum   = 1,0580% × 110026 = 1164,07508 -> 1164,08
+  seguro        = 0,0000% × 110026 =   0,00
+  parcela = 132,03 + 33,01 + 1164,08 = 1329,12
+  percentual_total = 0,1200 + 0,0300 + 1,0580 = 1,2080%
 
-media_direta_100               = 132911,408 / 100 = 1329,11408 -> 1329,11
-parcela_exibida                = 1329,12
-
-simulacao_de_arredondamento_por_componente:
-fundo_comum_mensal_teorico     = arred(110026 / 100)          = 1100,26
-administracao_mensal_teorica   = arred(19584,628 / 100)       =  195,85
-fundo_reserva_mensal_teorico   = arred(3300,78 / 100)         =   33,01
-soma_componentes_arredondados = 1329,12  # reproduz a tela
+custo_nominal_total_teorico = 110026 × (1 + 0,178 + 0,03)
+                            = 132911,408 -> 132911,41
+media_aritmetica_teorica = 132911,408 / 100 = 1329,11408 -> 1329,11
 ```
 
-**Observações:**
-- A simulação sugere **arredondamento separado por componente**, mas a diferença de R$ 0,01 também poderia decorrer de outras regras internas; a captura não comprova o algoritmo.
-- A existência da observação **“0,60% diluído nas 5 primeiras parcelas”** significa que **não devemos presumir** que R$ 1.329,12 será cobrado em cada um dos 100 meses.
-- Nem o percentual efetivamente aplicado à primeira prestação nem a distribuição do fundo comum e demais componentes em cada período estão discriminados.
-- A frase sobre 0,60% **não demonstra, sozinha**, se esses valores são cobrados **além da média exibida**, se os demais componentes são ajustados em sentido inverso ou se a tela mostra valor médio/indicativo.
-- Sem distribuição mensal verificada, calcular as cinco primeiras parcelas usando **0,60% ÷ 5** geraria apenas uma **hipótese ilustrativa** e não deve ser apresentado como cobrança contratual.
+A diferença de centavos entre **média aritmética direta** e **soma de componentes arredondados** requer tratar arredondamentos e ajustes residuais. A **coincidência da parcela exibida com os componentes discriminados** não é mais apenas hipótese: está documentada na própria tela.
 
-### 17.3. Comparação correta com o caso anterior
+### 17.3. Regra operacional confirmada: a distribuição altera a amortização
 
-| Campo | Caso anterior: grupo em formação | Novo caso: grupo em andamento |
-| --- | ---: | ---: |
-| Crédito nominal | R$ 110.026,00 | R$ 110.026,00 |
-| Prazo atual | 100 | 100 |
-| Taxa de administração total | **20,90%** | **17,80%**, sendo 0,60% relacionado às 5 primeiras parcelas |
-| Fundo de reserva total | 3,00% | 3,00% |
-| Parcela exibida | R$ 1.363,22 | R$ 1.329,12 |
-| Diferença de parcelas exibidas | — | **R$ 34,10 menor** |
-| Diferença nominal de taxa de administração | — | **3,10 pontos percentuais / R$ 3.410,81** |
+- Conforme esclarecimento do usuário, **a prestação nominal não se modifica somente porque a administração está distribuída entre períodos**. Mantida a base do bem, o valor da prestação é preservado mediante **compensação no percentual de amortização do fundo comum**.
+- Na composição observada, administração de **0,1200%**, reserva de **0,0300%** e amortização de **1,0580%** somam exatamente a participação mensal de **1,2080%**.
+- Uma administração mensal menor pode ser compensada por amortização maior; quando a administração mensal aumentar, a amortização poderá diminuir, **conforme o cronograma efetivo do grupo**.
+- Essa redistribuição é distinta de **reajustes do crédito/bem**, **lance/amortização extraordinária**, **seguro** ou **alteração de fator de redução**; esses eventos podem modificar os valores pagos.
+- O sistema tem uma opção para detalhar prestações **sem fator de redução**. As capturas **não demonstram** a composição dessa visualização alternativa; não presumir igualdade entre os modos.
 
-Comparação nominal **não equivale** à comparação de custo futuro efetivo: o novo grupo pode ter cronogramas, vencimentos, reajustes e regras de adesão distintos. Não afirmar que uma opção é melhor apenas pela parcela exibida.
+### 17.4. Exemplo matemático de cronograma conciliado — hipótese, não extração da tela
 
-### 17.4. Consequências para o motor matemático e a interface
+Existe um cronograma hipotético que reproduz todas as taxas totais mantendo **1,2080%** da carta por mês, antes de reajustes:
 
-1. Separar `administracao_total_pct`, `administracao_regular_pct`, `administracao_adicional_pct`, `periodos_adicional`, `base_adicional` e `cronograma_adicional`.
-2. Guardar a **parcela exibida pelo simulador** como campo de origem externa, separado da **média nominal calculada** e da **prestação mensal contratual projetada**.
-3. Para cálculos de lance e comparador comercial, permitir informar diretamente a parcela exibida; **não usar essa entrada para afirmar o valor de todas as parcelas**.
-4. Se apenas o texto de antecipação estiver disponível, apresentar um aviso de **distribuição mensal não verificada** e bloquear projeção exata para as primeiras cinco prestações.
-5. Conferir se o número de parcelas afetadas pela antecipação é contado desde a **adesão ou desde a formação do grupo**, já que o exemplo é de grupo em andamento.
-6. Criar testes para cálculo da soma nominal e para casos de arredondamento por componente; não considerar um centavo de coincidência prova suficiente.
-7. Preservar o status do grupo, pois pode alterar prazos remanescentes, condições de adesão e cobrança das taxas.
+```text
+primeiras 5 parcelas:
+  administracao   = 0,60% / 5    = 0,120000000% por parcela
+  fundo_reserva   = 3,00% / 100  = 0,030000000% por parcela
+  amortizacao     = 1,208% - 0,12% - 0,03% = 1,058000000%
 
-### 17.5. Pendências objetivas
+demais 95 parcelas — HIPÓTESE:
+  administracao   = 17,20% / 95 = 0,1810526316% por parcela
+  fundo_reserva   = 3,00% / 100 = 0,0300000000% por parcela
+  amortizacao     = 1,208% - 0,1810526316% - 0,03%
+                  = 0,9969473684% por parcela
 
-- [x] Registrar a existência de **administração regular (17,20%) mais 0,60% distribuído nas cinco primeiras parcelas**, conforme captura.
-- [x] Confirmar o total de administração de **17,80% / R$ 19.584,63** e o fundo de reserva de **3,00% / R$ 3.300,78**.
-- [x] Encontrar reconciliação aritmética que reproduz **R$ 1.329,12** pela soma de componentes mensais individualmente arredondados (**hipótese**, não algoritmo homologado).
-- [ ] Identificar o valor efetivo **da 1ª, 2ª, 5ª e 6ª prestações**, ou suas alíquotas componentes, nesse mesmo plano.
-- [ ] Confirmar se a primeira cobrança e o período de distribuição adicional se referem à adesão do consorciado ou ao cronograma original do grupo.
-- [ ] Verificar se o valor apresentado é prestação inicial, média informativa ou parcela de um período específico.
-- [ ] Confirmar possíveis ajustes residuais de arredondamento.
+conferencia hipotetica dos totais:
+  administracao = 5 × 0,12% + 95 × 0,1810526316% = 17,80%
+  fundo_comum   = 5 × 1,058% + 95 × 0,9969473684% = 100,00%
+  reserva       = 100 × 0,03% = 3,00%
+```
 
-**Conclusão:** este terceiro caso confirma a necessidade de **taxa total versus distribuição temporal** e não autoriza inferir, só pela parcela exibida, o cronograma real de cobrança.
+**Atenção:** a composição das demais 95 parcelas é **dedução possível**, ainda **não confirmada pelo sistema**. Usar esse cálculo somente para orientar investigação e testes, não como regra contratual homologada.
+
+### 17.5. Especificação para o motor de cálculo
+
+**Separar dois conceitos:**
+
+1. `valor_nominal_da_prestacao_t`: valor decorrente do crédito atualizado, do plano e do fator aplicável.
+2. `composicao_prestacao_t`: taxas e amortização atribuídas ao mês, respeitando os percentuais acumulados e a conciliação final.
+
+Quando o plano adotado efetivamente **preservar a prestação** pela compensação da amortização:
+
+```text
+percentual_total_mensal_t = conforme_plano_e_base_atualizada
+percentual_amortizacao_t =
+    percentual_total_mensal_t
+  - percentual_administracao_t
+  - percentual_reserva_t
+  - percentual_seguro_t
+  - outros_componentes_percentuais_t
+
+prestacao_t = soma_de_componentes_arredondados_ou_regra_de_arredondamento_verificada
+```
+
+**Não deduzir automaticamente** `percentual_total_mensal_t = (100 + taxa_admin_total + reserva_total) / prazo` para qualquer grupo: só utilizar se demonstrado pelo perfil do contrato. Se faltar cronograma, receber **parcela observada** como entrada e declarar os componentes desconhecidos.
+
+**Testes essenciais:**
+- [x] Reproduzir o total **R$ 1.329,12** pelos componentes da nova tela.
+- [x] Confirmar que **0,12% × 5 = 0,60%**.
+- [x] Registrar informação operacional de que a distribuição especial altera a **amortização inicial**, não a prestação exclusivamente por causa da taxa.
+- [ ] Conferir percentual de administração e amortização **da 6ª parcela** ou de outra após o período inicial, no mesmo grupo.
+- [ ] Comparar telas **com e sem fator de redução**, sem presumir equivalência.
+- [ ] Validar aplicação da regra para grupo em formação e outros grupos.
+- [ ] Confirmar arredondamentos e ajustes residuais na última parcela.
+
+**Decisão de produto:** não criar lógica de aumento da parcela nas cinco primeiras prestações por causa do adicional de 0,60%. A distribuição das taxas e a compensação pela amortização devem ficar no **cronograma dos componentes**. Isso não constitui garantia de prestação fixa diante de reajustes e de outros eventos contratuais.
