@@ -220,7 +220,7 @@
        '<div class="hero-number">'+escapeHtml(data.main)+'<small>'+escapeHtml(data.heading)+'</small></div>'+
        '<p class="result-copy">Comparação do desembolso e das prestações com as condições informadas. Não é CET nem cálculo de valor presente.</p></div>'+
       cards+chart+
-      '<div class="technical-section"><h4>Indicadores lado a lado</h4>'+table(["Indicador","Consórcio","Financiamento"],technicalRows)+'</div>'+
+      '<div class="technical-section"><h4>Indicadores lado a lado</h4>'+table(["Indicador","Consórcio","Financiamento"],technicalRows).replace('<table class="compare-table">','<table class="compare-table technical-compare-table">')+'</div>'+
       '<div class="technical-section"><h4>Leitura técnica do cenário</h4><ol class="technical-insights">'+analyzed+'</ol></div>'+
       '<details class="technical-disclosure"><summary>Memória de cálculo e premissas</summary>'+
         '<div class="technical-section">'+table(["Composição do consórcio","Valor"],data.consortiumDetails)+'</div>'+
