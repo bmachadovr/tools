@@ -63,7 +63,7 @@ A neutralidade visual e nominal **não elimina** a necessidade de declarar as pr
 **Entradas essenciais:**
 - Valor efetivo do bem e valor de crédito utilizável.
 - Condições obtidas no simulador operacional: crédito nominal, prestação(ões), prazo restante, taxa total de administração, fundo de reserva, seguros e outros custos aplicáveis.
-- Alternativa de financiamento: entrada, prazo, parcela, taxa/CET e encargos, quando disponíveis.
+- Alternativa de financiamento: entrada, prazo e **taxa de juros mensal** para cálculo das prestações **Price ou SAC**; IOF, tarifas financiadas e custos à vista como entradas opcionais, conforme proposta.
 - Horizonte de comparação e cenários **hipotéticos** de contemplação (sem previsão nem garantia).
 - Premissas de reajuste do bem e das prestações, se aplicáveis.
 
@@ -1069,7 +1069,7 @@ Ao acessar o conteúdo integral da versão pertinente, extrair com referência d
 
 | Funcionalidade | Entrada principal | Saída atual |
 | --- | --- | --- |
-| **Comparar alternativas** | Preço do bem, carta líquida, prestações restantes, custos próprios, entrada/parcelas do financiamento, cenário de contemplação | Desembolso nominal futuro do consórcio, financiamento e à vista; diferença; alertas sobre acesso ao bem e reajuste hipotético |
+| **Comparar alternativas** | Preço do bem, carta líquida, prestações restantes, custos próprios, entrada, **taxa mensal**, prazo e regime **Price ou SAC** do financiamento; custos opcionais e cenário de contemplação | **Financiamento calculado**: principal, prestações Price ou SAC, juros, despesas e desembolso total; comparação nominal com consórcio e à vista, alertas de acesso ao bem |
 | **Estratégia de lances** | Carta vigente, lance próprio, embutido, teto, preço do bem, regra de amortização | Crédito líquido, lance total, aporte próprio, complemento de compra; prestação pós-lance **somente quando são informadas prestações elegíveis** |
 | **Analisar concorrente** | Duas propostas com crédito, parcela, prazo, custos adicionais, taxas informativas e fonte | Comparação lado a lado, diferenças nominais, alerta quando crédito ou prazo não são equivalentes |
 | **Gerar proposta** | Última análise realizada; nome e objetivo opcionais | Resumo textual revisável, cópia, WhatsApp e impressão do navegador; compartilhamento WhatsApp desativado para exemplos ilustrativos |
@@ -1079,7 +1079,7 @@ Ao acessar o conteúdo integral da versão pertinente, extrair com referência d
 - **Não duplicar o simulador operacional**: a ferramenta recebe a prestação e os valores da carta já informados pelo usuário.
 - **Consórcio x financiamento:** somar prestações **a pagar** e desembolsos próprios adicionais. Diferença entre preço do bem e carta líquida entra como complemento de compra quando necessário. O capital próprio usado no lance é desembolso adicional; o embutido já deve estar refletido no **crédito líquido informado**.
 - **Reajuste do consórcio:** quando informado, usar cenário **simplificado** de reaplicação anual sobre a prestação a cada 12 meses a partir da primeira prestação usada na simulação. O resultado não substitui índice, data-base ou cronograma contratual reais.
-- **Financiamento:** utilizar **prestação informada**, entrada e custos efetivamente externos; **não inferir CET** nem estimar juros em sistema de amortização não especificado. O comparativo não calcula valor presente ou custo de oportunidade.
+- **Financiamento (revisão):** calcular o principal como `preço do bem − entrada + IOF financiado + tarifas financiadas`, com **prestação Price** `principal × i / [1 − (1+i)^(-n)]` ou **SAC** (amortização constante `principal / n`, juros incidentes sobre saldo anterior). Juros e total são calculados e apresentados separadamente; despesas pagas à vista são somadas apenas ao desembolso externo. Em taxa zero, o ajuste da última prestação concilia centavos sem juros negativos. **Não inferir CET**, recalcular IOF automaticamente nem comparar valor presente ou custo de oportunidade sem dados adicionais.
 - **Preço à vista:** utilizado como referência de desembolso imediato; não deduzir valor excedente da carta como livre disponibilidade de caixa.
 - **Lance embutido:** aplicar o teto percentual **configurável**, inicializado em 30% conforme contratos recentes examinados, quando essa modalidade for permitida; crédito líquido igual à carta vigente menos embutido. O lance próprio **não é deduzido da carta**.
 - **Redução de parcela:** quando o usuário fornecer prestação base e prestações realmente afetadas, aplicar somente a hipótese `nova = parcela − lance_total / parcelas_elegiveis`; apresentar advertência de que não é regra universal. **Não calcular redução de prazo** sem cronograma do grupo.
@@ -1092,7 +1092,7 @@ Ao acessar o conteúdo integral da versão pertinente, extrair com referência d
 
 - [x] JavaScript passou pela compilação de sintaxe do runtime usado no teste.
 - [x] Interface contém quatro abas, três formulários de análise e gerador de proposta.
-- [x] Fluxo de comparação entre alternativas executou sem erro, e a soma nominal do caso informado (R$ 1.363,22 × 100) resultou em **R$ 136.322,00** antes de reajustes, distinta da média exata do contrato por arredondamentos.
+- [x] Fluxo de comparação entre alternativas executou sem erro; a soma nominal do caso informado (R$ 1.363,22 × 100) é **R$ 136.322,00** antes de reajustes. **O financiamento passou a ser calculado** por Price ou SAC a partir da taxa mensal, entrada e prazo.
 - [x] Fluxo de lances reproduziu **R$ 1.029,81** para carta de R$ 110.026, lance próprio de R$ 33.007,80, parcela de R$ 1.363,22 e **99** prestações afetadas.
 - [x] Fluxo de comparação de propostas executou com duas prestações e prazos informados, com total nominal e diferença corretos.
 - [x] O gerador de proposta recebeu os dados da última análise.
@@ -1104,3 +1104,49 @@ Ao acessar o conteúdo integral da versão pertinente, extrair com referência d
 - [ ] Criar cenários de comparação com reajustes reais e efeitos financeiros da espera após validação contratual.
 
 **Prioridade seguinte:** testar utilização no computador e celular, corrigir divergências encontradas e então avaliar a necessidade de recursos avançados. O MVP é uma ferramenta de **análise de cenários**, não sistema de contratação nem promessa de contemplação.
+
+### 22.4. Revisão do comparador — cálculo próprio do financiamento (17/11/2026)
+
+**Mudança motivadora:** exigir a parcela pronta do financiamento não gera comparação consistente quando o operador dispõe de preço do bem, entrada, taxa e prazo. Agora o comparador calcula o financiamento e explicita as hipóteses.
+
+**Entradas financeiras:** `preco_bem`, `entrada`, `taxa_juros_mensal`, `meses_financiamento`, `sistema_amortizacao (Price/SAC)`. Opcionalmente `iof_financiado`, `tarifas_seguros_financiados` e `custos_pagos_a_vista`; valores não informados são tratados como zero **com aviso de possível incompletude**, nunca como isenção declarada.
+
+```text
+financiamento_bem = preco_bem - entrada
+principal = financiamento_bem + iof_financiado + tarifas_seguros_financiados
+taxa_decimal = taxa_mensal_percentual / 100
+
+se Price:
+  prestacao = principal * taxa_decimal / (1 - (1 + taxa_decimal)^(-meses))
+  se taxa_decimal = 0: prestacao = principal / meses
+  total_parcelas = soma das prestações arredondadas, com eventual ajuste residual
+
+se SAC:
+  amortizacao_mensal = principal / meses
+  prestacao_mes_t = amortizacao_mensal +
+                    saldo_antes_do_mes_t * taxa_decimal
+  saldo_antes_do_mes_t = principal - (t - 1) * amortizacao_mensal
+  total_parcelas = soma das prestações, arredondadas no mês
+
+juros_totais = total_parcelas - principal
+total_financiamento_pago = entrada + total_parcelas + custos_pagos_a_vista
+
+desembolso_consorcio = soma_prestacoes_a_pagar +
+                        lance_com_capital_proprio +
+                        custos_externos +
+                        max(0, preco_bem - credito_liquido)
+```
+
+**Comparação correta:**
+- O **mesmo preço do bem** serve de referência para ambos os cenários, mas a entrada do financiamento e o lance do consórcio são fluxos distintos.
+- O consórcio utiliza a **parcela informada pela operação real**, não estima taxa de administração a partir de hipótese universal. O número de prestações corresponde a **prestações ainda a pagar**.
+- O financiamento **calcula sua própria prestação**, seus juros e o custo nominal total. Quando SAC, mostra **primeira e última prestações** para não sugerir parcela fixa.
+- O IOF e tarifas **não são calculados automaticamente** nesta versão; informar valores reais da operação quando conhecidos. Se não forem informados, o resultado é **incompleto** para tomada de decisão, ainda que matematicamente bem-formado.
+- **Price / SAC não são sinônimos de CET**. Para comparação com proposta real, conferir seguros, impostos, tarifas, datas e custo efetivo total da oferta.
+- O total nominal **não equaliza datas de pagamentos nem a disponibilidade do bem**. A contemplação simulada continua sendo cenário hipotético, não previsão; risco de espera, índice de reajuste, aluguel/uso alternativo e valor presente não estão calculados.
+- Se o usuário editar campos e os tornar inválidos, o resultado antigo é ocultado para impedir apresentação inadvertida de valores desatualizados.
+- Os testes precisam reproduzir **juros zero**, **Price**, **SAC**, custos financiados distintos dos pagos à vista, limite `entrada < valor_do_bem` e comparação com as prestações históricas.
+
+**Exemplo ilustrativo:** bem de R$ 110.026, entrada R$ 22.005,20, saldo do bem de R$ 88.020,80, taxa de 1,60% a.m. e 60 meses. Ao preencher os custos reais, conferir a prestação calculada pelo método selecionado; não associar o exemplo a qualquer oferta institucional.
+
+**Estado da validação:** lógica implementada em JavaScript no navegador; não se trata de cotação bancária oficial ou pré-aprovação do financiamento.
