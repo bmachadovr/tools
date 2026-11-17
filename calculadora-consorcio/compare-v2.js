@@ -274,7 +274,7 @@ window.ConsorcioCompareV2 = (function () {
       get(id).addEventListener("input",autoLoan);
     });
     get("form-comparar").addEventListener("reset",()=>{
-      setTimeout(()=>{
+      window.setTimeout(()=>{
         const fields=["c-bem","c-carta","c-contemplacao","c-prazo","c-taxa","c-parcela",
           "c-lance","c-embutido","c-liquida","c-apos-parcela","c-apos-prazo","c-extras",
           "c-entrada","c-fintaxa","c-finprazo","c-finparcela",
