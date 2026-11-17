@@ -174,7 +174,7 @@
     const heading = cheaper === "mesmo valor nominal" ? "nas premissas informadas" : "diferença nominal — menor no " + cheaper;
     const labelSistema = finSistema === "price" ? "Price" : "SAC";
     const parcelaResumo = finSistema === "price"
-      ? "Prestação calculada: " + money(fin.first)
+      ? "Prestação calculada: " + money(fin.first) + (fin.last !== fin.first ? " (última ajustada para " + money(fin.last) + " por arredondamento)" : "")
       : "1ª parcela: " + money(fin.first) + " / última: " + money(fin.last);
     const rows = [
       ["Consórcio", money(totalCons), "Mês " + mesContemplacao + " (hipótese)"],
@@ -192,8 +192,10 @@
       ["Total financiado", money(fin.principal)],
       [finSistema === "price" ? "Parcela mensal" : "Primeira / última parcela",
         finSistema === "price" ? money(fin.first) : money(fin.first) + " / " + money(fin.last)],
+      ...(finSistema === "price" && fin.first !== fin.last ? [["Última prestação ajustada", money(fin.last)]] : []),
       ["Total de juros nas parcelas", money(fin.interestTotal)],
       ["Total das prestações", money(fin.installmentsTotal)],
+      ["Despesas adicionais pagas à vista", money(finExtras)],
       ["Entrada + despesas pagas à vista", money(entrada + finExtras)],
       ["Desembolso total", money(totalFin)]
     ];
@@ -219,6 +221,7 @@
       ["Crédito líquido do consórcio", money(carta)]
     ];
     if (finSistema === "sac") metrics.push(["Última prestação SAC", money(fin.last)]);
+    if (finSistema === "price" && fin.first !== fin.last) metrics.push(["Última prestação (ajuste de centavos)", money(fin.last)]);
     updateResult("resultado-comparar", heading, headline,
       "Financiamento calculado a partir de entrada, juros mensais e prazo, com despesas explicitadas. A diferença é nominal e não equivale a valor presente, CET ou vantagem financeira garantida.",
       metrics,
