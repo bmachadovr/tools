@@ -95,7 +95,7 @@ export function simulateCredit({kind='new',requestedAmount,outstandingBalance=0,
   const financedAmount=roundMoney(baseAmount+iof);
 
   return {
-    kind,requestedAmount,outstandingBalance,baseAmount,iof,newMoneyIof,outstandingIof,
+    kind,requestedAmount,outstandingBalance,periods,baseAmount,iof,newMoneyIof,outstandingIof,
     financedAmount,payment:roundMoney(paymentWithFirstPeriod(financedAmount,monthlyRate,periods,financialFirstPeriodDays)),
     firstPeriodDays,financialFirstPeriodDays,
     iofBase:requestedAmount,outstandingIofIncluded:kind==='renewal',
