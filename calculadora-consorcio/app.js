@@ -96,6 +96,42 @@
     return '<div class="result-section"><h4>' + escapeHtml(sectionTitle) + '</h4>' + contents + '</div>';
   }
 
+  function roundCents(value) {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+  }
+
+  // A prestação financiada é calculada exclusivamente com a taxa mensal fornecida.
+  // Tributos e despesas só entram quando informados e com sua forma de pagamento indicada.
+  function calculateFinancing(principal, months, ratePercent, system) {
+    if (!(principal > 0)) throw Error("O valor a financiar precisa ser maior que zero.");
+    const rate = ratePercent / 100;
+    let first = 0, last = 0, installmentsTotal = 0;
+    if (system === "price") {
+      const payment = roundCents(rate === 0
+        ? principal / months
+        : principal * rate / (-Math.expm1(-months * Math.log1p(rate))));
+      first = last = payment;
+      installmentsTotal = roundCents(payment * months);
+    } else if (system === "sac") {
+      const monthlyAmortization = principal / months;
+      for (let month = 1; month <= months; month++) {
+        const balanceBefore = principal - monthlyAmortization * (month - 1);
+        const payment = roundCents(monthlyAmortization + balanceBefore * rate);
+        if (month === 1) first = payment;
+        if (month === months) last = payment;
+        installmentsTotal += payment;
+      }
+      installmentsTotal = roundCents(installmentsTotal);
+    } else {
+      throw Error("Sistema de amortização inválido.");
+    }
+    return {
+      principal, first, last, installmentsTotal,
+      interestTotal: roundCents(installmentsTotal - principal),
+      system
+    };
+  }
+
   function compare() {
     const bem = read("c-bem", true);
     const mesContemplacao = integer("c-contemplacao", true);
@@ -103,58 +139,109 @@
     const prazo = integer("c-prazo", true);
     const lanceProprio = read("c-lance"), extras = read("c-extras");
     const reaj = read("c-reajuste");
-    const entrada = read("c-entrada", true), finParcela = read("c-finparcela", true);
-    const finPrazo = integer("c-finprazo", true), finExtras = read("c-finextras");
-    [bem, carta, parcela, finParcela].forEach((v) => positive(v, "os valores essenciais"));
-    if (mesContemplacao > prazo) throw Error("O mês hipotético de contemplação não pode ultrapassar as prestações restantes.");
+
+    const entrada = read("c-entrada", true);
+    const taxaFin = read("c-fintaxa", true);
+    const finPrazo = integer("c-finprazo", true);
+    const finSistema = $("c-sistema").value;
+    const iof = read("c-finiof");
+    const tarifasFinanciadas = read("c-fintarifas");
+    const finExtras = read("c-finextras");
+
+    [bem, carta, parcela].forEach((v) => positive(v, "os valores essenciais"));
+    if (mesContemplacao > prazo) throw Error("O mês hipotético de contemplação não pode ultrapassar as prestações a pagar.");
     if (reaj > 100) throw Error("Informe reajuste anual de até 100% para evitar uma projeção inconsistente.");
-    if (entrada > bem) throw Error("A entrada do financiamento não pode exceder o preço do bem.");
+    if (taxaFin > 100) throw Error("Confirme a taxa de juros do financiamento: o valor mensal informado ultrapassa 100%.");
+    if (entrada >= bem) throw Error("A entrada precisa ser menor que o preço do bem para haver saldo a financiar.");
+
+    const creditoFinanciadoDoBem = bem - entrada;
+    const principalFinanciado = roundCents(creditoFinanciadoDoBem + iof + tarifasFinanciadas);
+    const fin = calculateFinancing(principalFinanciado, finPrazo, taxaFin, finSistema);
+    const totalFin = roundCents(fin.installmentsTotal + entrada + finExtras);
 
     const diferencaBem = Math.max(0, bem - carta);
     const sobra = Math.max(0, carta - bem);
     const totalParcelasCons = totalComReajuste(parcela, prazo, reaj);
-    const totalCons = totalParcelasCons + lanceProprio + extras + diferencaBem;
-    const totalFin = finParcela * finPrazo + entrada + finExtras;
+    const totalCons = roundCents(totalParcelasCons + lanceProprio + extras + diferencaBem);
     const totalVista = bem;
-    const diff = Math.abs(totalCons - totalFin);
+    const diff = roundCents(Math.abs(totalCons - totalFin));
     const cheaper = totalCons < totalFin - 0.005 ? "consórcio" : totalFin < totalCons - 0.005 ? "financiamento" : "mesmo valor nominal";
     const headline = cheaper === "mesmo valor nominal" ? "Mesmo custo estimado" : money(diff);
-    const heading = cheaper === "mesmo valor nominal" ? "nas premissas informadas" : "diferença de desembolso — menor no " + cheaper;
+    const heading = cheaper === "mesmo valor nominal" ? "nas premissas informadas" : "diferença nominal — menor no " + cheaper;
+    const labelSistema = finSistema === "price" ? "Price" : "SAC";
+    const parcelaResumo = finSistema === "price"
+      ? "Prestação calculada: " + money(fin.first)
+      : "1ª parcela: " + money(fin.first) + " / última: " + money(fin.last);
     const rows = [
       ["Consórcio", money(totalCons), "Mês " + mesContemplacao + " (hipótese)"],
-      ["Financiamento", money(totalFin), "Após contratação/aprovação"],
+      ["Financiamento " + labelSistema, money(totalFin), "Após aprovação"],
       ["Compra à vista", money(totalVista), "No pagamento"]
     ];
-    const tableHtml = table(["Alternativa", "Desembolso", "Disponibilidade do bem"], rows);
+    const tableHtml = table(["Alternativa", "Desembolso nominal", "Acesso ao bem"], rows);
+
+    const financiamentos = [
+      ["Preço do bem", money(bem)],
+      ["Entrada", money(entrada)],
+      ["Preço financiado", money(creditoFinanciadoDoBem)],
+      ["IOF incluído no saldo", money(iof)],
+      ["Outras despesas financiadas", money(tarifasFinanciadas)],
+      ["Total financiado", money(fin.principal)],
+      [finSistema === "price" ? "Parcela mensal" : "Primeira / última parcela",
+        finSistema === "price" ? money(fin.first) : money(fin.first) + " / " + money(fin.last)],
+      ["Total de juros nas parcelas", money(fin.interestTotal)],
+      ["Total das prestações", money(fin.installmentsTotal)],
+      ["Entrada + despesas pagas à vista", money(entrada + finExtras)],
+      ["Desembolso total", money(totalFin)]
+    ];
+
     const notices = [
-      { text: "Contemplação no mês " + mesContemplacao + " é apenas uma hipótese, não uma previsão. Compare também o custo de aguardar o bem e a possibilidade de reajustes.", warn: true },
-      { text: "Consórcio: " + money(totalParcelasCons) + " em parcelas, " + money(lanceProprio) + " em lance próprio, " + money(diferencaBem) + " para completar a compra e " + money(extras) + " em outros custos não incluídos nas parcelas.", warn: false }
+      { text: "Contemplação no mês " + mesContemplacao + " é hipótese, não previsão. O financiamento permite adquirir o bem após contratação e aprovação, enquanto o consórcio depende da contemplação e das condições de liberação.", warn: true },
+      { text: "Financiamento " + labelSistema + " calculado a " + pct(taxaFin) + " ao mês em " + finPrazo + " prestações. " + parcelaResumo + ". Juros estimados: " + money(fin.interestTotal) + ". A taxa informada não equivale automaticamente ao CET.", warn: false },
+      { text: "Consórcio: " + money(totalParcelasCons) + " em prestações, " + money(lanceProprio) + " em lance próprio, " + money(diferencaBem) + " para completar a compra e " + money(extras) + " em despesas externas.", warn: false }
     ];
+    const costsEmpty = ["c-finiof", "c-fintarifas", "c-finextras"].some((id) => !$(id).value.trim());
+    if (costsEmpty) notices.push({
+      text: "Alguns campos de IOF, tarifas ou despesas do financiamento não foram preenchidos e entraram como zero. Isso NÃO significa isenção: confira os custos reais antes de considerar a comparação completa.",
+      warn: true
+    });
     if (sobra > 0) notices.push({ text: "A carta excede o preço do bem em " + money(sobra) + ". Esse saldo não foi tratado como dinheiro livre ou abatimento automático; sua destinação depende do contrato.", warn: true });
-    if (reaj > 0) notices.push({ text: "Projeção simplificada: reajuste de " + pct(reaj) + " a cada 12 prestações, contado da primeira parcela informada. A data-base contratual pode ser diferente.", warn: true });
-    if (examplesUsed.comparar) notices.push({ text: "EXEMPLO ILUSTRATIVO: dados fictícios ou demonstrativos. Substitua por uma simulação real antes de compartilhar.", warn: true });
+    if (reaj > 0) notices.push({ text: "Reajuste do consórcio simplificado em " + pct(reaj) + " a cada 12 prestações, contado da primeira prestação informada; a data-base contratual pode ser diferente.", warn: true });
+    if (examplesUsed.comparar) notices.push({ text: "EXEMPLO ILUSTRATIVO: valores fictícios ou demonstrativos. Não compartilhar como proposta real.", warn: true });
+
     const metrics = [
-      ["Crédito líquido do consórcio", money(carta)],
-      ["Valor a complementar na compra", money(diferencaBem)],
-      ["Entrada do financiamento", money(entrada)],
-      ["Prestação atual do consórcio", money(parcela)]
+      ["Parcela financiamento " + labelSistema + (finSistema === "sac" ? " — primeira" : ""), money(fin.first)],
+      ["Juros totais do financiamento", money(fin.interestTotal)],
+      ["Valor efetivamente financiado", money(fin.principal)],
+      ["Crédito líquido do consórcio", money(carta)]
     ];
-    updateResult("resultado-comparar", heading, headline, "Os totais consideram as prestações a pagar e desembolsos futuros informados. Não incluem pagamentos passados nem equivalem a valor presente, CET ou garantia de contemplação.", metrics, [explain("Visão lado a lado", tableHtml)], notices);
+    if (finSistema === "sac") metrics.push(["Última prestação SAC", money(fin.last)]);
+    updateResult("resultado-comparar", heading, headline,
+      "Financiamento calculado a partir de entrada, juros mensais e prazo, com despesas explicitadas. A diferença é nominal e não equivale a valor presente, CET ou vantagem financeira garantida.",
+      metrics,
+      [explain("Desembolso total e acesso ao bem", tableHtml), explain("Como foi calculado o financiamento", table(["Componente", "Valor"], financiamentos))],
+      notices);
     setAnalysis("comparar", [
       ["Preço do bem", money(bem)],
       ["Crédito líquido do consórcio", money(carta)],
-      ["Prazo e prestação do consórcio", prazo + " × " + money(parcela)],
-      ["Desembolso estimado no consórcio", money(totalCons)],
-      ["Entrada e prazo no financiamento", money(entrada) + " + " + finPrazo + " prestações"],
-      ["Desembolso nominal do financiamento", money(totalFin)],
+      ["Prestação e prazo do consórcio", prazo + " × " + money(parcela)],
+      ["Desembolso nominal no consórcio", money(totalCons)],
+      ["Sistema de amortização do financiamento", labelSistema],
+      ["Taxa de juros mensal", pct(taxaFin)],
+      ["Entrada", money(entrada)],
+      ["Principal financiado (com despesas incorporadas)", money(fin.principal)],
+      ["IOF e despesas financiadas", money(iof + tarifasFinanciadas)],
+      ["Prestação do financiamento", finSistema === "price" ? money(fin.first) : money(fin.first) + " (primeira) / " + money(fin.last) + " (última)"],
+      ["Juros totais do financiamento", money(fin.interestTotal)],
+      ["Total de prestações do financiamento", money(fin.installmentsTotal)],
+      ["Desembolso nominal no financiamento", money(totalFin)],
       ["Compra à vista", money(totalVista)],
-      ["Diferença de desembolso", money(diff) + " — menor no " + cheaper],
+      ["Diferença nominal entre os planos", money(diff) + " — menor no " + cheaper],
       ["Contemplação hipotética", "Mês " + mesContemplacao],
-      ["Reajuste anual simulado", pct(reaj)]
+      ["Reajuste anual hipotético do consórcio", pct(reaj)]
     ], notices.map((x) => x.text));
   }
 
-  function bids() {
+    function bids() {
     const carta = read("l-carta", true), bem = read("l-bem");
     const proprio = read("l-proprio"), embutido = read("l-embutido");
     const limite = read("l-limite", true);
@@ -301,8 +388,9 @@
     comparar: {
       "c-bem":"110.026,00", "c-contemplacao":"12", "c-carta":"110.026,00",
       "c-parcela":"1.363,22", "c-prazo":"100", "c-lance":"0", "c-extras":"0",
-      "c-reajuste":"0", "c-entrada":"22.005,20", "c-finparcela":"2.300,00",
-      "c-finprazo":"60", "c-finextras":"0"
+      "c-reajuste":"0", "c-entrada":"22.005,20", "c-fintaxa":"1,60",
+      "c-finprazo":"60", "c-sistema":"price", "c-finiof":"",
+      "c-fintarifas":"", "c-finextras":""
     },
     lances: {
       "l-carta":"110.026,00", "l-bem":"110.026,00", "l-proprio":"33.007,80",
