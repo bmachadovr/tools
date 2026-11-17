@@ -254,3 +254,23 @@ footer p{margin:0;max-width:620px}
  .technical-section .compare-table{min-width:450px}
 }
 .technical-chart-head.technical-installments{border-top:1px solid #dbe7ea;padding-top:15px;margin-top:18px}
+
+/* Adaptação real da grade de ferramentas e da tabela a telas de 390px. */
+@media(max-width:600px){
+  .tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;overflow:visible}
+  .tabs .tab{min-width:0;width:100%;white-space:normal;line-height:1.3;text-align:center;padding:12px 8px;gap:6px;font-size:.78rem}
+  .tabs .tab-num{flex:none;font-size:.69rem}
+  .technical-section .technical-compare-table{min-width:0;width:100%;table-layout:auto}
+  .technical-compare-table,.technical-compare-table tbody,.technical-compare-table tr,.technical-compare-table td{display:block;width:100%;max-width:100%;min-width:0!important}
+  .technical-compare-table thead{display:none}
+  .technical-compare-table tr{border-bottom:1px solid #e2eaed;padding:11px 0}
+  .technical-compare-table tr:last-child{border-bottom:0}
+  .technical-compare-table td{padding:4px 0;border:0;line-height:1.4;font-size:.79rem;text-align:left!important;overflow-wrap:anywhere}
+  .technical-compare-table td:first-child{color:#244a58;font-weight:800;font-size:.8rem;margin-bottom:5px}
+  .technical-compare-table td:nth-child(2),.technical-compare-table td:nth-child(3){display:flex;justify-content:space-between;align-items:start;gap:14px;text-align:right!important}
+  .technical-compare-table td:nth-child(2)::before{content:"Consórcio";font-weight:650;color:#718793;text-align:left;white-space:nowrap}
+  .technical-compare-table td:nth-child(3)::before{content:"Financiamento";font-weight:650;color:#718793;text-align:left;white-space:nowrap}
+  .technical-disclosure .technical-section .compare-table{min-width:0;width:100%;table-layout:fixed}
+  .technical-disclosure .technical-section .compare-table th,.technical-disclosure .technical-section .compare-table td{font-size:.75rem;overflow-wrap:anywhere}
+  .technical-disclosure .technical-section .compare-table td:first-child{width:56%}
+}
