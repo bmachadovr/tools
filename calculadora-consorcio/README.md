@@ -1299,6 +1299,6 @@ Substituído o comparativo por barras pelo **gráfico de linhas acumuladas**. A 
 - [x] Lance próprio pago no mês hipotético de contemplação; entrada do financiamento lançada no mês zero.
 - [x] Crédito líquido após lance embutido e entrada com capital próprio conservam as regras aprovadas.
 - [x] Caso com taxa de juros zero conciliado sem distorção de centavos.
-- [ ] Verificação visual pública em desktop e celular da versão do gráfico de linhas.
+- [x] Verificação visual pública da versão `v=20261117-08` em desktop e mobile (390 px): gráfico SVG com duas linhas e sem corte; CDC/Price exclusivo de veículos; SAC/Price em imóveis; IOF só no financiamento.
 
 **Documento detalhado:** [SPEC_V2.md](SPEC_V2.md#9-evolução-temporal-dos-desembolsos-e-modalidades-de-financiamento-17112026).
