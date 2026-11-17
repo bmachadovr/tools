@@ -815,9 +815,11 @@ prestacao_t = soma_de_componentes_arredondados_ou_regra_de_arredondamento_verifi
 - [x] Reproduzir o total **R$ 1.329,12** pelos componentes da nova tela.
 - [x] Confirmar que **0,12% × 5 = 0,60%**.
 - [x] Registrar informação operacional de que a distribuição especial altera a **amortização inicial**, não a prestação exclusivamente por causa da taxa.
-- [ ] Conferir percentual de administração e amortização **da 6ª parcela** ou de outra após o período inicial, no mesmo grupo.
+- [ ] Conferir percentual de administração e amortização **da 6ª parcela** ou de outro período após os cinco primeiros **somente se houver fonte acessível** (por exemplo, demonstrativo/contrato); a tecla de navegação para a próxima parcela foi informada como **não funcional**, portanto não depender desse recurso.
 - [ ] Comparar telas **com e sem fator de redução**, sem presumir equivalência.
 - [ ] Validar aplicação da regra para grupo em formação e outros grupos.
 - [ ] Confirmar arredondamentos e ajustes residuais na última parcela.
+
+**Orientação prática:** não bloquear o desenvolvimento das ferramentas comerciais por falta do detalhamento da sexta parcela. Usar **parcela real informada** e **taxas totais do grupo**; oferecer projeção detalhada somente quando a distribuição por período estiver validada. Não inventar a alíquota das demais prestações.
 
 **Decisão de produto:** não criar lógica de aumento da parcela nas cinco primeiras prestações por causa do adicional de 0,60%. A distribuição das taxas e a compensação pela amortização devem ficar no **cronograma dos componentes**. Isso não constitui garantia de prestação fixa diante de reajustes e de outros eventos contratuais.
