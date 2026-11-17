@@ -187,22 +187,31 @@ function centerActiveTab(){}
 function goTool(index,smooth=true){
   index=normalizeTool(index);
   const panel=carousel.children[index];
-  carousel.scrollTo({left:panel.offsetLeft,behavior:smooth?'smooth':'auto'});
+  carousel.scrollTo({left:panel.offsetLeft-carousel.children[0].offsetLeft,behavior:smooth?'smooth':'auto'});
   setToolState(index,smooth);
+  requestAnimationFrame(()=>carousel.scrollIntoView({behavior:smooth?'smooth':'auto',block:'start'}));
 }
 function setToolState(index,smooth=true){
   index=normalizeTool(index);
-  tabs.forEach((t,i)=>t.classList.toggle('active',i===index));
+  tabs.forEach((t,i)=>{const selected=i===index;t.classList.toggle('active',selected);t.setAttribute('aria-current',selected?'page':'false');});
   dots.forEach((d,i)=>d.classList.toggle('active',i===index));
   centerActiveTab(index,smooth);
 }
 const menuTrigger=$('menuTrigger'),toolMenu=$('toolMenu'),menuBackdrop=$('menuBackdrop'),menuClose=$('menuClose');
+const desktopLayout=window.matchMedia('(min-width: 980px)');
 function setMenu(open){
-  toolMenu.classList.toggle('open',open);
-  menuBackdrop.hidden=!open;
-  toolMenu.setAttribute('aria-hidden',String(!open));
-  menuTrigger.setAttribute('aria-expanded',String(open));
+  const wasOpen=toolMenu.classList.contains('open');
+  const mobileOpen=Boolean(open&&!desktopLayout.matches);
+  toolMenu.classList.toggle('open',mobileOpen);
+  menuBackdrop.hidden=!mobileOpen;
+  toolMenu.setAttribute('aria-hidden',String(!desktopLayout.matches&&!mobileOpen));
+  toolMenu.inert=!(desktopLayout.matches||mobileOpen);
+  menuTrigger.setAttribute('aria-expanded',String(mobileOpen));
+  document.body.classList.toggle('menu-open',mobileOpen);
+  if(wasOpen&&!mobileOpen&&!desktopLayout.matches)menuTrigger.focus({preventScroll:true});
 }
+desktopLayout.addEventListener('change',()=>setMenu(false));
+setMenu(false);
 menuTrigger?.addEventListener('click',()=>setMenu(!toolMenu.classList.contains('open')));
 menuClose?.addEventListener('click',()=>setMenu(false));
 menuBackdrop?.addEventListener('click',()=>setMenu(false));
