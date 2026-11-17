@@ -1,6 +1,6 @@
 # Calculadora de Consórcio — Central de Estratégias Comerciais
 
-> **Status:** Comparador V2 atualizado em 17/11/2026: campos vazios na abertura, botão Limpar, máscaras decimais e reajustes sugeridos por modalidade. As demais funcionalidades do MVP permanecem disponíveis.  
+> **Status:** Comparador aprimorado em 17/11/2026: campo único de valor do bem/carta, máscara monetária com centavos em tempo real e resultados técnicos comparativos; demais funcionalidades preservadas.  
 > **Local:** `tools/calculadora-consorcio/` (pasta `calculadora-consorcio/` na raiz do repositório `tools`).  
 > **Produto:** aplicação web independente, estática, responsiva e orientada ao apoio à negociação.  
 > **Implementação atual:** `index.html`, `styles.css`, `compare-v2.js` e `app.js`; aplicação estática sem backend, acessível pela página inicial. Consulte **[SPEC_V2.md](SPEC_V2.md)** para a especificação consolidada do comparador.
@@ -1218,7 +1218,7 @@ parcela_sac_t = principal/n + saldo_inicial_t × juros_mensal
 
 - Botões **Preencher exemplo** e **Limpar** visíveis lado a lado no topo; **Limpar** também está no final do formulário.
 - **Limpar** zera as informações comerciais e os resultados, recolhe campos opcionais e restaura Veículos, deixando a taxa histórica sugerida de IPCA.
-- O script `input-masks.js` aplica máscara `pt-BR` a todos os campos decimais das ferramentas: ponto nos milhares, vírgula decimal e **duas casas monetárias** no desfoco. Exemplo: `100000` vira `100.000,00`; `20,5` vira `20,50`. Cálculos reversíveis preservados.
+- **Revisão posterior (seção 25):** o script `input-masks.js` passa a aplicar **máscara monetária por centavos durante a digitação**, por exemplo teclas `123456` → `1.234,56`, enquanto percentuais mantêm digitação decimal convencional (`20,5` → `20,50` no desfoque). A formatação antiga de valores monetários somente no desfoque foi substituída.
 - Após selecionar **Veículos**, o reajuste anual hipotético começa em **4,69%** (média histórica anualizada do IPCA).
 - Após selecionar **Imóveis**, o reajuste anual hipotético começa em **6,35%** (média histórica anualizada do INCC-M).
 - Média composta a partir das três janelas de 12 meses até outubro de 2024, 2025 e 2026: IPCA **4,76% / 4,68% / 4,63%**; INCC-M **5,72% / 6,58% / 6,75%**. `(produto dos três fatores)^(1/3) − 1`.
@@ -1227,3 +1227,41 @@ parcela_sac_t = principal/n + saldo_inicial_t × juros_mensal
 - Metodologia, referências e casos de teste estão em **[SPEC_V2.md](SPEC_V2.md)**.
 
 **Validação:** inicialização vazia, índice por modalidade, preservação manual, exemplo, limpeza, digitação monetária e decimal verificadas por testes de eventos simulados. Teste visual em navegador real ainda pendente.
+
+## 25. Campo único de valor e novo painel de análise financeira (17/11/2026)
+
+**Decisão de produto:** para esse comparador, o **valor do bem e o valor nominal da carta são o mesmo dado**. A duplicação foi removida da interface e do motor financeiro. O campo visível agora é apenas **Valor do bem / carta de crédito**, mantendo o crédito líquido após lance embutido como dado diferente e opcional.
+
+### 25.1. Máscara monetária reformulada
+
+- Todos os campos de valor monetário funcionam como caixa registradora, com **dois centavos sempre visíveis desde a primeira tecla**. Sequência `1 → 12 → 123 → 1234 → 123456` exibe respectivamente `0,01 → 0,12 → 1,23 → 12,34 → 1.234,56`.
+- Backspace/Delete deslocam os centavos no sentido inverso até apagar o campo completamente; evita o travamento em `0,00`.
+- Percentuais continuam com digitação decimal convencional, formatados em `pt-BR` ao sair do campo. A máscara foi aplicada às ferramentas de lances e comparação de propostas, preservando exemplos já formatados.
+- O botão **Preencher exemplo** continua carregando R$ 100.000,00 e demais condições de demonstração; o carregamento não reinterpreta o valor absoluto como centavos.
+
+### 25.2. Painel comparativo profissional
+
+O resultado da primeira aba foi reestruturado com:
+
+1. **Diagnóstico nominal** e indicação de comparação parcial quando uma oferta de lance não inclui o cronograma de amortização.
+2. **Cartões de consórcio e financiamento** com total projetado, parcela mensal, prazo e capital próprio ou entrada.
+3. **Barras proporcionais** de desembolso nominal total e primeira prestação, cada uma com valores monetários explícitos e escala comum.
+4. **Tabela técnica** confrontando taxa de administração + reserva do consórcio, taxa efetiva de juros do financiamento, parcelas iniciais e finais/pós-lance, prazos, recursos próprios, crédito disponível, principal, juros, IOF, custos adicionais e desembolso total.
+5. **Leitura técnica do cenário**, destacando diferenças de prestações, prazo, custo de juros, reajuste hipotético e disponibilidade do bem.
+6. **Memória de cálculo expansível** e ressalvas contratuais visíveis.
+
+**Limite conceitual:** a diferença entre total nominal das alternativas **não é CET, custo ajustado ao valor do dinheiro no tempo, nem previsão de contemplação**. Taxa de administração total e taxa de juros periódica não são percentuais comparáveis diretamente, por isso ambos são identificados com suas unidades.
+
+### 25.3. Testes executados
+
+- [x] Inicialização com apenas um campo do valor do bem/carta, vazio até o clique em `Preencher exemplo`.
+- [x] Sequência monetária `123456` gera `1.234,56` e digitação por centavos em tempo real.
+- [x] Backspace/Delete sobre `12,34` recuam até campo vazio em quatro exclusões.
+- [x] Exemplo de R$ 100.000,00 permanece correto ao carregar por botão.
+- [x] Dashboard produz parcelas comparadas, custos nominais, juros e análise técnica.
+- [x] Testes de lance próprio com entrada vinculada, lance embutido com crédito líquido e bloqueio de conclusão definitiva em comparação parcial.
+- [x] Botão `Limpar` remove os valores e o resultado.
+- [ ] Validar o visual e posição do cursor no navegador real do computador e no Android.
+- [ ] Confirmar o processamento da publicação no GitHub Pages.
+
+**Especificação atualizada:** [SPEC_V2.md](SPEC_V2.md#8-refinamento-do-comparador--campo-único-e-análise-técnica-17112026).
