@@ -305,4 +305,5 @@ fluxo_consorcio_mes_t (>1) = nova_prestacao_estimada ×
 - [x] Nova prestação pós-lance informada: tem prioridade sobre cálculo automático.
 - [x] Cenários sem lance ignoram dados pós-lance soltos e avisam sobre essa inconsistência.
 - [x] Gráfico de evolução nominal e totais dos cartões reconciliados para os cenários testados.
+- [x] Verificação pública em desktop e celular (390 px) na versão `v=20261117-09`: primeira prestação cheia, 99 posteriores estimadas, lance no mês 1 do gráfico, ausência de campo de contemplação e entrada igual ao lance próprio. Sem problemas de layout observados.
 - [ ] Validar o novo cenário com dados reais de uma proposta e de seu demonstrativo de amortização após lance.
