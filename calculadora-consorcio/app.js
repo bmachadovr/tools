@@ -106,10 +106,14 @@
     if (!(principal > 0)) throw Error("O valor a financiar precisa ser maior que zero.");
     const rate = ratePercent / 100;
     let first = 0, last = 0, installmentsTotal = 0;
-    if (system === "price") {
-      const payment = roundCents(rate === 0
-        ? principal / months
-        : principal * rate / (-Math.expm1(-months * Math.log1p(rate))));
+    if (rate === 0 && (system === "price" || system === "sac")) {
+      // No último vencimento, ajustar os centavos acumulados: sem juros
+      // o desembolso total precisa coincidir exatamente com o principal.
+      first = roundCents(principal / months);
+      last = roundCents(principal - first * (months - 1));
+      installmentsTotal = roundCents(principal);
+    } else if (system === "price") {
+      const payment = roundCents(principal * rate / (-Math.expm1(-months * Math.log1p(rate))));
       first = last = payment;
       installmentsTotal = roundCents(payment * months);
     } else if (system === "sac") {
@@ -437,7 +441,12 @@
     $(formId).addEventListener("submit", (e) => {
       e.preventDefault();
       setError("erro-" + kind, "");
-      try { fn(); } catch (err) { setError("erro-" + kind, err); }
+      try { fn(); } catch (err) {
+        setError("erro-" + kind, err);
+        $("resultado-" + kind).innerHTML = '<div class="empty-result"><span class="empty-icon">!</span><h3>Dados precisam de revisão</h3><p>Corrija os campos indicados para gerar uma nova análise.</p></div>';
+        if (lastAnalysis && lastAnalysis.kind === kind) lastAnalysis = null;
+        renderOffer();
+      }
     });
     $(formId).addEventListener("reset", () => {
       examplesUsed[kind] = false;
