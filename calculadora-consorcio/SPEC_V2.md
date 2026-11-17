@@ -248,4 +248,4 @@ O eixo Y mostra **quanto foi pago ao longo do tempo**, não saldo devedor, renta
 - [x] Lance embutido reduz o crédito, sem criar entrada adicional no financiamento.
 - [x] Financiamento sem juros trata a última prestação residual sem gerar juros negativos e concilia os fluxos.
 - [x] Consórcio não contém cobrança de IOF em nenhum componente de sua soma de caixa.
-- [ ] Verificar renderização efetiva do novo gráfico de linhas em desktop e celular após a publicação dos arquivos.
+- [x] Verificação pública concluída na versão `v=20261117-08`: gráfico SVG com duas linhas, legenda e tabela de marcos, sem barras; seleção CDC/Price em veículos, SAC/Price em imóveis; IOF somente no financiamento. Testado em desktop e celular (390 px), sem corte horizontal.
