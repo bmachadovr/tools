@@ -1,6 +1,6 @@
 # Calculadora de Consórcio — Central de Estratégias Comerciais
 
-> **Status:** Comparador V2 implementado em 17/11/2026, com modalidades ilustradas, campos reversíveis, entrada vinculada ao lance próprio e cálculo estimado de IOF. As demais três funcionalidades do MVP permanecem disponíveis.  
+> **Status:** Comparador V2 atualizado em 17/11/2026: campos vazios na abertura, botão Limpar, máscaras decimais e reajustes sugeridos por modalidade. As demais funcionalidades do MVP permanecem disponíveis.  
 > **Local:** `tools/calculadora-consorcio/` (pasta `calculadora-consorcio/` na raiz do repositório `tools`).  
 > **Produto:** aplicação web independente, estática, responsiva e orientada ao apoio à negociação.  
 > **Implementação atual:** `index.html`, `styles.css`, `compare-v2.js` e `app.js`; aplicação estática sem backend, acessível pela página inicial. Consulte **[SPEC_V2.md](SPEC_V2.md)** para a especificação consolidada do comparador.
@@ -1158,7 +1158,7 @@ desembolso_consorcio = soma_prestacoes_a_pagar +
 ### 23.1. Alterações efetivas
 
 1. **Modalidade no topo:** dois cartões visuais, **Veículos** e **Imóveis**, com desenhos vetoriais editáveis. Serviços foi removido da seleção do comparador; as demais ferramentas seguem disponíveis.
-2. **Valores iniciais:** bem e carta em **R$ 100.000,00**; contemplação **hipotética no primeiro mês**, devidamente sinalizada.
+2. **Valores do botão Preencher exemplo:** bem e carta em **R$ 100.000,00**; contemplação **hipotética no primeiro mês**. Sem o exemplo, os campos comerciais começam vazios.
 3. **Consórcio:** ordem dos campos principais: **prestações a pagar → taxa total de administração + reserva → valor da parcela**. Com dois campos preenchidos, o terceiro é resolvido automaticamente; prazo calculado é inteiro, com aviso se aproximado.
 4. **Detalhamento opcional do consórcio:** lance próprio → embutido → crédito líquido após embutido → nova prestação após lance → prazo após lance → outros custos → reajuste anual.
 5. **Regra central:** **entrada do financiamento = lance com recursos próprios**. Edição de qualquer lado atualiza imediatamente o outro. Embutido diminui crédito líquido, não aumenta entrada.
@@ -1211,3 +1211,19 @@ parcela_sac_t = principal/n + saldo_inicial_t × juros_mensal
 - [ ] Validar cálculos com IOF financiado em múltiplos regimes, incluindo valores arredondados e possíveis diferenças de centavos.
 
 **Atenção:** o fluxo completo de um consórcio com lance, amortização e reajustes não pode ser reproduzido fielmente sem o cronograma real. A diferença exibida continua sendo **nominal** e não captura risco de contemplação, custo de espera e valor presente.
+
+## 24. Experiência de entrada — campos vazios, máscaras e reajuste histórico (17/11/2026)
+
+**Alteração solicitada:** abrir o comparador **sem dados fictícios preenchidos**. A simulação de R$ 100 mil e contemplação no mês 1 é carregada **somente ao clicar** em `Preencher exemplo`. A única informação de simulação inicial automática é o **reajuste anual hipotético** da modalidade.
+
+- Botões **Preencher exemplo** e **Limpar** visíveis lado a lado no topo; **Limpar** também está no final do formulário.
+- **Limpar** zera as informações comerciais e os resultados, recolhe campos opcionais e restaura Veículos, deixando a taxa histórica sugerida de IPCA.
+- O script `input-masks.js` aplica máscara `pt-BR` a todos os campos decimais das ferramentas: ponto nos milhares, vírgula decimal e **duas casas monetárias** no desfoco. Exemplo: `100000` vira `100.000,00`; `20,5` vira `20,50`. Cálculos reversíveis preservados.
+- Após selecionar **Veículos**, o reajuste anual hipotético começa em **4,69%** (média histórica anualizada do IPCA).
+- Após selecionar **Imóveis**, o reajuste anual hipotético começa em **6,35%** (média histórica anualizada do INCC-M).
+- Média composta a partir das três janelas de 12 meses até outubro de 2024, 2025 e 2026: IPCA **4,76% / 4,68% / 4,63%**; INCC-M **5,72% / 6,58% / 6,75%**. `(produto dos três fatores)^(1/3) − 1`.
+- **Fontes oficiais:** IPCA — [2024](https://agenciadenoticias.ibge.gov.br/agencia-sala-de-imprensa/2013-agencia-de-noticias/releases/41795-ipca-foi-de-0-56-em-outubro), [2025](https://agenciadenoticias.ibge.gov.br/agencia-sala-de-imprensa/2013-agencia-de-noticias/releases/45033-ipca-fica-em-0-09-em-outubro), [2026](https://www.ibge.gov.br/indicadores-e-sistemas/indices-e-certificados/16855-ipca.html); INCC-M — [2024](https://portal.fgv.br/noticias/incc-m-outubro-2024), [2025](https://portal.fgv.br/noticias/incc-m-outubro-2025), [2026](https://portal.fgv.br/noticias/incc-m-outubro-2026).
+- A referência é **estática e editável**; edição manual preservada ao trocar de modalidade. O INCC-M **não é necessariamente** a variante contratual de todos os grupos de imóveis; veículos podem ter reajuste por FIPE ou outro critério.
+- Metodologia, referências e casos de teste estão em **[SPEC_V2.md](SPEC_V2.md)**.
+
+**Validação:** inicialização vazia, índice por modalidade, preservação manual, exemplo, limpeza, digitação monetária e decimal verificadas por testes de eventos simulados. Teste visual em navegador real ainda pendente.
