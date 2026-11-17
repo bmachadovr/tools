@@ -194,3 +194,12 @@ footer p{margin:0;max-width:620px}
 @media print{
  .mode-picker{display:none!important}
 }
+
+/* Ferramentas de ação sempre visíveis junto ao título da comparação. */
+.panel-tools{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap;flex-shrink:0}
+.panel-tools .example{margin:0}
+.fields input[inputmode="decimal"]{font-variant-numeric:tabular-nums;letter-spacing:.005em}
+@media(max-width:600px){
+ .panel-tools{justify-content:flex-start;margin-top:15px}
+ .panel-tools .example{flex:1 1 auto}
+}
