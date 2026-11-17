@@ -9,7 +9,7 @@
 
 - No cabeçalho, **dois cartões grandes clicáveis**, com desenhos vetoriais de veículo e imóvel, indicação selecionada e textos curtos explicativos. Não exibir uma terceira modalidade.
 - Alternar a modalidade sem sair da página. O estado escolhido determina rótulo, unidade da taxa de juros, tratamento inicial do IOF e **índice sugerido de reajuste (IPCA/INCC-M)**.
-- Valores de referência ficam em um bloco separado do consórcio: **preço do bem**, **carta de crédito** e **mês hipotético de contemplação**.
+- Valores de referência ficam em um bloco separado do consórcio: **um único campo de valor do bem / carta de crédito** e **mês hipotético de contemplação**.
 - Consórcio e financiamento têm campos principais visíveis e um bloco `<details>` recolhido para informações de maior precisão.
 - Resultado fica lado a lado com o formulário no desktop e abaixo no celular. Mostrar uma explicação do cálculo e seus componentes.
 - A aplicação não pode sugerir vínculo ou apoio institucional. Nenhum identificador de instituição de referência pode entrar em qualquer arquivo.
@@ -148,7 +148,7 @@ Exibir:
 
 **Limpar:** disponibilizar botão visível ao lado de `Preencher exemplo` e no final do formulário. A limpeza deve apagar campos informados e calculados, limpar resultado/gerador de proposta da análise, recolher os dois blocos opcionais e restaurar a modalidade Veículos com a taxa sugerida de IPCA. Não reintroduzir números fictícios.
 
-**Máscara de valores:** entrada de valores em padrão português do Brasil, separando milhar por ponto e casas decimais por vírgula; **duas casas** para valores monetários e demais percentuais (quatro casas para a taxa de juros do financiamento calculada inversamente). Ao digitar `100000`, preservar a grandeza e apresentar `100.000,00` ao sair do campo. Ao digitar `20,5`, completar para `20,50` ao sair. Não transformar `100000` em `1.000,00`. A máscara se aplica também aos campos monetários e percentuais das outras ferramentas.
+**Máscara revisada:** valores monetários adotam agora digitação **centesimal em tempo real** (exemplo: teclas `1`, `2`, `3`, `4` exibem sucessivamente `0,01`, `0,12`, `1,23`, `12,34`); seis teclas `123456` produzem `1.234,56`. Ao usar Backspace/Delete, os centavos recuam até esvaziar o campo. Percentuais mantêm digitação decimal comum e são padronizados no desfoque (`20,5` → `20,50`). Dados carregados pelo botão de exemplo permanecem em valores absolutos (R$ 100.000,00 não é reinterpretado como R$ 1.000,00).
 
 ### 7.1. Taxas sugeridas para cenários de reajuste
 
@@ -177,8 +177,38 @@ O índice é **referência histórica estática**, não previsão e não consult
 - [x] Editar reajuste manualmente e trocar modalidade: não sobrescrever o valor informado.
 - [x] Clicar em `Preencher exemplo`: carregar carta de R$ 100.000 e calcular prestação de R$ 1.200 (100 × 20% total).
 - [x] Clicar em `Limpar`: apagar campos e resultado; deixar apenas índice sugerido, blocos recolhidos e modalidade inicial.
-- [x] Digitar `100000` em campo monetário e desfocar: exibir `100.000,00`.
+- [x] Digitar sequencialmente seis teclas `123456` em campo monetário: exibir `1.234,56` já na digitação.
 - [x] Digitar `20,5` em percentual e desfocar: exibir `20,50`.
 - [x] Digitar separador decimal parcial: não interromper cálculos por erro de parsing.
-- [ ] Validar as máscaras e posição do cursor em teclados físicos e virtuais reais.
+- [x] Validar por eventos simulados o Backspace/Delete até campo vazio, inclusive quando existe formatação monetária.
+- [ ] Validar a máscara e posição do cursor em teclados físicos e virtuais reais.
 - [ ] Comparar o visual desktop e Android após o processamento do GitHub Pages.
+
+## 8. Refinamento do comparador — campo único e análise técnica (17/11/2026)
+
+**Um único campo** `Valor do bem / carta de crédito` substitui as duas entradas duplicadas. O preço utilizado para calcular o financiamento é igual ao valor nominal da carta. Ao informar lance embutido, somente o **crédito líquido disponível** diminui, podendo surgir necessidade de completar a compra com recursos externos. Não permitir uma diferença arbitrária entre as duas bases neste fluxo simplificado.
+
+**Novo painel de resultados** (implementado em `app.js` e `styles.css`):
+
+1. **Diagnóstico nominal**, com diferença projetada e identificação explícita de **comparação parcial** quando faltar cronograma de lance.
+2. **Dois cartões**, apresentando total pago, prestação, prazo e recursos necessários no consórcio/financiamento.
+3. **Gráficos em escala comum** para valores totais e primeiras prestações; valores exibidos ao lado das barras. Não são gráficos de custo presente.
+4. **Tabela técnica** com taxas totais (não comparáveis diretamente à taxa de juros), parcelas inicial e após lance/final, prazos, capital próprio/entrada, crédito líquido/principal, juros, IOF, custos e total.
+5. **Leitura técnica** em linguagem acessível, com diferença de prestações, duração, estrutura de custos e riscos de contemplação e reajuste.
+6. **Memória de cálculo expansível** preservando componentes detalhados por alternativa e premissas.
+7. **Ressalvas contratuais** sobre distribuição do consórcio, crédito líquido, custos ausentes, reajustes e ausência de valor presente/CET.
+
+**Importante:** o consórcio pode ter prestação inicial inferior e prazo maior. O painel informa ambos, sem declarar vantagem econômica apenas pela parcela, nem equiparar taxa de administração total e juros mensais. A contemplação no primeiro mês permanece cenário hipotético.
+
+### 8.1. Testes de regressão
+
+- [x] Campo duplicado removido do HTML, referências antigas eliminadas dos cálculos.
+- [x] Exemplo com carta de R$ 100.000 ainda gera prestação de R$ 1.200,00 para 100 meses e taxa total de 20%.
+- [x] Sequência de teclas `123456` produz `1.234,56` com máscara ativa.
+- [x] Quatro exclusões em `12,34` produzem `1,23 → 0,12 → 0,01 → campo vazio`.
+- [x] Painel apresenta comparações de **primeira prestação, total nominal, taxas, custos e parecer técnico**, com memória de cálculo recolhida.
+- [x] O lance próprio permanece vinculado à entrada e o embutido diminui o crédito líquido sem alterar a entrada.
+- [x] Cenário de lance sem prazo pós-lance continua identificado como **comparação parcial**.
+- [ ] Homologar o comportamento visual real no navegador do computador e no teclado Android.
+
+O fluxo atual permanece **uma ferramenta de apoio comercial**, e não um cálculo automático e completo de contrato de consórcio ou de CET do financiamento.
