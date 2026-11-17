@@ -148,7 +148,7 @@
       warn: true
     });
     updateResult("resultado-comparar", data.heading, data.main, data.sub, data.metrics,
-      [explain("Consórcio x financiamento", comparison), explain("Cálculo do financiamento", finance)], notices);
+      [explain("Consórcio x financiamento", comparison), explain("Como foi calculado o consórcio", table(["Componente do consórcio", "Valor"], data.consortiumDetails)), explain("Como foi calculado o financiamento", finance)], notices);
     setAnalysis("comparar", data.rows, notices.map((x) => x.text));
   }
 
