@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#f5f7fa">
   <meta name="description" content="Compare alternativas de aquisição, analise lances e propostas e gere resumos de consórcio com cálculos transparentes.">
   <title>Calculadora de Consórcio | Central de Estratégias</title>
-  <link rel="stylesheet" href="styles.css?v=20261117-04">
-  <script src="input-masks.js?v=20261117-04" defer></script>
-  <script src="compare-v2.js?v=20261117-04" defer></script>
-  <script src="app.js?v=20261117-04" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20261117-05">
+  <script src="input-masks.js?v=20261117-05" defer></script>
+  <script src="compare-v2.js?v=20261117-05" defer></script>
+  <script src="app.js?v=20261117-05" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -36,7 +36,7 @@
   <main id="main">
     <section class="panel active" id="painel-comparar" role="tabpanel" aria-labelledby="tab-comparar">
       <div class="panel-head"><div><span class="section-kicker">ANÁLISE FINANCEIRA</span><h2>Consórcio ou financiamento?</h2><p>O mesmo bem, duas formas de aquisição. Calcule uma prestação a partir dos campos disponíveis, compare o dinheiro investido e considere a espera pela contemplação.</p></div><div class="panel-tools"><button type="button" class="example" data-example="comparar">Preencher exemplo</button><button type="reset" form="form-comparar" class="example" aria-label="Limpar todos os dados da comparação">Limpar</button></div></div>
-      <div class="content-grid"><form id="form-comparar" class="form-card" novalidate>
+      <div class="content-grid"><form id="form-comparar" class="form-card" autocomplete="off" novalidate>
         <div class="how"><strong>Como usar</strong><p>Escolha <b>Veículos</b> ou <b>Imóveis</b> acima e informe o preço do bem e a carta. No consórcio, preencha dois entre prazo, taxa total e parcela. No financiamento, preencha três entre entrada, juros, prazo e parcela. <b>Entrada = lance com recursos próprios.</b> Use <b>Preencher exemplo</b> para ver uma demonstração ou <b>Limpar</b> para começar de novo.</p></div>
         <div class="form-section"><h3>Valores de referência</h3><div class="fields">
           <label>Preço do bem <span>R$</span><input id="c-bem" inputmode="decimal" required></label>
