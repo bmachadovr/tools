@@ -1439,3 +1439,29 @@ Observação de produto: a posição econômica ajustada é um índice de oportu
 - **Tempos e fluxos:** a cada mês, o investimento rende e os aportes/parcelas são creditados ou pagos no fim do mês. Na alavancagem, o capital rende no mês da contemplação antes do desembolso de lance/complemento. O aluguel é aplicado no final do mês: desde o mês 1 para imóvel comprado à vista; somente após o mês de contemplação para alavancagem.
 - **Exemplo de regressão:** C=K=V=R$100.000; prazo=120; taxa administração+reserva=20% total; lance próprio=R$50.000; mês de contemplação=1; H=60; CDI=12,97% a.a.; IPCA=4,69% a.a.; aluguel=0. Prestação mês1 R$1.000; meses2–60 R$579,83193277. Aportes alternativos até mês60: R$35.210,08. Ativos brutos no mês60, conforme modelo: investimento R$232.446,96; imóvel à vista R$174.203,10; alavancagem R$218.205,58. Restam 60 prestações nominais de R$579,83 (total R$34.789,92, informativo, NÃO abatido).
 - **Limitações:** não inclui IR de aplicações, taxas de gestão, tributos e custos de imóveis, vacância, reajustes da carta/prestações, chances reais de contemplação ou cálculo de saldo devedor. Nunca chamar ativos brutos de "patrimônio líquido" ou declarar um vencedor financeiro definitivo.
+
+
+### Regras vigentes — 18/11/2026, índices separados e abatimento do aluguel
+
+**Estas regras substituem as anteriores quando conflitantes.** Todos os resultados mostram uma fotografia dos ATIVOS BRUTOS no mês H, sem descontar obrigações posteriores (quantidade e soma de parcelas correntes congeladas informadas separadamente). Não afirmar patrimônio líquido equivalente, quitação, vencedor econômico definitivo ou garantia de contemplação.
+
+**Taxas iniciais editáveis, referências históricas de 12 meses fechados (não projeções):**
+- Investimento: **90% do CDI** acumulado até out/2026: CDI 14,23%, multiplicação aproximada 0,9×14,23% = **12,81% a.a.** Fonte B3/BCB SGS 4391; estimativa bruta, não reproduz diária de títulos.
+- Imóvel residencial: **IGMI-R Brasil 12,58%** até set/2026, ABECIP. Não é avaliação de imóvel específico.
+- Consórcio: **INCC-M 6,75%** até out/2026, FGV IBRE. Projeta aumento das prestações **anualmente no mês 13, 25, 37...**. Não ajusta carta já contemplada, e a regra verdadeira depende do contrato. Prestação base pós-lance é nominalmente estimada por redistribuição linear.
+- Aluguel: **IGP-M 5,24%** até out/2026, FGV IBRE. Projeta reajuste anual após 12 meses efetivos de aluguel; compra à vista tem aluguel desde mês 1; consórcio a partir de mês seguinte à contemplação.
+
+Para cada mês t até H:
+1. `p_t = p_base(t) × (1+INCC) ^ floor((t-1)/12)` enquanto houver prestações; após encerrar, zero.
+2. `aluguel_alav_t=0` até mês de contemplação hipotética; desde o seguinte, `aluguel_inicial × (1+IGPM)^floor((t-contemplacao-1)/12)`.
+3. `recursos_do_bolso_t=max(0,p_t-aluguel_alav_t)`; `aluguel_abatido_t=min(p_t,aluguel_alav_t)`; `sobra_aluguel_t=max(0,aluguel_alav_t-p_t)`.
+4. Manter investido: rentabilizar capital acumulado à taxa mensal composta derivada de 90% CDI, **acrescentar ao final do mês apenas recursos_do_bolso_t**.
+5. Compra à vista: comprar imóvel no mês zero se capital disponível suficiente, rentabilizar a sobra; ao fim do mês investir `recursos_do_bolso_t + aluguel_compra_t`, este último recebido desde o mês 1 com seu próprio reajuste anual IGP-M. Imóvel cresce mensalmente à taxa composta equivalente ao IGMI-R anual.
+6. Consórcio/alavancagem: capital inicial rende até contemplação; no fim do mês hipotético descontar lance próprio + complemento e incluir imóvel no ativo; nos meses posteriores, aplicar somente `sobra_aluguel_t` após aluguel pagar parcela. Não há aporte extra na aplicação com renda externa.
+7. Informar separadamente: prestações pagas até mês H, aluguéis recebidos, parcela coberta pelo aluguel, sobra aplicada, desembolso próprio, quantidade de parcelas após H e **soma nominal dessas parcelas ao valor vigente em H, CONGELADO sem futuras atualizações**. A soma não é saldo devedor nem quitação. A regra não antecipa futuros reajustes ou valores patrimoniais.
+
+**Fullscreen:** botão Expandir tela inteira ocupa a janela inteira com resultados e scroll próprios, permitindo sair pelo próprio botão ou pela tecla Escape, inclusive em viewport mobile.
+
+**Limitações:** referência agregada de mercado, 12 meses não garantem próximos anos; não há vacância, inadimplência, impostos, ITBI/cartório, evolução real da taxa DI, diferenciação de parcelamento por regras de cada administradora, garantias, reajustes para crédito não utilizado, ou probabilidade de contemplação. A compra à vista exige capital inicial >= preço do imóvel. Algumas outras partes do site têm metodologias próprias.
+
+**Fontes:** https://www.bcb.gov.br/ ; https://www.abecip.org.br/igmi-r-abecip/mes-a-mes ; https://portal.fgv.br/noticias/incc-m-outubro-2026 ; https://portal.fgv.br/noticias/igp-m-outubro-2026 .
