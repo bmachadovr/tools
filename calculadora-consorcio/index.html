@@ -148,11 +148,13 @@
           </div>
           <div class="form-section"><h3>Compromissos e horizonte</h3>
             <div class="fields">
-              <label>Parcela atual do consórcio <span>R$</span><input id="a-parcela" inputmode="decimal" required placeholder="Ex.: 2.300,00"></label>
+              <label>Parcela antes da contemplação <span>R$</span><input id="a-parcela" inputmode="decimal" required placeholder="Ex.: 2.300,00"></label>
               <label>Prazo total a pagar <span>meses</span><input id="a-prazo" type="number" min="1" max="600" required placeholder="Ex.: 180"></label>
               <label>Mês hipotético da contemplação <span>não é previsão</span><input id="a-contemplacao" type="number" min="1" max="600" required placeholder="Ex.: 18"></label>
               <label>Horizonte da análise <span>meses desde a contratação</span><input id="a-horizonte" type="number" min="1" max="600" required placeholder="Ex.: 60"></label>
-            </div><p class="hint">Sem contemplação não há liberação do crédito nem imóvel alugado. A análise pressupõe aquisição no mês hipotético informado.</p>
+              <label>Parcela após contemplação/lance <span>R$ · se houver lance, obrigatório</span><input id="a-parcela-apos" inputmode="decimal" placeholder="Informe o valor do demonstrativo"></label>
+              <label>Prestações após contemplação/lance <span>meses · se houver lance, obrigatório</span><input id="a-prazo-apos" type="number" min="0" max="600" placeholder="Ex.: 162"></label>
+            </div><p class="hint">Sem contemplação não há liberação do crédito nem imóvel alugado. Se houver lance, preencha a parcela e o prazo após abatimento de acordo com o demonstrativo do plano; o sistema não inventa essa amortização.</p>
           </div>
           <div class="form-section"><h3>Renda e valorização <span class="inline-tag">hipóteses</span></h3>
             <div class="fields">
