@@ -10,8 +10,8 @@
   <script src="input-masks.js?v=20261118-04" defer></script>
   <script src="compare-v2.js?v=20261117-09" defer></script>
   <script src="app.js?v=20261118-05" defer></script>
-  <script src="patrimonio-comparativo.js?v=20261118-08" defer></script>
-  <script src="patrimonio.js?v=20261118-10" defer></script>
+  <script src="patrimonio-comparativo.js?v=20261118-11" defer></script>
+  <script src="patrimonio.js?v=20261118-11" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -138,12 +138,13 @@
 
     <section class="panel" id="painel-patrimonio" role="tabpanel" aria-labelledby="tab-patrimonio" hidden>
       <div class="panel-head">
-        <div><span class="section-kicker">PLANEJAMENTO DE PATRIMÔNIO</span><h2>Como ampliar o alcance do seu capital?</h2><p>Compare três estratégias até o mês escolhido: manter o capital aplicado, comprar o imóvel à vista ou usar o consórcio. Nos cenários sem consórcio, os aportes mensais acompanham as prestações efetivas do plano; na alavancagem, elas são pagas. As prestações futuras aparecem apenas separadamente.</p></div>
+        <div><span class="section-kicker">PLANEJAMENTO DE PATRIMÔNIO</span><h2>Como ampliar o alcance do seu capital?</h2><p>Compare investimento, compra à vista e consórcio para um <b>imóvel ou veículo</b>. O cálculo termina no mês escolhido, sem antecipar obrigações futuras. O veículo pode perder valor durante o uso.</p></div>
         <button type="button" class="example" id="a-exemplo">Preencher exemplo</button>
       </div>
       <div class="content-grid">
         <form id="form-patrimonio" class="form-card" autocomplete="off" novalidate>
-          <div class="how"><strong>Como usar</strong><p>Preencha os campos de cada grupo. No <b>Consórcio</b>, informe a carta e mais dois dados entre prazo, taxa total e prestação: o terceiro é preenchido automaticamente. Abra <b>Lances e contemplação</b> somente se quiser simular essas condições. Use as taxas anualizadas compostas do mesmo período histórico de 10 anos (set/2016–ago/2026) para 90% CDI, IGMI-R, INCC-M e IGP-M, ou altere-as. No resultado, use <b>Expandir tela</b> para apresentar os cenários sem os campos.</p></div>
+          <div class="how"><strong>Como usar</strong><p>Escolha <b>Imóvel</b> ou <b>Veículo</b> e informe o capital, os dados do consórcio e o bem. Basta preencher carta + dois valores entre prazo, taxa total e prestação. Taxas são hipóteses editáveis. O aluguel do imóvel pode abater a prestação; o veículo de uso particular não gera aluguel na simulação. Use <b>Expandir tela inteira</b> para visualizar os resultados.</p></div>
+          <div class="pat-asset-picker"><label for="a-tipo-bem">Tipo de bem</label><select id="a-tipo-bem" aria-label="Selecionar imóvel ou veículo"><option value="imovel" selected>Imóvel</option><option value="veiculo">Veículo</option></select><p class="hint" id="a-tipo-nota">Imóvel: IGMI-R para valorização, INCC-M para reajuste do consórcio e IGP-M para aluguel.</p></div>
           <section class="product-group product-group--investimento" aria-labelledby="patrimonio-grupo-investimento">
             <div class="product-heading"><div class="product-step" aria-hidden="true">01</div><div class="product-heading-copy"><span class="product-label">RECURSOS PRÓPRIOS</span><h3 id="patrimonio-grupo-investimento">Capital e investimentos</h3><p>Defina o capital inicial e a taxa para comparar a aplicação integral com recursos preservados após o lance.</p></div></div>
             <div class="fields">
@@ -160,8 +161,9 @@
               <label>Taxa de administração + fundo de reserva <span>% total</span><input id="a-taxa" inputmode="decimal" required placeholder="Ex.: 20,00"></label>
               <label>Parcela antes da contemplação <span>R$</span><input id="a-parcela" inputmode="decimal" required placeholder="Calculada automaticamente"></label>
             </div>
-            <div class="fields"><label>Reajuste do consórcio pelo INCC-M <span>% a.a. · a cada 12 meses</span><input id="a-reajuste-consorcio" type="number" min="-50" max="50" step="0.01" value="6.63"></label></div>
-            <p class="hint">Referência editável de <strong>10 anos (set/2016–ago/2026)</strong>: INCC-M acumulado ≈ 89,99%, média composta de <strong>6,63% a.a.</strong> <a href="https://corrigirvalor.com.br/tabela/incc-m" target="_blank" rel="noopener noreferrer">Fonte: FGV IBRE / BCB (SGS 7456)</a>. Na projeção, reajuste anual no mês 13, 25, ...; não recalcula o crédito já liberado. Índice e regra real dependem do contrato.</p>
+            <div class="fields"><label><span id="a-reajuste-consorcio-label">Reajuste do consórcio pelo INCC-M</span> <span>% a.a. · hipótese editável</span><input id="a-reajuste-consorcio" type="number" min="-50" max="50" step="0.01" value="6.63"></label></div>
+            <div class="fields pat-vehicle-only" hidden><label>Referência de reajuste da carta <select id="a-indice-veiculo"><option value="ipca">IPCA — média histórica de 10 anos</option><option value="contrato">FIPE / montadora / contrato — valor manual</option></select></label><label>Periodicidade do reajuste <select id="a-periodicidade-veiculo"><option value="anual">Anual</option><option value="mensal">Mensal (taxa anual equivalente)</option></select></label></div>
+            <p class="hint" id="a-nota-reajuste">Referência editável de <strong>10 anos (set/2016–ago/2026)</strong>: INCC-M acumulado ≈ 89,99%, média composta de <strong>6,63% a.a.</strong> <a href="https://corrigirvalor.com.br/tabela/incc-m" target="_blank" rel="noopener noreferrer">Fonte: FGV IBRE / BCB (SGS 7456)</a>. Na projeção, reajuste anual no mês 13, 25, ...; não recalcula o crédito já liberado. Índice e regra real dependem do contrato.</p>
             <p class="calc-status" id="a-core-status" role="status" aria-live="polite">Preencha a carta e mais dois valores entre prazo, taxa total e prestação; o terceiro será calculado.</p>
             <details class="finance-advanced" id="a-avancado">
               <summary>Lances e contemplação <span>opcional · toque para expandir</span></summary>
@@ -177,27 +179,27 @@
             </details>
           </section>
           <section class="product-group product-group--imovel" aria-labelledby="patrimonio-grupo-imovel">
-            <div class="product-heading"><div class="product-step" aria-hidden="true">03</div><div class="product-heading-copy"><span class="product-label">ATIVO PATRIMONIAL</span><h3 id="patrimonio-grupo-imovel">Imóvel e renda</h3><p>Defina o preço do bem e as hipóteses opcionais de locação e valorização.</p></div></div>
+            <div class="product-heading"><div class="product-step" aria-hidden="true">03</div><div class="product-heading-copy"><span class="product-label">ATIVO PATRIMONIAL</span><h3 id="patrimonio-grupo-imovel">Imóvel e renda</h3><p id="a-bem-descricao">Defina o preço do imóvel e as hipóteses opcionais de locação e valorização.</p></div></div>
             <div class="fields">
-              <label>Preço do imóvel desejado <span>R$</span><input id="a-preco" inputmode="decimal" required placeholder="Ex.: 300.000,00"></label>
-              <label>Aluguel mensal líquido esperado <span>R$ · após despesas usuais</span><input id="a-aluguel" inputmode="decimal" placeholder="0,00"></label>
-              <label>Valorização hipotética do imóvel pelo IGMI-R <span>% a.a. · residencial</span><input id="a-valorizacao" type="number" min="-50" max="50" step="0.01" value="8.92" required></label>
-              <label>Reajuste anual do aluguel pelo IGP-M <span>% a.a. · contrato de locação</span><input id="a-reajuste-aluguel" type="number" min="-50" max="50" step="0.01" value="6.30"></label>
+              <label><span id="a-preco-label">Preço do imóvel desejado</span> <span>R$</span><input id="a-preco" inputmode="decimal" required placeholder="Ex.: 300.000,00"></label>
+              <label class="pat-property-only">Aluguel mensal líquido esperado <span>R$ · após despesas usuais</span><input id="a-aluguel" inputmode="decimal" placeholder="0,00"></label>
+              <label><span id="a-valorizacao-label">Valorização hipotética do imóvel pelo IGMI-R</span> <span id="a-valorizacao-unit">% a.a. · residencial</span><input id="a-valorizacao" type="number" min="-50" max="80" step="0.01" value="8.92" required></label>
+              <label class="pat-property-only">Reajuste anual do aluguel pelo IGP-M <span>% a.a. · contrato de locação</span><input id="a-reajuste-aluguel" type="number" min="-50" max="50" step="0.01" value="6.30"></label>
             </div>
-            <p class="hint"><strong>Mesma janela histórica de 10 anos (set/2016–ago/2026)</strong>. IGMI-R Brasil residencial: valorização acumulada de 134,93%, média composta de <strong>8,92% a.a.</strong> (<a href="https://www.abecip.org.br/igmi-r-abecip/serie-historica" target="_blank" rel="noopener noreferrer">ABECIP, índices ago/2016–ago/2026</a>). IGP-M: 84,18% acumulados, média composta de <strong>6,30% a.a.</strong> (<a href="https://corrigirvalor.com.br/tabela/igp-m" target="_blank" rel="noopener noreferrer">FGV IBRE / BCB, SGS 189</a>). Taxas editáveis. O aluguel reajusta anualmente após 12 meses de locação; não inclui vacância, impostos, ITBI ou cartório.</p>
+            <p class="hint" id="a-nota-bem"><strong>Mesma janela histórica de 10 anos (set/2016–ago/2026)</strong>. IGMI-R Brasil residencial: valorização acumulada de 134,93%, média composta de <strong>8,92% a.a.</strong> (<a href="https://www.abecip.org.br/igmi-r-abecip/serie-historica" target="_blank" rel="noopener noreferrer">ABECIP, índices ago/2016–ago/2026</a>). IGP-M: 84,18% acumulados, média composta de <strong>6,30% a.a.</strong> (<a href="https://corrigirvalor.com.br/tabela/igp-m" target="_blank" rel="noopener noreferrer">FGV IBRE / BCB, SGS 189</a>). Taxas editáveis. O aluguel reajusta anualmente após 12 meses de locação; não inclui vacância, impostos, ITBI ou cartório.</p>
           </section>
           <section class="product-group product-group--cenario" aria-labelledby="patrimonio-grupo-cenario">
             <div class="product-heading"><div class="product-step" aria-hidden="true">04</div><div class="product-heading-copy"><span class="product-label">PROJEÇÃO</span><h3 id="patrimonio-grupo-cenario">Horizonte da análise</h3><p>Escolha por quanto tempo deseja acompanhar a evolução dos investimentos e do imóvel.</p></div></div>
             <div class="fields">
               <label>Horizonte da análise <span>meses desde a contratação</span><input id="a-horizonte" type="number" min="1" max="600" required placeholder="Ex.: 60"></label>
             </div>
-            <p class="hint">Fotografia até o mês indicado. O aluguel <strong>abate primeiro a parcela do consórcio</strong>; nos cenários alternativos, o cliente investe apenas o desembolso que sobraria do próprio bolso. Eventual aluguel excedente ao pagamento é aplicado na alavancagem. INCC-M reajusta as prestações e IGP-M reajusta o aluguel anualmente. Prestações posteriores são informadas, mas não descontadas dos ativos brutos. Sem lance, indique o mês hipotético de contemplação.</p>
+            <p class="hint" id="a-nota-horizonte">Fotografia até o mês indicado. O aluguel <strong>abate primeiro a parcela do consórcio</strong>; nos cenários alternativos, o cliente investe apenas o desembolso que sobraria do próprio bolso. Eventual aluguel excedente ao pagamento é aplicado na alavancagem. INCC-M reajusta as prestações e IGP-M reajusta o aluguel anualmente. Prestações posteriores são informadas, mas não descontadas dos ativos brutos. Sem lance, indique o mês hipotético de contemplação.</p>
           </section>
           <div class="actions"><button type="submit" class="primary">Gerar análise patrimonial</button><button type="reset" class="ghost">Limpar</button></div>
           <p class="form-error" id="erro-patrimonio" role="alert" aria-live="polite"></p>
         </form>
         <aside id="resultado-patrimonio" class="result-card" aria-live="polite">
-          <div class="empty-result"><span class="empty-icon">↗</span><h3>Compare três caminhos</h3><p>Projeção dos ativos até a data escolhida: investimento, imóvel à vista e alavancagem, com os aportes mensais equivalentes às parcelas efetivas.</p></div>
+          <div class="empty-result"><span class="empty-icon">↗</span><h3>Compare três caminhos</h3><p>Projeção dos ativos até a data escolhida: investimento, compra do bem à vista e consórcio, com os aportes mensais equivalentes ao desembolso próprio.</p></div>
         </aside>
       </div>
     </section>
