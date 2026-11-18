@@ -6,11 +6,12 @@
   <meta name="theme-color" content="#f5f7fa">
   <meta name="description" content="Compare alternativas de aquisição e explore cenários de formação patrimonial com custos e premissas transparentes.">
   <title>Calculadora de Consórcio | Central de Estratégias</title>
-  <link rel="stylesheet" href="styles.css?v=20261118-04">
+  <link rel="stylesheet" href="styles.css?v=20261118-05">
   <script src="input-masks.js?v=20261118-04" defer></script>
   <script src="compare-v2.js?v=20261117-09" defer></script>
   <script src="app.js?v=20261118-01" defer></script>
-  <script src="patrimonio.js?v=20261118-04" defer></script>
+  <script src="patrimonio-comparativo.js?v=20261118-05" defer></script>
+  <script src="patrimonio.js?v=20261118-05" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -137,14 +138,14 @@
 
     <section class="panel" id="painel-patrimonio" role="tabpanel" aria-labelledby="tab-patrimonio" hidden>
       <div class="panel-head">
-        <div><span class="section-kicker">PLANEJAMENTO DE PATRIMÔNIO</span><h2>Como ampliar o alcance do seu capital?</h2><p>Divida o capital próprio entre lance e investimentos, simule a aquisição de um imóvel e acompanhe os dois ativos ao longo do tempo — sempre separando ativos brutos das obrigações do consórcio.</p></div>
+        <div><span class="section-kicker">PLANEJAMENTO DE PATRIMÔNIO</span><h2>Como ampliar o alcance do seu capital?</h2><p>Compare investir os recursos, comprar o imóvel à vista ou usar o consórcio para alavancagem. Todos os cenários consideram o mesmo capital e uma capacidade mensal equivalente.</p></div>
         <button type="button" class="example" id="a-exemplo">Preencher exemplo</button>
       </div>
       <div class="content-grid">
         <form id="form-patrimonio" class="form-card" autocomplete="off" novalidate>
           <div class="how"><strong>Como usar</strong><p>Preencha os campos de cada grupo. No <b>Consórcio</b>, informe a carta e mais dois dados entre prazo, taxa total e prestação: o terceiro é preenchido automaticamente. Abra <b>Lances e contemplação</b> somente se quiser simular essas condições. As taxas de CDI e IPCA são referências históricas editáveis.</p></div>
           <section class="product-group product-group--investimento" aria-labelledby="patrimonio-grupo-investimento">
-            <div class="product-heading"><div class="product-step" aria-hidden="true">01</div><div class="product-heading-copy"><span class="product-label">RECURSOS PRÓPRIOS</span><h3 id="patrimonio-grupo-investimento">Capital e investimentos</h3><p>Defina quanto o cliente possui e a rentabilidade hipotética dos recursos que permanecerem aplicados.</p></div></div>
+            <div class="product-heading"><div class="product-step" aria-hidden="true">01</div><div class="product-heading-copy"><span class="product-label">RECURSOS PRÓPRIOS</span><h3 id="patrimonio-grupo-investimento">Capital e investimentos</h3><p>Defina o capital inicial e a taxa para comparar a aplicação integral com recursos preservados após o lance.</p></div></div>
             <div class="fields">
               <label>Capital próprio total disponível <span>R$</span><input id="a-capital" inputmode="decimal" required placeholder="Ex.: 100.000,00"></label>
               <label>Rendimento hipotético do capital investido <span>% a.a. · CDI médio 36 meses</span><input id="a-rendimento" type="number" min="-50" max="50" step="0.01" value="12.97" required></label>
@@ -193,7 +194,7 @@
           <p class="form-error" id="erro-patrimonio" role="alert" aria-live="polite"></p>
         </form>
         <aside id="resultado-patrimonio" class="result-card" aria-live="polite">
-          <div class="empty-result"><span class="empty-icon">↗</span><h3>Construa um cenário de patrimônio</h3><p>Informe os dados para avaliar capital inicial, potencial de aluguel, compromissos e argumentos de oferta.</p></div>
+          <div class="empty-result"><span class="empty-icon">↗</span><h3>Compare três caminhos</h3><p>Preencha os dados para analisar investimento integral, compra à vista e alavancagem com consórcio sob as mesmas hipóteses.</p></div>
         </aside>
       </div>
     </section>
