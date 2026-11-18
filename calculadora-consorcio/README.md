@@ -1490,3 +1490,17 @@ Fontes consultadas:
 - Série mensal INCC-M: https://api.bcb.gov.br/dados/serie/bcdata.sgs.7456/dados?formato=json&dataInicial=01%2F09%2F2016&dataFinal=31%2F08%2F2026
 - Série mensal IGP-M: https://api.bcb.gov.br/dados/serie/bcdata.sgs.189/dados?formato=json&dataInicial=01%2F09%2F2016&dataFinal=31%2F08%2F2026
 - IGMI-R ABECIP: https://www.abecip.org.br/igmi-r-abecip/serie-historica (planilha histórica até agosto de 2026).
+
+
+### Extensão patrimonial para veículo — 18/11/2026
+
+A análise patrimonial oferece dois botões visuais com ilustrações vetoriais (Veículo e Imóvel), reutilizando os ícones e o padrão de seleção da comparação de alternativas. Cada modo guarda seus próprios campos do bem e taxas; alternar de categoria invalida o resultado anterior.
+
+- **Imóvel:** metodologia anterior mantida. 90% CDI (8,41% a.a. de referência histórica 10 anos), IGMI-R Brasil (8,92% a.a.) valorização, INCC-M (6,63% a.a.) reajuste anual de parcela, IGP-M (6,30% a.a.) reajuste anual de aluguel; aluguel cobre primeiro a parcela, seu excesso é investido, aportes alternativos equivalem somente ao desembolso do bolso.
+- **Veículo:** simula veículo de uso particular, SEM renda de aluguel. Crescimento do valor do bem = taxa anual informada, inicialmente **−10% a.a.**, ilustrativa e editável. **NÃO é série FIPE ou taxa geral apurada**. Tabela FIPE fornece preços de modelos, versões e anos específicos; depreciação deve ser adaptada com referências reais por modelo.
+- **Reajuste do consórcio de veículo:** campo anual editável pré-preenchido com **IPCA 4,89% a.a.**, CAGR dos 120 meses de set/2016 a ago/2026 (BCB SGS 433; acumulado 61,1483% em 10 anos); opção FIPE / montadora / contrato aceita taxa anual manual, SEM consulta automática. Periodicidade anual ou mensal equivalente: fator anual elevado a floor((m-1)/12) no anual ou a (m-1)/12 no mensal. Regra real definida pelo contrato.
+- **Fluxos:** veículo não tem aluguel; prestações saem integralmente da renda; nas alternativas manter investido e comprar veículo à vista, parcelas hipotéticas são aplicadas como aportes mensais do próprio bolso. No consórcio, o veículo entra no mês da contemplação hipotética e o capital inicial é reduzido pelo lance/complemento. O veículo deprecia até o mês H. Custos de uso — IPVA, seguro, manutenção, combustível, licenciamento — não entram no modelo.
+- **Fotografia:** mesma data final em todas as estratégias; ativos brutos no mês H, prestações futuras informadas, não antecipadas nem descontadas. Resultados não equivalem a patrimônio líquido.
+- **Exemplos separados:** imóvel conserva cenário anterior; veículo com R$40 mil de capital, R$80 mil de preço/carta, R$20 mil de lance, 80 meses de prazo, 18% de encargos totais e horizonte de 36 meses. Tela inteira funciona para ambos.
+
+Fontes: https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados?formato=json&dataInicial=01%2F09%2F2016&dataFinal=31%2F08%2F2026 ; https://veiculos.fipe.org.br/ .
