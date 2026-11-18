@@ -311,3 +311,15 @@ footer p{margin:0;max-width:620px}
  .cash-chart-top h4{font-size:.91rem}
  .cash-milestones .compare-table{table-layout:fixed}
 }
+
+
+/* Nova jornada: o seletor de veículo/imóvel pertence só ao comparador. */
+.mode-picker[hidden]{display:none}
+.pat-arguments{margin:0;padding-left:21px;line-height:1.68;color:#365666;font-size:.85rem}
+.pat-arguments li{padding-left:4px;margin:11px 0}
+#painel-patrimonio .result-section .compare-table td{font-size:.79rem;line-height:1.5;overflow-wrap:anywhere}
+#painel-patrimonio .result-section .compare-table td:first-child{width:57%;padding-right:10px}
+@media(max-width:600px){
+  .tabs .tab:last-child{grid-column:1/-1}
+  #painel-patrimonio .result-section .compare-table{table-layout:fixed}
+}
