@@ -3,7 +3,7 @@
 // Percentuais: entrada decimal tradicional (20,5 = 20,5%), com normalização no desfoque.
 (function () {
   const percentIds = new Set([
-    "c-taxa","c-reajuste","c-fintaxa","l-limite",
+    "c-taxa","c-reajuste","c-fintaxa","l-limite","a-taxa",
     "p-a-taxa","p-a-reserva","p-b-taxa","p-b-reserva"
   ]);
   const digitsFor = (input) => input.id === "c-fintaxa" ? 4 : 2;
