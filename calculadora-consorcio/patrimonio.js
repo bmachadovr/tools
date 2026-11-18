@@ -270,7 +270,7 @@
     });
     const alertas = [
       "Contemplação no mês " + contemplacao + " é apenas uma hipótese. Sorteio ou lance não têm data garantida; sem contemplação não há aquisição"+(veiculo?" do veículo.":" do imóvel nem aluguel nos meses estimados."),
-      veiculo?"A desvalorização de 10% ao ano é apenas hipótese inicial editável, não média da FIPE. Depreciação varia por modelo, ano, condições e mercado.":"IGMI-R é índice agregado de preços residenciais e não garante valorização do imóvel específico. A taxa histórica constante não é previsão de preços futuros.",
+      veiculo?"A taxa de depreciação informada é hipótese editável, não uma média da FIPE. A variação do preço depende do modelo, ano, conservação e mercado.":"IGMI-R é índice agregado de preços residenciais e não garante valorização do imóvel específico. A taxa histórica constante não é previsão de preços futuros.",
       veiculo?"Depreciação, rendimento do investimento e reajuste contratual são hipóteses, não previsões. Ativos brutos não representam patrimônio líquido nem lucro.":"Valorização, rendimento financeiro e aluguel são premissas fornecidas, não previsões. Ativos brutos não representam patrimônio líquido, rentabilidade real ou lucro.",
       "Prestação inicial estimada linearmente. Após lance, redução ilustrativa. Reajuste por "+indiceConsorcio+" simulado "+(veiculo&&periodicidadeVeiculo==="mensal"?"mensalmente na taxa equivalente":"anualmente")+"; índice e regras efetivas dependem do contrato.",
       veiculo?"Veículo particular não gera aluguel na hipótese. Prestações são pagas do bolso; nas estratégias sem consórcio, seus valores equivalentes são aplicados mensalmente. Custos de utilização não incluídos.":"Aluguel na alavancagem abate primeiro a prestação; somente a sobra é aplicada. Nas alternativas, o aporte mensal equivale apenas ao desembolso efetivo do próprio bolso na prestação do consórcio. O IGP-M simulado reajusta o aluguel anualmente.",
@@ -487,7 +487,7 @@
   });
   $("a-indice-veiculo").addEventListener("change",()=>{
     if($("a-tipo-bem").value==="veiculo"){
-      if($("a-indice-veiculo").value==="ipca")$("a-reajuste-consorcio").value="4.89";
+      $("a-reajuste-consorcio").value=$("a-indice-veiculo").value==="ipca"?"4.89":"";
       vehicleIndexHint();
     }
   });
@@ -553,7 +553,9 @@
     derivePost();
   });
   $("a-exemplo").addEventListener("click", () => {
-    const ex=$("a-tipo-bem").value==="veiculo"?vehicleExample:example;
+    const isVehicle=$("a-tipo-bem").value==="veiculo";
+    const ex=isVehicle?vehicleExample:example;
+    if(isVehicle){$("a-indice-veiculo").value="ipca";$("a-periodicidade-veiculo").value="anual";vehicleIndexHint();}
     for (const [id,value] of Object.entries(ex)) $(id).value=value;
     savedModes[$("a-tipo-bem").value]=snapshotMode();
     if (window.ConsorcioMasks) window.ConsorcioMasks.formatAll();
