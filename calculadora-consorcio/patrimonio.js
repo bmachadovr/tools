@@ -142,9 +142,9 @@
   }
   function percent(id, min, max) {
     const raw = $(id).value.trim().replace(",", ".");
-    if (!raw) throw Error("Informe a taxa de valorização hipotética.");
+    if (!raw) throw Error("Informe a taxa do campo " + $(id).closest("label").childNodes[0].textContent.trim() + ".");
     const value = Number(raw);
-    if (!Number.isFinite(value) || value < min || value > max) throw Error("A valorização hipotética precisa ficar entre " + min + "% e " + max + "%.");
+    if (!Number.isFinite(value) || value < min || value > max) throw Error("A taxa em " + id + " precisa ficar entre " + min + "% e " + max + "%.");
     return value;
   }
   function renderArguments(items) {
@@ -186,6 +186,8 @@
     const horizonte = integer("a-horizonte", contemplacao, 600);
     const valorizacao = percent("a-valorizacao", -50, 50);
     const rendimento = percent("a-rendimento", -50, 50);
+    const reajusteConsorcio = percent("a-reajuste-consorcio", -50, 50);
+    const reajusteAluguel = percent("a-reajuste-aluguel", -50, 50);
 
     if (!(capital > 0 && carta > 0 && preco > 0 && parcela > 0)) throw Error("Capital próprio, carta, preço do imóvel e parcela precisam ser maiores que zero.");
     if (embutido >= carta) throw Error("O lance embutido não pode consumir toda a carta.");
@@ -205,45 +207,68 @@
     const capitalUtilizado = proprio + complemento;
     if (capitalUtilizado > capital + .01) throw Error("O lance próprio e o complemento do imóvel excedem o capital próprio informado. Informe recursos suficientes ou altere o cenário.");
     const capitalInvestido = Math.max(0, capital - capitalUtilizado);
-    // Mesma convenção temporal do comparador: rendimento até o mês da
-    // contemplação, quando se deduz lance próprio/complemento.
-    const taxaMensal = Math.pow(1 + rendimento / 100, 1 / 12) - 1;
-    const investimentoNaContemplacao = capital * Math.pow(1 + taxaMensal, contemplacao) - capitalUtilizado;
-    const ativosNaContemplacao = preco + investimentoNaContemplacao;
-    const mesesLocacao = Math.max(0, horizonte - contemplacao);
-    const rendaAplicada = (m) => aluguel * (Math.abs(taxaMensal) < 1e-12 ? m :
-      (Math.pow(1 + taxaMensal, m) - 1) / taxaMensal);
-    const investimentosFuturos = investimentoNaContemplacao * Math.pow(1 + taxaMensal, mesesLocacao)
-      + rendaAplicada(mesesLocacao);
-    const ativosFuturos = investimentosFuturos + preco * Math.pow(1 + valorizacao / 100, mesesLocacao / 12);
-    const aluguelMedio = aluguel;
-    const receitaPeriodo = aluguelMedio * mesesLocacao;
-    const valorFuturo = preco * Math.pow(1 + valorizacao / 100, mesesLocacao / 12);
-    const cobertura = prazoApos > 0 ? aluguelMedio / parcelaApos * 100 : 0;
-    const diferencaMensal = prazoApos > 0 ? parcelaApos - aluguelMedio : -aluguelMedio;
-    const parcelasAteHorizonte = contemplacao * parcela + Math.min(Math.max(0,horizonte-contemplacao),prazoApos) * parcelaApos;
-    const parcelasRestantes = Math.max(0, prazoApos - Math.max(0,horizonte-contemplacao));
-    const caixaPeriodo = capitalUtilizado + parcelasAteHorizonte - receitaPeriodo;
-    const parcelasFuturasNominais = parcelasRestantes * parcelaApos;
-    const saltoMeses = Math.max(12, Math.ceil(mesesLocacao / 120) * 12);
-    const marcos = [0];
-    for (let m = saltoMeses; m < mesesLocacao; m += saltoMeses) marcos.push(m);
-    if (mesesLocacao > 0) marcos.push(mesesLocacao);
-    const timeline = marcos.map((m) => {
-      const propriedade = preco * Math.pow(1 + valorizacao / 100, m / 12);
-      const aplicacao = investimentoNaContemplacao * Math.pow(1 + taxaMensal, m) + rendaAplicada(m);
-      return [m === 0 ? "Contemplação" : "Após " + (m/12).toLocaleString("pt-BR",{maximumFractionDigits:1}) + " anos",
-        propriedade, aplicacao, propriedade + aplicacao];
+    // Mesma convenção temporal do comparador: juros antes dos fluxos
+    // no fim do mês; INCC na parcela a cada 12 meses de contratação,
+    // IGP-M no aluguel a cada 12 meses contados da primeira locação.
+    const taxaMensal = Math.pow(1+rendimento/100,1/12)-1;
+    const taxaImovelMensal = Math.pow(1+valorizacao/100,1/12)-1;
+    const dueAt = (t) => t>contemplacao+prazoApos?0:
+      (t<=contemplacao?parcela:parcelaApos)*Math.pow(1+reajusteConsorcio/100,Math.floor((t-1)/12));
+    const rentAt = (t) => t<=contemplacao?0:
+      aluguel*Math.pow(1+reajusteAluguel/100,Math.floor((t-contemplacao-1)/12));
+    const investimentos = [];
+    let saldoAplicado = capital, saldoImovel = 0;
+    let investimentoNaContemplacao = 0, ativosNaContemplacao = 0;
+    let receitaPeriodo = 0, parcelasAteHorizonte = 0;
+    let totalAluguelAbatido = 0, totalAluguelExcedente = 0, totalDoBolso = 0;
+    for(let t=1;t<=horizonte;t++){
+      const prestacao=dueAt(t),rendLocacao=rentAt(t);
+      saldoAplicado*=1+taxaMensal;
+      if(saldoImovel>0) saldoImovel*=1+taxaImovelMensal;
+      if(t===contemplacao){
+        saldoAplicado-=capitalUtilizado;
+        saldoImovel=preco;
+        investimentoNaContemplacao=saldoAplicado;
+        ativosNaContemplacao=saldoAplicado+preco;
+      }
+      const abatimento=Math.min(prestacao,rendLocacao);
+      const sobra=Math.max(0,rendLocacao-prestacao);
+      saldoAplicado+=sobra;
+      receitaPeriodo+=rendLocacao;
+      parcelasAteHorizonte+=prestacao;
+      totalAluguelAbatido+=abatimento;
+      totalAluguelExcedente+=sobra;
+      totalDoBolso+=Math.max(0,prestacao-rendLocacao);
+      investimentos.push({mes:t,imovel:saldoImovel,aplicacao:saldoAplicado});
+    }
+    const mesesLocacao=Math.max(0,horizonte-contemplacao);
+    const investimentosFuturos=saldoAplicado;
+    const valorFuturo=saldoImovel;
+    const ativosFuturos=saldoAplicado+saldoImovel;
+    const aluguelMedio=aluguel;
+    const cobertura=prazoApos>0&&parcelaApos>0?aluguelMedio/parcelaApos*100:0;
+    const diferencaMensal=parcelaApos-aluguelMedio;
+    const parcelasRestantes=Math.max(0,contemplacao+prazoApos-horizonte);
+    const parcelasFuturasNominais=parcelasRestantes*dueAt(horizonte);
+    const caixaPeriodo=capitalUtilizado+totalDoBolso;
+    const saltoMeses=Math.max(12,Math.ceil(mesesLocacao/120)*12);
+    const marcos=[0];
+    for(let m=saltoMeses;m<mesesLocacao;m+=saltoMeses)marcos.push(m);
+    if(mesesLocacao>0)marcos.push(mesesLocacao);
+    const timeline=marcos.map(m=>{
+      const item=investimentos[contemplacao+m-1];
+      return [m===0?"Contemplação":"Após "+(m/12).toLocaleString("pt-BR",{maximumFractionDigits:1})+" anos",
+        item.imovel,item.aplicacao,item.imovel+item.aplicacao];
     });
     const alertas = [
       "Contemplação no mês " + contemplacao + " é apenas uma hipótese. Sorteio ou lance não têm data garantida; sem contemplação não há aquisição nem aluguel nos meses estimados.",
-      "IPCA não mede a valorização imobiliária. Sua utilização como taxa hipotética de apreciação do imóvel é apenas ilustrativa; imóveis podem valorizar menos, ficar estáveis ou perder valor.",
+      "IGMI-R é índice agregado de preços residenciais e não garante valorização do imóvel específico. A taxa histórica constante não é previsão de preços futuros.",
       "Valorização, rendimento financeiro e aluguel são premissas fornecidas, não previsões. Ativos brutos não representam patrimônio líquido, rentabilidade real ou lucro.",
-      "Prestação inicial estimada pela carta × (1 + taxa total) ÷ prazo, quando calculada. Após lance, a redução é linear e aproximada, sem reajustes, seguros, tributos pessoais ou custos de oportunidade. Confirme o demonstrativo contratual.",
-      "Na alavancagem, o investimento não recebe aportes mensais externos: a renda paga as prestações. Aluguéis informados são aplicados depois da contemplação. Nas alternativas de investimento e compra à vista, aportes mensais equivalem às prestações efetivas. Rendimento bruto não considera impostos ou perdas.",
-      "A fotografia termina no horizonte escolhido. As parcelas posteriores não são antecipadas nem abatidas dos ativos; sua quantidade e soma nominal são exibidas à parte e não representam saldo devedor para quitação. Ativos brutos não equivalem a patrimônio líquido."
+      "Prestação inicial estimada linearmente pela carta e encargos totais. Após lance, redução linear ilustrativa, depois INCC-M anual a cada 12 meses da contratação. O contrato pode usar outro índice, periodicidade ou regra de abatimento.",
+      "Aluguel na alavancagem abate primeiro a prestação; somente a sobra é aplicada. Nas alternativas, o aporte mensal equivale apenas ao desembolso efetivo do próprio bolso na prestação do consórcio. O IGP-M simulado reajusta o aluguel anualmente.",
+      "A fotografia termina no horizonte escolhido. Parcelas posteriores não são antecipadas nem abatidas dos ativos. O total restante exibido supõe parcelas congeladas no valor da fotografia, sem novos reajustes e não representa saldo devedor ou quitação."
     ];
-    if (aluguel > 0) alertas.push("Aluguel projetado sem vacância, inadimplência ou manutenção. Esses eventos podem reduzir receitas, mas a prestação continua exigível.");
+    if (aluguel > 0) alertas.push("O reajuste hipotético do aluguel segue IGP-M anual sem vacância, inadimplência ou manutenção. Na prática, o contrato e o mercado determinam o reajuste possível e a prestação continua exigível.");
     alertas.push("Despesas de aquisição (ITBI, registros, cartório), vacância e impostos não foram incluídos, por solicitação de simplificação. Na prática, esses itens reduzem o capital preservado ou o retorno.");
     if(temLance) alertas.push("Lance considerado na assembleia "+contemplacao+" apenas se vencedor; quando o mês não é informado, considera-se a assembleia seguinte (mês 1). A estimativa de parcela pós-lance é uma distribuição nominal linear, não uma prestação contratual.");
     if (creditoLiquido > preco) alertas.push("Crédito disponível excede o preço do imóvel. A diferença não deve ser tratada como dinheiro livre; sua utilização depende das regras contratuais.");
@@ -254,7 +279,7 @@
       aluguel > 0
         ? "Se a locação ocorrer como planejado, o aluguel líquido hipotético de " + fmt(aluguelMedio) + "/mês cobriria " + pc(cobertura) + " da prestação pós-contemplação de " + fmt(parcelaApos) + "; " + (diferencaMensal >= 0 ? "seriam necessários " + fmt(diferencaMensal) + "/mês adicionais." : "haveria excedente operacional estimado de " + fmt(-diferencaMensal) + "/mês, sujeito a outros custos e impostos.")
         : "Sem aluguel informado, a prestação pós-contemplação de " + fmt(parcelaApos) + " deve ser suportada com renda própria. Não há argumento de autofinanciamento por locação.",
-      "Em " + (mesesLocacao / 12).toLocaleString("pt-BR",{maximumFractionDigits:1}) + " anos após a contemplação hipotética, com valorização imobiliária equivalente a um IPCA suposto de " + pc(valorizacao) + " ao ano e aplicação rendendo " + pc(rendimento) + " ao ano, os ativos brutos seriam " + fmt(ativosFuturos) + ". As prestações após o horizonte não são descontadas; os ativos brutos não são patrimônio líquido."
+      "No horizonte de " + horizonte + " meses, o imóvel projetado pelo IGMI-R hipotético de " + pc(valorizacao) + " ao ano e a aplicação hipotética de " + pc(rendimento) + " ao ano formam ativos brutos de " + fmt(ativosFuturos) + ". INCC-M e IGP-M reajustam prestações e aluguéis anualmente; nenhum pagamento posterior ao horizonte é antecipado."
     ];
     const rows = [
       ["Capital próprio inicial", fmt(capital)],
@@ -275,44 +300,55 @@
       ["Meses potenciais de locação", num(mesesLocacao)],
       ["Aluguel mensal hipotético (sem vacância)", fmt(aluguelMedio) + "/mês"],
       ["Cobertura estimada da prestação", pc(cobertura)],
-      ["Renda de aluguel no horizonte", fmt(receitaPeriodo)],
-      ["Prestações nominais pagas até o horizonte", fmt(parcelasAteHorizonte)],
-      ["Saída nominal de caixa (lances + complementos + parcelas − aluguéis)", fmt(caixaPeriodo)],
-      ["Valorização hipotética imóvel (IPCA usado como referência)", pc(valorizacao) + " ao ano"],
+      ["Receitas de aluguel recebidas até o horizonte (IGP-M)", fmt(receitaPeriodo)],
+      ["Aluguel utilizado para abater prestações", fmt(totalAluguelAbatido)],
+      ["Excedente de aluguel aplicado", fmt(totalAluguelExcedente)],
+      ["Prestações nominais pagas até o horizonte (INCC-M)", fmt(parcelasAteHorizonte)],
+      ["Desembolso próprio nas prestações até o horizonte", fmt(totalDoBolso)],
+      ["Saída nominal de recursos próprios (lance + complemento + prestações líquidas)", fmt(caixaPeriodo)],
+      ["Valorização hipotética do imóvel (IGMI-R)", pc(valorizacao) + " ao ano"],
+      ["Reajuste anual do aluguel (IGP-M)", pc(reajusteAluguel) + " ao ano"],
+      ["Reajuste anual das prestações (INCC-M)", pc(reajusteConsorcio) + " ao ano"],
       ["Rendimento hipotético investimento", pc(rendimento) + " ao ano"],
       ["Valor bruto futuro do imóvel", fmt(valorFuturo)],
       ["Valor bruto futuro das aplicações", fmt(investimentosFuturos)],
       ["Ativos brutos futuros totais", fmt(ativosFuturos)],
       ["Prestações previstas após o horizonte", num(parcelasRestantes)],
-      ["Soma nominal das parcelas futuras (não é saldo devedor)", fmt(parcelasFuturasNominais)]
+      ["Soma nominal estimada das parcelas futuras congeladas na data (não é saldo devedor)", fmt(parcelasFuturasNominais)]
     ];
     if (!window.PatrimonioComparador) throw Error("O comparador patrimonial não foi carregado. Atualize a página.");
     const comparado = window.PatrimonioComparador.run({
       capital,preco,capitalUtilizado,capitalInvestido,parcela,parcelaApos,prazoApos,
-      contemplacao,horizonte,valorizacao,rendimento,aluguel
+      contemplacao,horizonte,valorizacao,rendimento,aluguel,reajusteConsorcio,reajusteAluguel
     });
     const comparaveis = [
       ["Horizonte da fotografia",horizonte+" meses"],
+      ["Investimentos: 90% CDI hipotético",pc(rendimento)+" a.a."],
+      ["Imóveis: IGMI-R hipotético",pc(valorizacao)+" a.a."],
+      ["Consórcio: INCC-M hipotético",pc(reajusteConsorcio)+" a.a."],
+      ["Aluguéis: IGP-M hipotético",pc(reajusteAluguel)+" a.a."],
       ["Capital próprio inicial",fmt(capital)],
       ["Prestação inicial do consórcio",fmt(parcela)],
       ["Prestação após a contemplação/lance",fmt(parcelaApos)],
-      ["Aportes alternativos em investimento / compra à vista",fmt(comparado.aportesAlternativos)+" até o horizonte"],
+      ["Aportes alternativos equivalentes ao desembolso próprio",fmt(comparado.aportesAlternativos)+" até o horizonte"],
+      ["Aluguel utilizado para abater prestações",fmt(comparado.rentCovered)],
+      ["Aluguel excedente investido",fmt(comparado.rentSurplus)],
       ["Aplicação integral — ativos no horizonte",fmt(comparado.investment)],
       ["Compra do imóvel à vista — ativos no horizonte",comparado.cashPossible?fmt(comparado.cash):"Inviável; faltam "+fmt(comparado.shortfall)],
       ["Alavancagem — imóvel no horizonte",fmt(comparado.scenarios[2].property)],
       ["Alavancagem — aplicações no horizonte",fmt(comparado.scenarios[2].portfolio)],
       ["Alavancagem — ativos brutos no horizonte",fmt(comparado.gross)],
       ["Alavancagem — parcelas efetivamente pagas até o horizonte",fmt(comparado.paidLever)],
-      ["Alavancagem — prestações posteriores ao horizonte",comparado.left+" × "+fmt(parcelaApos)],
-      ["Alavancagem — soma nominal das parcelas posteriores (informativa)",fmt(comparado.futureNominal)],
+      ["Alavancagem — prestações posteriores ao horizonte",comparado.left+" parcelas, valor vigente "+fmt(comparado.installmentAtH)],
+      ["Alavancagem — soma nominal de parcelas restantes congeladas na fotografia (informativa)",fmt(comparado.futureNominal)],
       ["Cenário com maior estoque bruto de ativos na data",comparado.best.name+" — "+fmt(comparado.best.value)]
     ];
     const contraste = "No mês "+horizonte+", a aplicação integral acumula "+fmt(comparado.investment)
       +", a compra à vista "+(comparado.cashPossible?fmt(comparado.cash):"não é viável com o capital disponível")
       +" e a alavancagem soma "+fmt(comparado.gross)+" em ativos brutos. O consórcio já teve "
       +fmt(comparado.paidLever)+" pagos e ainda prevê "+comparado.left
-      +" prestações após o horizonte (soma nominal "+fmt(comparado.futureNominal)
-      +"). Não se descontam fluxos posteriores da fotografia. Ativos brutos não equivalem a patrimônio líquido.";
+      +" prestações após o horizonte (soma nominal congelada na data "+fmt(comparado.futureNominal)
+      +"). O aluguel abate as parcelas e os aportes alternativos correspondem só à diferença do bolso. Obrigações posteriores não são descontadas dos ativos brutos, que não equivalem a patrimônio líquido." ;
     const detalhes = '<details class="pat-report-details"><summary>Ver composição da alavancagem, premissas e memória de cálculo</summary><div class="pat-report-inner">'
       + renderMetrics([
         ["Capital próprio inicial",fmt(capital)],
@@ -321,7 +357,9 @@
         ["Ativos brutos na fotografia",fmt(comparado.gross)],
         ["Prestações nominais após o horizonte (não é saldo devedor)",fmt(comparado.futureNominal)],
         ["Prestações pagas até o horizonte",fmt(comparado.paidLever)],
-        ["Aluguel / prestação",pc(cobertura)]
+        ["Aluguel / prestação base",pc(cobertura)],
+        ["Aluguel que abateu prestações",fmt(comparado.rentCovered)],
+        ["Sobra de aluguel aplicada",fmt(comparado.rentSurplus)]
       ])
       + renderTimeline(timeline) + renderArguments(argumentos)
       + renderRows(rows) + renderWarnings(alertas) + '</div></details>';
@@ -331,7 +369,7 @@
       + '<div class="result-actions"><button type="button" class="to-offer">Gerar proposta com esta análise →</button></div>';
     const expandButton = $("pat-expand");
     if(expandButton && $("painel-patrimonio").classList.contains("pat-results-expanded")) {
-      expandButton.textContent="Reduzir cenários";
+      expandButton.textContent="Sair da tela inteira";
       expandButton.setAttribute("aria-pressed","true");
     }
 
@@ -341,8 +379,8 @@
           ...comparaveis, ...rows,
           ["Conclusão contextual",contraste],
           ...argumentos.map((a,i)=>["Argumento "+(i+1),a])],
-        warnings: ["Fotografia até o mês escolhido: aportes nos cenários investimento e compra à vista equivalem apenas às prestações efetivas do consórcio em cada mês. Na alavancagem, a prestação é paga com renda externa e sua redução após o lance não é reaplicada automaticamente.",
-          "Prestações após o horizonte não são descontadas nem antecipadas. A quantidade e soma nominal remanescentes são exibidas separadamente. Ativos brutos não representam patrimônio líquido ou valor de quitação.",
+        warnings: ["Fotografia até o mês escolhido: o IGP-M reajusta o aluguel, que reduz primeiro o valor pago pelo cliente na prestação reajustada pelo INCC-M. Só o desembolso próprio vira aporte nas alternativas. Sobra positiva de aluguel é investida na alavancagem. Rentabilidade do investimento 90% CDI e imóveis IGMI-R editáveis.",
+          "Prestações após o horizonte não são descontadas nem antecipadas. A soma nominal informativa pressupõe o valor vigente congelado, sem novos reajustes. Ativos brutos não representam patrimônio líquido ou valor de quitação.",
           ...alertas],
         example: isExample
       });
@@ -356,8 +394,17 @@
     const panel=$("painel-patrimonio");
     const expanded=panel.classList.toggle("pat-results-expanded");
     const button=$("pat-expand");
-    button.textContent=expanded?"Reduzir cenários":"Ampliar cenários";
+    button.textContent=expanded?"Sair da tela inteira":"Expandir tela inteira";
+    document.body.classList.toggle("pat-fullscreen-active",expanded);
     button.setAttribute("aria-pressed",String(expanded));
+  });
+  document.addEventListener("keydown",(e)=>{
+    if(e.key==="Escape"&&$("painel-patrimonio").classList.contains("pat-results-expanded")){
+      $("painel-patrimonio").classList.remove("pat-results-expanded");
+      document.body.classList.remove("pat-fullscreen-active");
+      const button=$("pat-expand");
+      if(button){button.textContent="Expandir tela inteira";button.setAttribute("aria-pressed","false");button.focus();}
+    }
   });
   const example = {
     "a-capital":"100.000,00", "a-carta":"100.000,00", "a-preco":"100.000,00",
@@ -366,7 +413,8 @@
     "a-contemplacao":"", "a-horizonte":"60",
     "a-parcela-apos":"", "a-prazo-apos":"",
     "a-aluguel":"0,00",
-    "a-valorizacao":"4.69", "a-rendimento":"12.97"
+    "a-valorizacao":"12.58", "a-rendimento":"12.81",
+    "a-reajuste-consorcio":"6.75", "a-reajuste-aluguel":"5.24"
   };
   ["a-carta","a-prazo","a-taxa","a-parcela"].forEach((id) => {
     $(id).addEventListener("input",()=>{
@@ -412,6 +460,8 @@
   });
   form.addEventListener("reset", () => {
     isExample=false;
+    $("painel-patrimonio").classList.remove("pat-results-expanded");
+    document.body.classList.remove("pat-fullscreen-active");
     coreHistory=["a-prazo","a-taxa"];postManual.pay=false;postManual.term=false;
     window.setTimeout(() => {
       $("a-avancado").open=false;
