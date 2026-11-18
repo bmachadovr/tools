@@ -129,22 +129,25 @@
             +'<div><span>Imóvel projetado</span><b>'+esc(money(s.property))+'</b></div>'
             +'<div><span>Aplicações projetadas</span><b>'+esc(money(s.portfolio))+'</b></div>'
             +'<div><span>Ativos brutos</span><b>'+esc(money(s.gross))+'</b></div>'
-            +(s.id==="lever"?'<div><span>VP de prestações futuras</span><b>− '+esc(money(s.pv))+'</b></div>':'')
+            +(s.id==="lever"?'<div><span>VP de prestações futuras</span><b>− '+esc(money(s.pv))+'</b></div><div><span>Parcelas pagas atualizadas</span><b>− '+esc(money(s.paidFV))+'</b></div>':'')
             +'</div>':'<div class="pat-cash-shortfall">Diferença para aquisição: <strong>'+esc(money(x.shortfall))+'</strong></div>')
           +'</article>';
       }).join("")+'</div>';
   }
   function timeline(x) {
-    const cMax=Math.max(1,...x.annual.flatMap(p=>[p.invested,p.leverAdj,p.cash||0]));
+    const values=x.annual.flatMap(p=>[p.invested,p.leverAdj,...(x.cashPossible?[p.cash]:[])]);
+    const cMin=Math.min(0,...values),cMax=Math.max(1,...values);
+    const scaleRange=Math.max(1,cMax-cMin);
     const ticks=[0,.25,.5,.75,1];
     const items=[["invest","Investimento","invested"],["cash","Compra à vista","cash"],["lever","Alavancagem ajustada","leverAdj"]];
     const w=760,h=270,L=80,R=16,T=17,B=41;
     const px=i=>L+(w-L-R)*i/Math.max(1,x.annual.length-1);
-    const py=value=>T+(h-T-B)*(1-Math.max(0,value)/cMax);
+    const py=value=>T+(h-T-B)*(1-(value-cMin)/scaleRange);
     const lines=ticks.map(f=>{
-      const y=py(cMax*f);
+      const value=cMin+scaleRange*f;
+      const y=py(value);
       return '<line x1="'+L+'" y1="'+y.toFixed(2)+'" x2="'+(w-R)+'" y2="'+y.toFixed(2)+'" class="pat-gridline"/>'
-        +'<text x="'+(L-10)+'" y="'+(y+4).toFixed(2)+'" text-anchor="end" class="pat-chart-label">'+esc(int(cMax*f/1000))+' mil</text>';
+        +'<text x="'+(L-10)+'" y="'+(y+4).toFixed(2)+'" text-anchor="end" class="pat-chart-label">'+esc(int(value/1000))+' mil</text>';
     }).join("");
     const monthLabels=x.annual.map((p,i)=>{
       if(i>0 && i<x.annual.length-1 && i%Math.max(1,Math.ceil(x.annual.length/6))!==0)return "";
@@ -156,7 +159,7 @@
         +'<circle cx="'+px(x.annual.length-1).toFixed(2)+'" cy="'+py(x.annual[x.annual.length-1][key]).toFixed(2)+'" r="4" class="pat-dot pat-dot--'+id+'"/>';
     }).join("");
     return '<div class="pat-chartwrap">'
-      +'<div class="pat-chart-head"><h4>Evolução comparativa</h4><p>Valores dos ativos; na alavancagem, subtraímos o valor presente das prestações futuras estimadas.</p></div>'
+      +'<div class="pat-chart-head"><h4>Evolução comparativa</h4><p>Sem novos aportes. A alavancagem deduz o custo de oportunidade das prestações já pagas e o valor presente das obrigações futuras.</p></div>'
       +'<div class="pat-chart-legend">'
       +items.filter(i=>i[0]!=="cash"||x.cashPossible).map(([id,name])=>'<span><i class="pat-legend pat-legend--'+id+'"></i>'+esc(name)+'</span>').join("")+'</div>'
       +'<div class="pat-chart-scroll"><svg class="pat-chart-svg" viewBox="0 0 '+w+' '+h+'" aria-label="Gráfico comparativo da evolução patrimonial" role="img">'
@@ -170,29 +173,33 @@
     return '<div class="pat-comparison-table"><h4>Comparação financeira no mesmo horizonte</h4><div class="pat-table-scroll">'
       +'<table><thead><tr><th scope="col">Critério</th><th scope="col">Manter investido</th><th scope="col">Comprar à vista</th><th scope="col">Alavancagem</th></tr></thead><tbody>'
       +row("Capital próprio no início",[money(x.initialCapital),money(x.initialCapital),money(x.initialCapital)])
-      +row("Aporte mensal disponível",[money(x.budget),money(x.budget),money(x.budget)])
+      +row("Aportes extras às aplicações",[money(0),x.cashPossible?money(0):blank,money(0)])
+      +row("Parcela inicial do consórcio",[blank,x.cashPossible?blank:blank,money(x.parcelaInicial)])
+      +row("Parcela após lance",[blank,x.cashPossible?blank:blank,money(x.parcelaPosLance)])
       +row("Imóvel",[money(0),x.cashPossible?money(x.scenarios[1].property):"Não viável",money(x.scenarios[2].property)])
       +row("Aplicações",[money(x.scenarios[0].portfolio),x.cashPossible?money(x.scenarios[1].portfolio):blank,money(x.scenarios[2].portfolio)])
       +row("Ativos brutos",[money(x.scenarios[0].gross),x.cashPossible?money(x.scenarios[1].gross):blank,money(x.gross)])
+      +row("Prestações pagas — nominal",[money(0),x.cashPossible?money(0):blank,money(x.paidLever)])
+      +row("Prestações pagas — valor capitalizado",[money(0),x.cashPossible?money(0):blank,money(x.paidLeverFV)])
       +row("VP das obrigações futuras",[money(0),x.cashPossible?money(0):blank,money(x.pvFuture)])
       +row("Posição ajustada",[money(x.investment),x.cashPossible?money(x.cash):blank,money(x.adjusted)])
       +'</tbody></table></div>'
-      +'<p class="hint"><strong>Critério comum:</strong> mesmo capital inicial e capacidade mensal igual à maior parcela do consórcio ('+esc(money(x.budget))+'). Em cada estratégia, o valor mensal não utilizado é investido; aluguel informado é reinvestido quando há imóvel. Na alavancagem, o resultado é deduzido do <em>valor presente dos pagamentos futuros</em>, descontado pela taxa hipotética dos investimentos. Esse valor presente não é o saldo devedor para quitação.</p></div>';
+      +'<p class="hint"><strong>Critério:</strong> mesmo capital inicial e <strong>sem aportes adicionais</strong> aos investimentos. As prestações efetivas do consórcio são pagas com renda externa; não reinvestimos a redução mensal após o lance. Para descontar o custo econômico do consórcio, subtraímos o valor das parcelas pagas acumulado até o horizonte e o valor presente das futuras, usando a taxa editável do investimento. Os números não são saldos de quitação. Se houver aluguel, ele é reinvestido apenas após o imóvel estar disponível.</p></div>';
   }
   function render(x) {
     const winner=x.best.name+" ("+money(x.best.value)+")";
     const note=x.cashPossible?"Todos os três cenários são financeiramente executáveis na hipótese inicial.":
       "A compra à vista não é executável com o capital informado; exige mais "+money(x.shortfall)+" inicialmente.";
     return '<section class="pat-comparative" aria-label="Comparação de estratégias patrimoniais">'
-      +'<div class="pat-summary-head"><div><span class="result-kicker">TRÊS CENÁRIOS • MESMO CAPITAL E APORTE MENSAL</span>'
+      +'<div class="pat-summary-head"><div><span class="result-kicker">TRÊS CENÁRIOS • SEM APORTES MENSAIS EXTRAS</span>'
       +'<h3>Qual caminho gera maior posição econômica projetada?</h3>'
-      +'<p>Horizonte de '+int(x.horizon)+' meses. Resultado condicionado às taxas editáveis, aos aportes e à contemplação hipotética.</p></div>'
+      +'<p>Horizonte de '+int(x.horizon)+' meses. Resultado condicionado às taxas editáveis e à contemplação hipotética, sem reinvestimento de economia de parcela.</p></div>'
       +'<button type="button" class="pat-expand-btn" id="pat-expand" aria-pressed="false" title="Alternar largura do painel">Ampliar cenários</button></div>'
       +cards(x)
       +'<div class="pat-outcome"><strong>Maior valor ajustado neste cenário:</strong> '+esc(winner)
       +'<span>'+esc(note)+'</span></div>'
       +timeline(x)+comparison(x)
-      +'<p class="pat-method-notice">A posição ajustada é um indicador econômico sob hipóteses e não corresponde necessariamente ao patrimônio líquido ou à rentabilidade efetiva. A comparação pressupõe renda mensal suficiente para manter o mesmo aporte nos três caminhos. Não inclui custos, impostos, vacância, reajustes contratuais ou risco de não contemplação.</p>'
+      +'<p class="pat-method-notice">A posição ajustada é um indicador econômico sob hipóteses e não corresponde necessariamente ao patrimônio líquido ou à rentabilidade efetiva. A comparação pressupõe que o cliente pague as prestações reais com renda externa, sem aportar a diferença economizada em aplicações. Não inclui custos, impostos, vacância, reajustes contratuais ou risco de não contemplação.</p>'
       +'</section>';
   }
 
