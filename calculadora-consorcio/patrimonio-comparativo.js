@@ -69,7 +69,7 @@
         leverInvested+=aluguel;
         rentLeverage+=aluguel;
       }
-      if(t===contemplacao || t%12===0 || t===horizonte) {
+      if(t>=contemplacao && (t===contemplacao || t%12===0 || t===horizonte)) {
         const point=snapshot(t);
         if(!annual.length||annual[annual.length-1].month!==t) annual.push(point);
       }
@@ -179,7 +179,6 @@
     const winner=x.best.name+" ("+money(x.best.value)+")";
     const note=x.cashPossible?"Todos os três cenários são financeiramente executáveis na hipótese inicial.":
       "A compra à vista não é executável com o capital informado; exige mais "+money(x.shortfall)+" inicialmente.";
-    x.initialCapital=x.initialCapital||x.initialCapitalValue;
     return '<section class="pat-comparative" aria-label="Comparação de estratégias patrimoniais">'
       +'<div class="pat-summary-head"><div><span class="result-kicker">TRÊS CENÁRIOS • MESMO CAPITAL E APORTE MENSAL</span>'
       +'<h3>Qual caminho gera maior posição econômica projetada?</h3>'
