@@ -468,3 +468,57 @@ footer p{margin:0;max-width:620px}
   .pat-comparison-table table{font-size:.75rem}
   .pat-chart-svg{min-width:490px}
 }
+
+
+/* Exibição de tela inteira para a análise patrimonial. */
+body.pat-fullscreen-active{overflow:hidden!important}
+#painel-patrimonio.pat-results-expanded #resultado-patrimonio{
+  position:fixed!important;
+  inset:0!important;
+  z-index:4000;
+  width:100vw!important;
+  width:100dvw!important;
+  height:100vh!important;
+  height:100dvh!important;
+  max-width:none!important;
+  max-height:100dvh!important;
+  margin:0!important;
+  padding:clamp(15px,3vw,40px)!important;
+  border-radius:0!important;
+  border:0!important;
+  overflow:auto!important;
+  overscroll-behavior:contain;
+  background:var(--paper,#fff);
+  box-shadow:none!important;
+}
+#painel-patrimonio.pat-results-expanded #resultado-patrimonio .pat-summary-head{
+  position:sticky;
+  top:-1px;
+  z-index:5;
+  margin:-2px -2px 14px;
+  padding:9px 2px 14px;
+  background:var(--paper,#fff);
+  border-bottom:1px solid #e1eaed;
+}
+#painel-patrimonio.pat-results-expanded .pat-scenario-grid{
+  gap:clamp(12px,1.4vw,24px)
+}
+#painel-patrimonio.pat-results-expanded .pat-chart-svg{
+  max-height:420px;
+}
+@media(max-width:720px){
+  #painel-patrimonio.pat-results-expanded #resultado-patrimonio{
+    padding:14px!important
+  }
+  #painel-patrimonio.pat-results-expanded .pat-summary-head{
+    margin:0 0 14px;
+  }
+  #painel-patrimonio.pat-results-expanded #form-patrimonio{display:block}
+}
+@media print{
+  body.pat-fullscreen-active{overflow:visible!important}
+  #painel-patrimonio.pat-results-expanded #resultado-patrimonio{
+    position:static!important;width:100%!important;height:auto!important;
+    max-height:none!important;overflow:visible!important
+  }
+}
