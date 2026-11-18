@@ -144,7 +144,23 @@
       <div class="content-grid">
         <form id="form-patrimonio" class="form-card" autocomplete="off" novalidate>
           <div class="how"><strong>Como usar</strong><p>Escolha <b>Imóvel</b> ou <b>Veículo</b> e informe o capital, os dados do consórcio e o bem. Basta preencher carta + dois valores entre prazo, taxa total e prestação. Taxas são hipóteses editáveis. O aluguel do imóvel pode abater a prestação; o veículo de uso particular não gera aluguel na simulação. Use <b>Expandir tela inteira</b> para visualizar os resultados.</p></div>
-          <div class="pat-asset-picker"><label for="a-tipo-bem">Tipo de bem</label><select id="a-tipo-bem" aria-label="Selecionar imóvel ou veículo"><option value="imovel" selected>Imóvel</option><option value="veiculo">Veículo</option></select><p class="hint" id="a-tipo-nota">Imóvel: IGMI-R para valorização, INCC-M para reajuste do consórcio e IGP-M para aluguel.</p></div>
+          <div class="pat-asset-picker">
+            <strong class="pat-picker-label" id="a-tipo-titulo">O que você quer simular?</strong>
+            <input type="hidden" id="a-tipo-bem" value="imovel">
+            <div class="pat-mode-picker" role="group" aria-labelledby="a-tipo-titulo">
+              <button type="button" class="pat-mode-card" data-asset="veiculo" aria-pressed="false">
+                <span class="mode-art" aria-hidden="true"><svg viewBox="0 0 180 104" role="img"><defs><linearGradient id="carPaint" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d4f5ee"/><stop offset="1" stop-color="#8ed3cf"/></linearGradient></defs><path d="M17 73l12-24c3-7 9-11 17-11h68c8 0 15 4 19 11l11 17 16 5c6 2 9 6 9 12v3H11v-6c0-5 2-7 6-7z" fill="url(#carPaint)"/><path d="M43 43h69c6 0 10 2 13 7l9 14H32z" fill="#1d5061"/><path d="M87 44v19" stroke="#a7e4e1" stroke-width="3"/><path d="M19 75h147" stroke="#ffffff" stroke-width="3" opacity=".5"/><circle cx="43" cy="86" r="12" fill="#0b2e3f" stroke="#b6ebdf" stroke-width="5"/><circle cx="136" cy="86" r="12" fill="#0b2e3f" stroke="#b6ebdf" stroke-width="5"/><path d="M16 64h15" stroke="#d9f6eb" stroke-width="4" stroke-linecap="round"/></svg></span>
+                <span class="mode-info"><strong>Veículo</strong><small>Depreciação e consórcio</small></span>
+                <span class="mode-check" aria-hidden="true">✓</span>
+              </button>
+              <button type="button" class="pat-mode-card selected" data-asset="imovel" aria-pressed="true">
+                <span class="mode-art" aria-hidden="true"><svg viewBox="0 0 180 104" role="img"><defs><linearGradient id="homePaint" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#d4f5ee"/><stop offset="1" stop-color="#8ed3cf"/></linearGradient></defs><path d="M26 52L87 12l64 40v44H26z" fill="url(#homePaint)"/><path d="M19 54l68-45 71 45" fill="none" stroke="#f3fffc" stroke-linecap="round" stroke-linejoin="round" stroke-width="7"/><rect x="76" y="62" width="27" height="34" rx="3" fill="#174a59"/><rect x="39" y="61" width="25" height="20" rx="3" fill="#2b7d8c"/><rect x="116" y="61" width="24" height="20" rx="3" fill="#2b7d8c"/><path d="M18 97h145" stroke="#ffffff99" stroke-width="3" stroke-linecap="round"/></svg></span>
+                <span class="mode-info"><strong>Imóvel</strong><small>Valorização e aluguel</small></span>
+                <span class="mode-check" aria-hidden="true">✓</span>
+              </button>
+            </div>
+            <p class="hint" id="a-tipo-nota">Imóvel: IGMI-R para valorização, INCC-M para reajuste do consórcio e IGP-M para aluguel.</p>
+          </div>
           <section class="product-group product-group--investimento" aria-labelledby="patrimonio-grupo-investimento">
             <div class="product-heading"><div class="product-step" aria-hidden="true">01</div><div class="product-heading-copy"><span class="product-label">RECURSOS PRÓPRIOS</span><h3 id="patrimonio-grupo-investimento">Capital e investimentos</h3><p>Defina o capital inicial e a taxa para comparar a aplicação integral com recursos preservados após o lance.</p></div></div>
             <div class="fields">
