@@ -413,8 +413,8 @@
     "a-contemplacao":"", "a-horizonte":"60",
     "a-parcela-apos":"", "a-prazo-apos":"",
     "a-aluguel":"0,00",
-    "a-valorizacao":"12.58", "a-rendimento":"12.81",
-    "a-reajuste-consorcio":"6.75", "a-reajuste-aluguel":"5.24"
+    "a-valorizacao":"8.92", "a-rendimento":"8.41",
+    "a-reajuste-consorcio":"6.63", "a-reajuste-aluguel":"6.30"
   };
   ["a-carta","a-prazo","a-taxa","a-parcela"].forEach((id) => {
     $(id).addEventListener("input",()=>{
