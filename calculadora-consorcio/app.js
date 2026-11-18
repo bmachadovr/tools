@@ -474,7 +474,7 @@
       showTab(tabs[next].dataset.tab);
     });
   });
-  document.querySelectorAll(".example").forEach((button) => {
+  document.querySelectorAll(".example[data-example]").forEach((button) => {
     button.addEventListener("click", () => {
       const kind = button.dataset.example;
       Object.entries(samples[kind]).forEach(([id, value]) => { $(id).value = value; });
