@@ -6,11 +6,11 @@
   <meta name="theme-color" content="#f5f7fa">
   <meta name="description" content="Compare alternativas de aquisição e explore cenários de formação patrimonial com custos e premissas transparentes.">
   <title>Calculadora de Consórcio | Central de Estratégias</title>
-  <link rel="stylesheet" href="styles.css?v=20261118-03">
-  <script src="input-masks.js?v=20261117-09" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20261118-04">
+  <script src="input-masks.js?v=20261118-04" defer></script>
   <script src="compare-v2.js?v=20261117-09" defer></script>
   <script src="app.js?v=20261118-01" defer></script>
-  <script src="patrimonio.js?v=20261118-02" defer></script>
+  <script src="patrimonio.js?v=20261118-04" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -142,46 +142,52 @@
       </div>
       <div class="content-grid">
         <form id="form-patrimonio" class="form-card" autocomplete="off" novalidate>
-          <div class="how"><strong>Como usar</strong><p>Preencha os grupos na ordem: <b>Capital e investimentos</b>, <b>Consórcio</b>, <b>Imóvel</b> e <b>Horizonte</b>. Informe condições reais do plano e taxas hipotéticas para a projeção. O aluguel é opcional; a contemplação não é garantida.</p></div>
+          <div class="how"><strong>Como usar</strong><p>Preencha os campos de cada grupo. No <b>Consórcio</b>, informe a carta e mais dois dados entre prazo, taxa total e prestação: o terceiro é preenchido automaticamente. Abra <b>Lances e contemplação</b> somente se quiser simular essas condições. As taxas de CDI e IPCA são referências históricas editáveis.</p></div>
           <section class="product-group product-group--investimento" aria-labelledby="patrimonio-grupo-investimento">
             <div class="product-heading"><div class="product-step" aria-hidden="true">01</div><div class="product-heading-copy"><span class="product-label">RECURSOS PRÓPRIOS</span><h3 id="patrimonio-grupo-investimento">Capital e investimentos</h3><p>Defina quanto o cliente possui e a rentabilidade hipotética dos recursos que permanecerem aplicados.</p></div></div>
             <div class="fields">
               <label>Capital próprio total disponível <span>R$</span><input id="a-capital" inputmode="decimal" required placeholder="Ex.: 100.000,00"></label>
-              <label>Rendimento hipotético do capital investido <span>% ao ano · bruto</span><input id="a-rendimento" type="number" min="-50" max="50" step="0.1" value="0" required></label>
+              <label>Rendimento hipotético do capital investido <span>% a.a. · CDI médio 36 meses</span><input id="a-rendimento" type="number" min="-50" max="50" step="0.01" value="12.97" required></label>
             </div>
-            <p class="hint">O capital aplicado será o saldo depois do lance próprio, das despesas e de eventual complemento do imóvel. A taxa é hipotética e não considera impostos ou resgates.</p>
+            <p class="hint">O capital investido será o saldo após o lance próprio e eventual complemento do imóvel. Referência editável: <strong>CDI 12,97% a.a.</strong>, média anualizada composta de 36 meses fechados (nov/2023–out/2026). <a href="https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarGraficoPorId&amp;hdOidSeriesSelecionadas=4391" target="_blank" rel="noopener noreferrer">Fonte: BCB, SGS 4391</a>. Retorno bruto hipotético; não considera impostos, taxas ou resgates.</p>
           </section>
           <section class="product-group product-group--consorcio" aria-labelledby="patrimonio-grupo-consorcio">
-            <div class="product-heading"><div class="product-step" aria-hidden="true">02</div><div class="product-heading-copy"><span class="product-label">PRODUTO 1</span><h3 id="patrimonio-grupo-consorcio">Consórcio</h3><p>Reúna a carta, a estratégia de lance e as prestações antes e depois da contemplação.</p></div></div>
+            <div class="product-heading"><div class="product-step" aria-hidden="true">02</div><div class="product-heading-copy"><span class="product-label">ALAVANCAGEM</span><h3 id="patrimonio-grupo-consorcio">Consórcio</h3><p>Informe a carta, prazo e taxa total ou parcela. O campo restante será calculado automaticamente por uma aproximação linear.</p></div></div>
             <div class="fields">
-              <label>Carta de crédito <span>R$</span><input id="a-carta" inputmode="decimal" required placeholder="Ex.: 300.000,00"></label>
-              <label>Lance com recursos próprios <span>R$ · opcional</span><input id="a-proprio" inputmode="decimal" placeholder="0,00"></label>
-              <label>Lance embutido <span>R$ · opcional</span><input id="a-embutido" inputmode="decimal" placeholder="0,00"></label>
-              <label>Parcela antes da contemplação <span>R$</span><input id="a-parcela" inputmode="decimal" required placeholder="Ex.: 2.300,00"></label>
-              <label>Prazo total a pagar <span>meses</span><input id="a-prazo" type="number" min="1" max="600" required placeholder="Ex.: 180"></label>
-              <label>Mês hipotético da contemplação <span>não é previsão</span><input id="a-contemplacao" type="number" min="1" max="600" required placeholder="Ex.: 18"></label>
-              <label>Parcela após contemplação/lance <span>R$ · se houver lance, obrigatório</span><input id="a-parcela-apos" inputmode="decimal" placeholder="Informe o valor do demonstrativo"></label>
-              <label>Prestações após contemplação/lance <span>meses · se houver lance, obrigatório</span><input id="a-prazo-apos" type="number" min="0" max="600" placeholder="Ex.: 162"></label>
+              <label>Carta de crédito <span>R$</span><input id="a-carta" inputmode="decimal" required placeholder="Ex.: 100.000,00"></label>
+              <label>Prazo total a pagar <span>meses</span><input id="a-prazo" type="number" min="1" max="600" required placeholder="Ex.: 120"></label>
+              <label>Taxa de administração + fundo de reserva <span>% total</span><input id="a-taxa" inputmode="decimal" required placeholder="Ex.: 20,00"></label>
+              <label>Parcela antes da contemplação <span>R$</span><input id="a-parcela" inputmode="decimal" required placeholder="Calculada automaticamente"></label>
             </div>
-            <p class="hint">O lance próprio utiliza recursos do capital inicial; o lance embutido reduz o crédito líquido. A contemplação é hipotética. Com lance, informe as prestações posteriores conforme demonstrativo real; não estimamos o abatimento.</p>
+            <p class="calc-status" id="a-core-status" role="status" aria-live="polite">Preencha a carta e mais dois valores entre prazo, taxa total e prestação; o terceiro será calculado.</p>
+            <details class="finance-advanced" id="a-avancado">
+              <summary>Lances e contemplação <span>opcional · toque para expandir</span></summary>
+              <div class="fields advanced-fields">
+                <label>Lance com recursos próprios <span>R$</span><input id="a-proprio" inputmode="decimal" placeholder="0,00"></label>
+                <label>Lance embutido <span>R$</span><input id="a-embutido" inputmode="decimal" placeholder="0,00"></label>
+                <label>Mês hipotético da contemplação <span>opcional · mês 1 com lance</span><input id="a-contemplacao" type="number" min="1" max="600" placeholder="Padrão: 1 (se houver lance)"></label>
+                <label>Parcela após contemplação <span>R$ · calculada se houver lance</span><input id="a-parcela-apos" inputmode="decimal" placeholder="Calculada como hipótese"></label>
+                <label>Prestações pós-contemplação <span>meses · estimadas se houver lance</span><input id="a-prazo-apos" type="number" min="0" max="600" placeholder="Calculado automaticamente"></label>
+              </div>
+              <p class="calc-status" id="a-post-status" role="status" aria-live="polite">Com lance, a projeção considera o mês 1 se não indicar outro. A primeira prestação é integral; o lance é distribuído linearmente pelas parcelas seguintes, mantendo o prazo.</p>
+              <p class="hint">As taxas e prestações do plano podem ser não lineares; a regra de abatimento depende do contrato. Você pode substituir os números estimados pelos valores do demonstrativo da administradora. Nenhuma hipótese garante contemplação.</p>
+            </details>
           </section>
           <section class="product-group product-group--imovel" aria-labelledby="patrimonio-grupo-imovel">
-            <div class="product-heading"><div class="product-step" aria-hidden="true">03</div><div class="product-heading-copy"><span class="product-label">ATIVO PATRIMONIAL</span><h3 id="patrimonio-grupo-imovel">Imóvel e renda</h3><p>Defina o imóvel, os custos de aquisição e as hipóteses de aluguel e valorização.</p></div></div>
+            <div class="product-heading"><div class="product-step" aria-hidden="true">03</div><div class="product-heading-copy"><span class="product-label">ATIVO PATRIMONIAL</span><h3 id="patrimonio-grupo-imovel">Imóvel e renda</h3><p>Defina o preço do bem e as hipóteses opcionais de locação e valorização.</p></div></div>
             <div class="fields">
               <label>Preço do imóvel desejado <span>R$</span><input id="a-preco" inputmode="decimal" required placeholder="Ex.: 300.000,00"></label>
-              <label>Despesas iniciais da aquisição <span>R$ · ITBI, registros etc.</span><input id="a-custos" inputmode="decimal" placeholder="0,00"></label>
               <label>Aluguel mensal líquido esperado <span>R$ · após despesas usuais</span><input id="a-aluguel" inputmode="decimal" placeholder="0,00"></label>
-              <label>Meses desocupados por ano <span>0 a 12</span><input id="a-vacancia" type="number" min="0" max="12" value="1" required></label>
-              <label>IPCA hipotético aplicado à valorização do imóvel <span>% ao ano (pode ser negativo)</span><input id="a-valorizacao" type="number" min="-50" max="50" step="0.1" value="0" required></label>
+              <label>Valorização hipotética do imóvel pelo IPCA <span>% a.a. · média 36 meses</span><input id="a-valorizacao" type="number" min="-50" max="50" step="0.01" value="4.69" required></label>
             </div>
-            <p class="hint">O aluguel é opcional e considera a vacância informada. O IPCA é usado somente como referência de valorização hipotética: não mede o preço de imóveis.</p>
+            <p class="hint">O aluguel é opcional e, se informado, é projetado sem descontar vacância. Referência editável: <strong>IPCA 4,69% a.a.</strong>, média anualizada composta de 36 meses fechados (nov/2023–out/2026). <a href="https://www.ibge.gov.br/indicadores" target="_blank" rel="noopener noreferrer">Fonte: IBGE</a>. O IPCA não mede preços de imóveis. ITBI, cartório, despesas, vacância e tributação não estão incluídos na projeção.</p>
           </section>
           <section class="product-group product-group--cenario" aria-labelledby="patrimonio-grupo-cenario">
             <div class="product-heading"><div class="product-step" aria-hidden="true">04</div><div class="product-heading-copy"><span class="product-label">PROJEÇÃO</span><h3 id="patrimonio-grupo-cenario">Horizonte da análise</h3><p>Escolha por quanto tempo deseja acompanhar a evolução dos investimentos e do imóvel.</p></div></div>
             <div class="fields">
               <label>Horizonte da análise <span>meses desde a contratação</span><input id="a-horizonte" type="number" min="1" max="600" required placeholder="Ex.: 60"></label>
             </div>
-            <p class="hint">O horizonte é medido desde a contratação; a valorização do imóvel e o rendimento do capital preservado são projetados a partir da contemplação hipotética.</p>
+            <p class="hint">O horizonte é medido desde a contratação. Valorização e rendimento do capital preservado são projetados a partir da contemplação hipotética. Sem lance, informe o mês hipotético nos detalhes do consórcio antes de calcular.</p>
           </section>
           <div class="actions"><button type="submit" class="primary">Gerar análise patrimonial</button><button type="reset" class="ghost">Limpar</button></div>
           <p class="form-error" id="erro-patrimonio" role="alert" aria-live="polite"></p>
