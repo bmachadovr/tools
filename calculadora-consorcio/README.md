@@ -1465,3 +1465,28 @@ Para cada mês t até H:
 **Limitações:** referência agregada de mercado, 12 meses não garantem próximos anos; não há vacância, inadimplência, impostos, ITBI/cartório, evolução real da taxa DI, diferenciação de parcelamento por regras de cada administradora, garantias, reajustes para crédito não utilizado, ou probabilidade de contemplação. A compra à vista exige capital inicial >= preço do imóvel. Algumas outras partes do site têm metodologias próprias.
 
 **Fontes:** https://www.bcb.gov.br/ ; https://www.abecip.org.br/igmi-r-abecip/mes-a-mes ; https://portal.fgv.br/noticias/incc-m-outubro-2026 ; https://portal.fgv.br/noticias/igp-m-outubro-2026 .
+
+
+### Revisão vigente: quatro índices com janela histórica comum de 10 anos (18/11/2026)
+
+**Regra padrão nova (substitui taxas de referência de 12 meses descritas anteriormente):** quatro índices partem da MESMA janela histórica de 120 meses, **setembro/2016 a agosto/2026**. São taxas de referência anuais compostas, NÃO previsões ou atualização automática, e todos os valores ficam editáveis pelo usuário no formulário.
+
+| Campo | Fonte | Crescimento histórico acumulado | Média anualizada composta | Padrão |
+|---|---|---:|---:|---:|
+| Investimento 90% CDI | Banco Central/B3, SGS 4391 | CDI 100%: 144,421272% | CDI 100%: 9,348769% a.a. | **8,41% a.a.** (0,9 × CAGR CDI) |
+| Imóvel residencial IGMI-R Brasil | ABECIP, índice de ago/2016 e ago/2026 | 134,934870% | 8,916769% a.a. | **8,92% a.a.** |
+| Consórcio INCC-M | FGV IBRE / BCB SGS 7456 | 89,988150% | 6,628341% a.a. | **6,63% a.a.** |
+| Aluguel IGP-M | FGV IBRE / BCB SGS 189 | 84,176586% | 6,297596% a.a. | **6,30% a.a.** |
+
+Fórmula de capitalização da taxa mensal de CDI, INCC-M e IGP-M:
+`fator_10a = produto_{meses=2016-09..2026-08}(1 + taxa_mensal/100)`, `CAGR_a.a.=(fator_10a^(1/10)-1)×100`. Os 120 meses são completos e contíguos. O IGMI-R emprega a razão do índice nacional de ago/2026 pelo índice de ago/2016, representando as mesmas 120 variações mensais do período setembro/2016–agosto/2026.
+
+**90% CDI:** o percentual anual padrão é, por convenção simplificada, `0,90 × CAGR_anual_CDI`. Isso NÃO corresponde à reprodução exata de uma aplicação que rende 90% da taxa DI diária com tributação e capitalização próprias; exibir ressalva.
+
+**Simulação permanece inalterada nos demais pontos:** consórcio com reajuste contratual anual (mês 13, 25, 37...), aluguel com reajuste a cada 12 meses de locação, líquido do pagamento da prestação, aporte dos outros cenários somente equivalente ao desembolso próprio, projeção terminando no mês selecionado sem descontar pagamentos futuros, cartões e visualização em tela inteira. Os indicadores permanecem hipóteses editáveis pelo operador.
+
+Fontes consultadas:
+- Série mensal CDI: https://api.bcb.gov.br/dados/serie/bcdata.sgs.4391/dados?formato=json&dataInicial=01%2F09%2F2016&dataFinal=31%2F08%2F2026
+- Série mensal INCC-M: https://api.bcb.gov.br/dados/serie/bcdata.sgs.7456/dados?formato=json&dataInicial=01%2F09%2F2016&dataFinal=31%2F08%2F2026
+- Série mensal IGP-M: https://api.bcb.gov.br/dados/serie/bcdata.sgs.189/dados?formato=json&dataInicial=01%2F09%2F2016&dataFinal=31%2F08%2F2026
+- IGMI-R ABECIP: https://www.abecip.org.br/igmi-r-abecip/serie-historica (planilha histórica até agosto de 2026).
