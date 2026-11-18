@@ -402,6 +402,97 @@
 
   const form = $("form-patrimonio");
   if (!form) return;
+
+  // A categoria é selecionada visualmente, sem depender do comparador principal.
+  const savedModes={
+    imovel:null,
+    veiculo:{
+      "a-preco":"","a-valorizacao":"-10.00",
+      "a-reajuste-consorcio":"4.89","a-aluguel":"0,00",
+      "a-reajuste-aluguel":"6.30"
+    }
+  };
+  const modeFieldIds=["a-preco","a-valorizacao","a-reajuste-consorcio",
+    "a-aluguel","a-reajuste-aluguel"];
+  const snapshotMode=()=>Object.fromEntries(modeFieldIds.map(id=>[id,$(id).value]));
+  const vehicleIndexHint=()=>{
+    const index=$("a-indice-veiculo").value;
+    const veh=index==="ipca";
+    $("a-reajuste-consorcio-label").textContent=veh?
+      "Reajuste do consórcio pelo IPCA":"Reajuste contratual do consórcio (taxa manual)";
+    $("a-nota-reajuste").innerHTML=veh?
+      'Veículo: <strong>IPCA de 4,89% a.a.</strong> como referência histórica de dez anos (set/2016–ago/2026). <a href="https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados?formato=json" target="_blank" rel="noopener noreferrer">Fonte: BCB, SGS 433</a>. O contrato pode prever tabela FIPE, preço de montadora ou outro critério. Configure periodicidade anual ou mensal equivalente.':
+      'Veículo: informe a taxa anual equivalente segundo a <strong>regra do seu contrato</strong> (FIPE por modelo/ano, tabela da montadora ou índice indicado). Não existe uma taxa FIPE universal; confirme a base e a periodicidade do grupo.';
+  };
+  function setAssetMode(mode, options={}) {
+    if(!["imovel","veiculo"].includes(mode))return;
+    const previous=$("a-tipo-bem").value;
+    if(options.reset){
+      savedModes.imovel={
+        "a-preco":"","a-valorizacao":"8.92","a-reajuste-consorcio":"6.63",
+        "a-aluguel":"0,00","a-reajuste-aluguel":"6.30"
+      };
+      savedModes.veiculo={
+        "a-preco":"","a-valorizacao":"-10.00","a-reajuste-consorcio":"4.89",
+        "a-aluguel":"0,00","a-reajuste-aluguel":"6.30"
+      };
+    } else if(previous!==mode) {
+      savedModes[previous]=snapshotMode();
+    }
+    if(previous!==mode||options.reset) {
+      const saved=savedModes[mode];
+      if(saved)for(const [id,value] of Object.entries(saved))$(id).value=value;
+    }
+    $("a-tipo-bem").value=mode;
+    const vehicle=mode==="veiculo";
+    document.querySelectorAll("#painel-patrimonio .pat-mode-card").forEach(btn=>{
+      const active=btn.dataset.asset===mode;
+      btn.classList.toggle("selected",active);
+      btn.setAttribute("aria-pressed",String(active));
+    });
+    document.querySelectorAll("#painel-patrimonio .pat-property-only").forEach(el=>el.hidden=vehicle);
+    document.querySelectorAll("#painel-patrimonio .pat-vehicle-only").forEach(el=>el.hidden=!vehicle);
+    $("patrimonio-grupo-imovel").textContent=vehicle?"Veículo e depreciação":"Imóvel e renda";
+    $("a-preco-label").textContent=vehicle?"Preço do veículo desejado":"Preço do imóvel desejado";
+    $("a-valorizacao-label").textContent=vehicle?
+      "Desvalorização hipotética do veículo":"Valorização hipotética do imóvel pelo IGMI-R";
+    $("a-valorizacao-unit").textContent=vehicle?"% a.a. · use negativo para depreciação":"% a.a. · residencial";
+    $("a-bem-descricao").textContent=vehicle?
+      "Defina o valor do veículo e quanto espera que ele perca por ano, sem atribuir renda de aluguel.":
+      "Defina o preço do imóvel e as hipóteses opcionais de locação e valorização.";
+    $("a-tipo-nota").textContent=vehicle?
+      "Veículo de uso particular: depreciação editável, sem aluguel e reajuste do consórcio conforme contrato.":
+      "Imóvel: IGMI-R para valorização, INCC-M para reajuste do consórcio e IGP-M para aluguel.";
+    $("a-nota-bem").innerHTML=vehicle?
+      '<strong>Depreciação ilustrativa de −10% a.a.</strong> (valor negativo e editável). Não é um índice histórico FIPE; os valores reais dependem do modelo, ano, km e mercado. <a href="https://veiculos.fipe.org.br/" target="_blank" rel="noopener noreferrer">Tabela FIPE</a> é uma referência por veículo específico. Não são considerados combustível, manutenção, seguro, IPVA, licenciamento ou revenda com impostos.':
+      '<strong>Janela histórica de 10 anos (set/2016–ago/2026)</strong>. IGMI-R Brasil: <strong>8,92% a.a.</strong> (<a href="https://www.abecip.org.br/igmi-r-abecip/serie-historica" target="_blank" rel="noopener noreferrer">ABECIP</a>); IGP-M: <strong>6,30% a.a.</strong> (<a href="https://corrigirvalor.com.br/tabela/igp-m" target="_blank" rel="noopener noreferrer">FGV/BCB</a>). Taxas editáveis; sem custos e vacância.';
+    $("a-nota-horizonte").innerHTML=vehicle?
+      "Fotografia até o mês informado: no consórcio, paga-se a prestação do próprio bolso. Nas alternativas, investe-se esse mesmo valor. O veículo deprecia até o horizonte; reajuste conforme índice e periodicidade escolhidos. Obrigações posteriores são mostradas separadamente, sem serem descontadas dos ativos brutos.":
+      "Fotografia até o mês informado. O aluguel <strong>abate primeiro a prestação</strong>; nas alternativas, investe-se somente a diferença do bolso. Sobras de aluguel são aplicadas no consórcio, com IGP-M no aluguel e INCC-M nas parcelas. Obrigações posteriores são apenas informativas.";
+    if(vehicle)vehicleIndexHint();
+    else{
+      $("a-reajuste-consorcio-label").textContent="Reajuste do consórcio pelo INCC-M";
+      $("a-nota-reajuste").innerHTML=
+        'Referência editável de <strong>10 anos (set/2016–ago/2026)</strong>: INCC-M acumulado ≈ 89,99%, média composta de <strong>6,63% a.a.</strong> <a href="https://corrigirvalor.com.br/tabela/incc-m" target="_blank" rel="noopener noreferrer">Fonte: FGV IBRE / BCB, SGS 7456</a>. Reajuste anual na projeção; o contrato é soberano.';
+    }
+    if(previous!==mode&&!options.keepResult){
+      $("resultado-patrimonio").innerHTML='<div class="empty-result"><h3>Simule '+(vehicle?"um veículo":"um imóvel")+'</h3><p>Preencha os dados da categoria selecionada e gere a nova análise.</p></div>';
+      if(window.receberAnalisePatrimonial)window.receberAnalisePatrimonial(null);
+      isExample=false;
+    }
+    $("erro-patrimonio").textContent="";
+  }
+  document.querySelectorAll("#painel-patrimonio .pat-mode-card").forEach(btn=>{
+    btn.addEventListener("click",()=>setAssetMode(btn.dataset.asset));
+  });
+  $("a-indice-veiculo").addEventListener("change",()=>{
+    if($("a-tipo-bem").value==="veiculo"){
+      if($("a-indice-veiculo").value==="ipca")$("a-reajuste-consorcio").value="4.89";
+      vehicleIndexHint();
+    }
+  });
+  setAssetMode("imovel",{keepResult:true});
+
   $("painel-patrimonio").addEventListener("click",(e)=>{
     if(!e.target.closest("#pat-expand")) return;
     const panel=$("painel-patrimonio");
@@ -429,6 +520,14 @@
     "a-valorizacao":"8.92", "a-rendimento":"8.41",
     "a-reajuste-consorcio":"6.63", "a-reajuste-aluguel":"6.30"
   };
+  const vehicleExample={
+    "a-capital":"40.000,00","a-carta":"80.000,00","a-preco":"80.000,00",
+    "a-proprio":"20.000,00","a-embutido":"0,00","a-parcela":"",
+    "a-prazo":"80","a-taxa":"18,00","a-contemplacao":"",
+    "a-horizonte":"36","a-parcela-apos":"","a-prazo-apos":"",
+    "a-aluguel":"0,00","a-valorizacao":"-10.00","a-rendimento":"8.41",
+    "a-reajuste-consorcio":"4.89","a-reajuste-aluguel":"6.30"
+  };
   ["a-carta","a-prazo","a-taxa","a-parcela"].forEach((id) => {
     $(id).addEventListener("input",()=>{
       if (id!=="a-carta") {
@@ -454,7 +553,9 @@
     derivePost();
   });
   $("a-exemplo").addEventListener("click", () => {
-    for (const [id,value] of Object.entries(example)) $(id).value=value;
+    const ex=$("a-tipo-bem").value==="veiculo"?vehicleExample:example;
+    for (const [id,value] of Object.entries(ex)) $(id).value=value;
+    savedModes[$("a-tipo-bem").value]=snapshotMode();
     if (window.ConsorcioMasks) window.ConsorcioMasks.formatAll();
     coreHistory=["a-prazo","a-taxa"];
     postManual.pay=false;postManual.term=false;
@@ -476,13 +577,15 @@
     $("painel-patrimonio").classList.remove("pat-results-expanded");
     document.body.classList.remove("pat-fullscreen-active");
     coreHistory=["a-prazo","a-taxa"];postManual.pay=false;postManual.term=false;
+    const preserveMode=$("a-tipo-bem").value;
     window.setTimeout(() => {
+      setAssetMode(preserveMode,{reset:true,keepResult:true});
       $("a-avancado").open=false;
       form.querySelectorAll(".is-derived").forEach(el=>el.classList.remove("is-derived"));
       $("a-core-status").textContent="Preencha a carta e mais dois valores entre prazo, taxa total e prestação; o terceiro será calculado.";
       $("a-post-status").textContent="Com lance, se o mês não for informado, considera-se a assembleia seguinte. Os dados pós-lance são estimados linearmente.";
       $("erro-patrimonio").textContent="";
-      $("resultado-patrimonio").innerHTML='<div class="empty-result"><span class="empty-icon">↗</span><h3>Construa um cenário de patrimônio</h3><p>Informe os dados para avaliar capital inicial, potencial de aluguel, compromissos e argumentos de oferta.</p></div>';
+      $("resultado-patrimonio").innerHTML='<div class="empty-result"><span class="empty-icon">↗</span><h3>Construa um cenário de patrimônio</h3><p>Informe os dados para comparar investimentos, aquisição do bem e obrigações até a data escolhida.</p></div>';
       if (window.receberAnalisePatrimonial) window.receberAnalisePatrimonial(null);
     },0);
   });
