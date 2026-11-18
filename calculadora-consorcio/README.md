@@ -1358,3 +1358,17 @@ Se o usuário informar **nova parcela pós-lance**, ela prevalece; se informar *
 - **Modelo explícito:** aluguel apenas a partir do mês seguinte ao da contemplação hipotética. Aluguel líquido e valorização são dados do cenário, não fontes automáticas, índices contratados nem previsões. Sem lucro líquido, taxa de retorno ou chance estimada de contemplação.
 - **Trava de qualidade:** se houver lance, exigir prestação e número de parcelas pós-lance obtidos de simulação ou demonstrativo para não contar duas vezes o efeito da amortização.
 - **Próxima evolução:** cenários pessimista/base/otimista com inflação, reajustes contratados, vacância e custo de oportunidade, sempre baseados em parâmetros fornecidos e em documentação verificável. Testar com operações anonimizadas antes de ofertar publicamente.
+
+
+### Exemplo de projeção de alavancagem patrimonial — 18/11/2026
+
+Estratégia definida pelo usuário: pessoa com **R$ 100.000 de recursos próprios** contrata carta de **R$ 100.000**, oferece **lance próprio de R$ 50.000**, preserva **R$ 50.000 em investimentos** e, **se contemplada e liberado o crédito**, adquire imóvel de **R$ 100.000**. Nesse instante, possui **R$ 150.000 em ativos brutos**, mas também **obrigações do consórcio**. Não confundir com patrimônio líquido ou lucro.
+
+Implementação:
+- Adicionado campo **capital próprio total**; aplicativo deduz do capital os recursos próprios do lance, eventual complemento do bem e despesas informadas; restante é **capital investido**.
+- Ativos brutos na contemplação hipotética = valor do imóvel + capital investido.
+- Evolução separada dos dois ativos: valorização hipotética do imóvel com **IPCA apenas como taxa de referência editável** (não indicador imobiliário); e rendimento hipotético editável das aplicações. O exemplo demonstrativo usa 4% a.a. e 6% a.a., respectivamente, ambos fictícios.
+- Mostrar série temporal da evolução de imóvel, investimentos e total bruto ao longo do horizonte.
+- Prestações do consórcio antes e após o lance devem ser informadas; se houver lance e faltar cronograma pós-lance, bloquear o cálculo. As parcelas futuras nominais são apresentadas como **obrigações não quitadas**, não como saldo devedor formal.
+- Modelo pressupõe que o investimento preservado não seja resgatado para pagar prestações; estas são pagas por renda externa ou aluguel, conforme a análise. Sem renda suficiente, o cenário pode não ser viável.
+- Comparar crescimento dos ativos com retorno líquido ou com a alternativa de investir 100% dos recursos fica para evolução posterior, após parametrizar saldo devedor, encargos, custos, impostos e cashflows.
