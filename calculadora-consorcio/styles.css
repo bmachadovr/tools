@@ -335,3 +335,48 @@ footer p{margin:0;max-width:620px}
   #painel-patrimonio .pat-timeline td,
   #painel-patrimonio .pat-timeline th{font-size:.72rem;white-space:nowrap}
 }
+
+/* Agrupamento visual por produto — comparador e alavancagem patrimonial. */
+.product-group{
+  --product-accent:#146879;
+  --product-tint:#eef8f8;
+  border:1px solid #dce6eb;
+  border-left:4px solid var(--product-accent);
+  border-radius:16px;
+  background:#fff;
+  padding:21px 21px 22px;
+  margin:0 0 18px;
+  box-shadow:0 5px 18px rgba(26,57,68,.035);
+}
+.product-group--financiamento{--product-accent:#456eaa;--product-tint:#edf3fb}
+.product-group--investimento{--product-accent:#6b68a3;--product-tint:#f2f0fb}
+.product-group--imovel{--product-accent:#60835f;--product-tint:#f0f7ed}
+.product-group--cenario{--product-accent:#69798c;--product-tint:#f2f5f8}
+.product-heading{display:flex;align-items:flex-start;gap:13px;padding-bottom:16px;margin-bottom:18px;border-bottom:1px solid #e7edf0}
+.product-step{
+  flex:0 0 38px;width:38px;height:38px;display:grid;place-items:center;
+  background:var(--product-tint);border-radius:11px;color:var(--product-accent);
+  font-size:.82rem;font-weight:850;letter-spacing:.015em;
+}
+.product-heading-copy{min-width:0}
+.product-label{display:block;color:var(--product-accent);font-size:.66rem;line-height:1.2;letter-spacing:.12em;font-weight:850;margin:0 0 6px}
+.product-heading h3{font-size:1.22rem;line-height:1.22;letter-spacing:-.028em;margin:0 0 5px;color:#1b3441}
+.product-heading p{margin:0;max-width:640px;color:#6c7f89;line-height:1.53;font-size:.82rem}
+.product-group>.fields{margin:0}
+.product-group .form-section{margin:0}
+.product-group .form-section+.form-section{border-top:1px solid #ebf0f2;padding-top:19px;margin-top:19px}
+.product-group .form-section h3{font-size:.94rem;color:#334f5b}
+.product-group .hint{margin-top:13px}
+.product-group .finance-advanced{margin-top:14px}
+.product-group .calc-status{margin-top:12px}
+@media(min-width:981px){
+  .product-group .fields{gap:14px 17px}
+}
+@media(max-width:600px){
+  .product-group{padding:15px 13px 17px;margin-bottom:13px;border-radius:13px}
+  .product-heading{gap:10px;padding-bottom:13px;margin-bottom:15px}
+  .product-step{width:33px;height:33px;flex-basis:33px;border-radius:9px;font-size:.74rem}
+  .product-heading h3{font-size:1.1rem}
+  .product-heading p{font-size:.78rem}
+  .product-group .form-section+.form-section{margin-top:15px;padding-top:15px}
+}
