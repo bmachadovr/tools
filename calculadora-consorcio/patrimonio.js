@@ -280,26 +280,56 @@
       ["Prestações previstas após o horizonte", num(parcelasRestantes)],
       ["Soma nominal das parcelas futuras (não é saldo devedor)", fmt(parcelasFuturasNominais)]
     ];
-    $("resultado-patrimonio").innerHTML =
-      '<div class="result-top"><span class="result-kicker">CENÁRIO DE FORMAÇÃO PATRIMONIAL</span><span class="status-pill">Hipóteses editáveis</span></div>'
-      + '<div class="hero-number">' + esc(fmt(ativosNaContemplacao)) + '<small>ativos brutos após a contemplação hipotética</small></div>'
-      + '<p class="result-copy">Imóvel de ' + esc(fmt(preco)) + ' + capital investido de ' + esc(fmt(capitalInvestido)) + '. Parte do patrimônio é financiada pelo compromisso com o consórcio, não é riqueza líquida imediata.</p>'
+    if (!window.PatrimonioComparador) throw Error("O comparador patrimonial não foi carregado. Atualize a página.");
+    const comparado = window.PatrimonioComparador.run({
+      capital,preco,capitalUtilizado,capitalInvestido,parcela,parcelaApos,prazoApos,
+      contemplacao,horizonte,valorizacao,rendimento,aluguel
+    });
+    const comparaveis = [
+      ["Aporte mensal equivalente nos três cenários",fmt(comparado.budget)],
+      ["Manter recursos integralmente investidos — posição projetada",fmt(comparado.investment)],
+      ["Comprar imóvel à vista — posição projetada",comparado.cashPossible ? fmt(comparado.cash) : "Não viável com capital disponível; faltam "+fmt(comparado.shortfall)],
+      ["Alavancagem — ativos brutos projetados",fmt(comparado.gross)],
+      ["Alavancagem — VP estimado das parcelas futuras",fmt(comparado.pvFuture)+" (não é saldo devedor)"],
+      ["Alavancagem — posição ajustada projetada",fmt(comparado.adjusted)],
+      ["Diferença da alavancagem frente ao investimento",fmt(comparado.extraComparedToInvest)],
+      ["Maior posição projetada sob as premissas",comparado.best.name+" — "+fmt(comparado.best.value)]
+    ];
+    const contraste = comparado.extraComparedToInvest > 0.01
+      ? "Nesta hipótese, a alavancagem supera a aplicação integral em "+fmt(comparado.extraComparedToInvest)+" na posição ajustada, mas o resultado não incorpora todos os custos e riscos."
+      : comparado.extraComparedToInvest < -0.01
+      ? "Nesta hipótese, a aplicação integral supera a posição ajustada da alavancagem em "+fmt(-comparado.extraComparedToInvest)+". Exibir apenas os ativos brutos do imóvel ocultaria essa diferença."
+      : "Nesta hipótese, os cenários de alavancagem e aplicação integral resultam em posição ajustada semelhante.";
+    const detalhes = '<details class="pat-report-details"><summary>Ver composição da alavancagem, premissas e memória de cálculo</summary><div class="pat-report-inner">'
       + renderMetrics([
-        ["Capital próprio inicial", fmt(capital)],
-        ["Lance e complemento do imóvel", fmt(capitalUtilizado)],
-        ["Capital preservado e investido", fmt(capitalInvestido)],
-        ["Ativos brutos no horizonte", fmt(ativosFuturos)],
-        ["Prestações nominais futuras (não é saldo devedor)", fmt(parcelasFuturasNominais)],
-        ["Cobertura da prestação pelo aluguel", pc(cobertura)]
+        ["Capital próprio inicial",fmt(capital)],
+        ["Lance e complemento do imóvel",fmt(capitalUtilizado)],
+        ["Capital preservado e investido",fmt(capitalInvestido)],
+        ["Ativos brutos da alavancagem",fmt(ativosFuturos)],
+        ["Prestações nominais futuras (não é saldo devedor)",fmt(parcelasFuturasNominais)],
+        ["Aluguel / prestação",pc(cobertura)]
       ])
-      + renderTimeline(timeline) + renderArguments(argumentos) + renderRows(rows)
-      + renderWarnings(alertas)
+      + renderTimeline(timeline) + renderArguments(argumentos)
+      + renderRows(rows) + renderWarnings(alertas) + '</div></details>';
+    $("resultado-patrimonio").innerHTML = window.PatrimonioComparador.render(comparado)
+      + '<div class="pat-contrast">'+esc(contraste)+'</div>'
+      + detalhes
       + '<div class="result-actions"><button type="button" class="to-offer">Gerar proposta com esta análise →</button></div>';
+    const expandButton = $("pat-expand");
+    if(expandButton && $("painel-patrimonio").classList.contains("pat-results-expanded")) {
+      expandButton.textContent="Reduzir cenários";
+      expandButton.setAttribute("aria-pressed","true");
+    }
 
     if (typeof window.receberAnalisePatrimonial === "function") {
       window.receberAnalisePatrimonial({
-        rows: [["Estratégia", "Alavancagem patrimonial com recursos parcialmente investidos"], ...rows, ...argumentos.map((a,i) => ["Argumento " + (i+1), a])],
-        warnings: alertas,
+        rows: [["Estratégia", "Comparação entre investimento, compra à vista e alavancagem patrimonial"],
+          ...comparaveis, ...rows,
+          ["Conclusão contextual",contraste],
+          ...argumentos.map((a,i)=>["Argumento "+(i+1),a])],
+        warnings: ["Os cenários partem do mesmo capital e de aportes mensais iguais à maior parcela do consórcio. Sobras mensais e aluguéis informados são reinvestidos.",
+          "O valor presente das parcelas futuras usa o rendimento hipotético do investimento como taxa de desconto, não é saldo devedor contratual.",
+          ...alertas],
         example: isExample
       });
     }
@@ -307,6 +337,14 @@
 
   const form = $("form-patrimonio");
   if (!form) return;
+  $("painel-patrimonio").addEventListener("click",(e)=>{
+    if(!e.target.closest("#pat-expand")) return;
+    const panel=$("painel-patrimonio");
+    const expanded=panel.classList.toggle("pat-results-expanded");
+    const button=$("pat-expand");
+    button.textContent=expanded?"Reduzir cenários":"Ampliar cenários";
+    button.setAttribute("aria-pressed",String(expanded));
+  });
   const example = {
     "a-capital":"100.000,00", "a-carta":"100.000,00", "a-preco":"100.000,00",
     "a-proprio":"50.000,00", "a-embutido":"0,00",
