@@ -1346,3 +1346,15 @@ Se o usuário informar **nova parcela pós-lance**, ela prevalece; se informar *
 - [ ] Conferir aproximação pós-lance com uma proposta real do simulador interno.
 
 **Detalhamento das novas regras e ressalvas:** [SPEC_V2.md](SPEC_V2.md#10-simplificação-definitiva-do-lance-e-da-atualização-17112026). As seções anteriores permanecem como histórico de mudanças e podem descrever comportamentos já substituídos.
+
+
+## Atualização de escopo — 18/11/2026
+
+- **Menu ativo:** Comparar alternativas; Alavancagem patrimonial; Gerar proposta.
+- **Adiados:** Estratégia de lances e Analisar concorrente. Os painéis e cálculos existentes foram mantidos no código para evolução futura; os botões foram removidos da navegação pública. Não utilizar dados externos de concorrentes até dispor de fontes confiáveis, datadas e conferíveis.
+- **Nova prioridade comercial:** argumentos de formação e alavancagem patrimonial com consórcio, inicialmente para aquisição de **imóvel destinado à locação**, sem confundir patrimônio bruto com patrimônio líquido ou promessa de enriquecimento.
+- **Entradas:** carta, valor do imóvel, lance próprio/embutido, despesas de aquisição, prestação e prazo antes da contemplação, **cronograma após o lance informado pelo operador**, mês hipotético de contemplação, horizonte, aluguel líquido estimado, meses vagos/ano e valorização hipotética.
+- **Saídas:** crédito líquido após embutido; capital próprio para lance, complemento e despesas; renda de locação média ajustada por vacância; cobertura da prestação pós-contemplação; desembolso projetado; valor bruto hipotético do imóvel; quantidade de parcelas restantes (que **não equivale a saldo devedor**); argumentos comerciais com ressalvas; integração com Gerar proposta e WhatsApp.
+- **Modelo explícito:** aluguel apenas a partir do mês seguinte ao da contemplação hipotética. Aluguel líquido e valorização são dados do cenário, não fontes automáticas, índices contratados nem previsões. Sem lucro líquido, taxa de retorno ou chance estimada de contemplação.
+- **Trava de qualidade:** se houver lance, exigir prestação e número de parcelas pós-lance obtidos de simulação ou demonstrativo para não contar duas vezes o efeito da amortização.
+- **Próxima evolução:** cenários pessimista/base/otimista com inflação, reajustes contratados, vacância e custo de oportunidade, sempre baseados em parâmetros fornecidos e em documentação verificável. Testar com operações anonimizadas antes de ofertar publicamente.
