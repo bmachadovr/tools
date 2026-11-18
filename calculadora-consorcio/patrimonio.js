@@ -9,6 +9,99 @@
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
     ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[c]);
   let isExample = false;
+  // Últimos dois campos efetivamente informados pelo operador são a fonte
+  // dos cálculos; o terceiro campo é derivado automaticamente.
+  let coreHistory = ["a-prazo","a-taxa"];
+  const postManual = {pay:false,term:false};
+  const formatBR = (v) => Number(v).toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});
+  function readOptionalNumber(id) {
+    const text = $(id).value.trim();
+    if (!text) return NaN;
+    const converted = text.includes(",") ? text.replace(/\./g,"").replace(",",".") : text;
+    return Number(converted);
+  }
+  function showDerived(id,n) {
+    if (!Number.isFinite(n) || n < 0) return false;
+    $(id).value = id === "a-prazo" || id === "a-prazo-apos" ? String(Math.round(n)) : formatBR(n);
+    $(id).classList.add("is-derived");
+    return true;
+  }
+  function deriveCore() {
+    const carta = readOptionalNumber("a-carta");
+    const valid = (id) => Number.isFinite(readOptionalNumber(id)) && readOptionalNumber(id) >= 0;
+    const choices = ["a-prazo","a-taxa","a-parcela"];
+    const manual = coreHistory.filter(id=>choices.includes(id) && valid(id));
+    const target = choices.find(id=>!manual.includes(id));
+    if (!(carta > 0) || manual.length < 2 || !target) {
+      $("a-core-status").textContent="Informe a carta e mais dois valores entre prazo, taxa total e prestação. O terceiro será calculado.";
+      return false;
+    }
+    const prazo = readOptionalNumber("a-prazo");
+    const taxa = readOptionalNumber("a-taxa");
+    const parcela = readOptionalNumber("a-parcela");
+    let value;
+    if(target === "a-parcela") {
+      if(!Number.isInteger(prazo)||prazo<1||prazo>600||taxa<0||taxa>200){$("a-core-status").textContent="Confira prazo e taxa total (0 a 200%).";return false;}
+      value = carta*(1+taxa/100)/prazo;
+    } else if(target === "a-taxa") {
+      if(!Number.isInteger(prazo)||prazo<1||prazo>600||!(parcela>0)){$("a-core-status").textContent="Confira prazo e parcela informados.";return false;}
+      value = (parcela*prazo/carta-1)*100;
+      if(value<0||value>200){$("a-core-status").textContent="Taxa implícita fora do intervalo de 0 a 200%. Revise os valores.";return false;}
+    } else {
+      if(!(parcela>0)||taxa<0||taxa>200){$("a-core-status").textContent="Confira prestação e taxa total.";return false;}
+      value = Math.round(carta*(1+taxa/100)/parcela);
+      if(value<1||value>600){$("a-core-status").textContent="Prazo estimado fora do intervalo permitido de 1 a 600 meses.";return false;}
+    }
+    if (!showDerived(target,value)) return false;
+    $("a-core-status").textContent = ({"a-prazo":"Prazo","a-taxa":"Taxa total","a-parcela":"Parcela inicial"})[target]
+      +" calculado(a) automaticamente por modelo linear de referência. Confira com o demonstrativo do grupo.";
+    return true;
+  }
+  function derivePost() {
+    const carta = readOptionalNumber("a-carta"), prazo = readOptionalNumber("a-prazo");
+    const parcela = readOptionalNumber("a-parcela"), proprio = readOptionalNumber("a-proprio") || 0;
+    const embutido = readOptionalNumber("a-embutido") || 0;
+    const lance = proprio+embutido;
+    const indicado = readOptionalNumber("a-contemplacao");
+    const mes = Number.isInteger(indicado) && indicado>0 ? indicado : lance>0 ? 1 : NaN;
+    const status = $("a-post-status");
+    if (!(carta>0 && Number.isInteger(prazo) && prazo>=1 && parcela>0)) {
+      status.textContent="Informe primeiro carta, prazo, taxa e parcela para estimar os valores pós-lance.";
+      return null;
+    }
+    if (!(mes>=1 && mes<=prazo)) {
+      status.textContent=lance>0?"Confira o mês de contemplação informado.":"Sem lance, informe um mês hipotético de contemplação neste bloco para projetar a aquisição.";
+      return null;
+    }
+    const restantes = prazo-mes;
+    const valorAAbater = Math.max(0,parcela*restantes-lance);
+    if (lance>0 && (!(restantes>0) || valorAAbater<=0)) {
+      status.textContent="O lance supera as parcelas posteriores previstas no modelo linear ou não há prestações restantes. Revise o cenário.";
+      return null;
+    }
+    let n=restantes, p=parcela;
+    if (lance>0) {
+      const pagoApos = valorAAbater;
+      const userCount = readOptionalNumber("a-prazo-apos");
+      const userPay = readOptionalNumber("a-parcela-apos");
+      if(postManual.term && Number.isInteger(userCount) && userCount>=1 && userCount<=restantes) n=userCount;
+      if(postManual.pay && userPay>0) p=userPay;
+      if(postManual.pay && !postManual.term) n=Math.ceil(pagoApos/p);
+      else if(postManual.term && !postManual.pay) p=pagoApos/n;
+      else if(!postManual.pay && !postManual.term) p=pagoApos/n;
+      if(!postManual.term) showDerived("a-prazo-apos",n);
+      if(!postManual.pay) showDerived("a-parcela-apos",p);
+    } else {
+      if(!postManual.term) showDerived("a-prazo-apos",restantes);
+      if(!postManual.pay) showDerived("a-parcela-apos",parcela);
+    }
+    status.textContent= (lance>0
+      ? "Lance de "+fmt(lance)+" suposto na assembleia do mês "+mes+". Primeiras "+mes+" prestações integrais; saldo nominal das seguintes é redistribuído linearmente. Valores pós-lance são estimados."
+      : "Contemplação no mês "+mes+" é apenas hipótese; não há garantia de contemplação.")
+      +" Abatimento real depende do regulamento e pode reduzir prazo ou parcela.";
+    return {mes,n,p,restantes,lance,estimated:lance>0&&!postManual.pay&&!postManual.term};
+  }
+
 
   function money(id, optional) {
     const raw = $(id).value.trim().replace(/\s|R\$/g, "");
@@ -63,12 +156,15 @@
     const capital = money("a-capital");
     const carta = money("a-carta"), preco = money("a-preco");
     const proprio = money("a-proprio", true), embutido = money("a-embutido", true);
-    const custos = money("a-custos", true);
     const parcela = money("a-parcela"), aluguel = money("a-aluguel", true);
+    if(!deriveCore()) throw Error("Informe carta e dois valores coerentes entre prazo, taxa total e parcela. A ferramenta calculará o quarto.");
+    const taxa = money("a-taxa");
+    if(taxa>200) throw Error("Taxa total do consórcio acima de 200%. Revise os dados.");
     const prazo = integer("a-prazo", 1, 600);
-    const contemplacao = integer("a-contemplacao", 1, prazo);
+    const post = derivePost();
+    if(!post) throw Error("Informe um mês hipotético de contemplação sem lance, ou revise a composição do lance.");
+    const contemplacao = post.mes;
     const horizonte = integer("a-horizonte", contemplacao, 600);
-    const vacancia = integer("a-vacancia", 0, 12);
     const valorizacao = percent("a-valorizacao", -50, 50);
     const rendimento = percent("a-rendimento", -50, 50);
 
@@ -76,20 +172,19 @@
     if (embutido >= carta) throw Error("O lance embutido não pode consumir toda a carta.");
     if (proprio + embutido > carta) throw Error("A soma dos lances supera o valor da carta. Confirme as regras ou revise os valores.");
     const temLance = proprio + embutido > 0;
-    const preencheuParcelaApos = $("a-parcela-apos").value.trim() !== "";
-    const preencheuPrazoApos = $("a-prazo-apos").value.trim() !== "";
-    if (temLance && (!preencheuParcelaApos || !preencheuPrazoApos)) {
-      throw Error("Com lance, informe a prestação e a quantidade de parcelas após abatimento, conforme o demonstrativo real. Sem esses dados, a projeção duplicaria parte do desembolso.");
-    }
-    const parcelaApos = preencheuParcelaApos ? money("a-parcela-apos") : parcela;
-    const prazoApos = preencheuPrazoApos ? integer("a-prazo-apos", 0, prazo - contemplacao) : prazo - contemplacao;
-    if (prazoApos > 0 && !(parcelaApos > 0)) throw Error("A prestação após a contemplação precisa ser positiva.");
+    const parcelaApos = post.p;
+    const prazoApos = post.n;
+    if (prazoApos < 0 || prazoApos>600 || parcelaApos<0 || !Number.isFinite(parcelaApos))
+      throw Error("Confira o prazo e a prestação após a contemplação.");
+    if (temLance && (!postManual.pay && !postManual.term) && post.estimated && prazoApos>prazo-contemplacao)
+      throw Error("O prazo pós-lance ultrapassa a duração inicial.");
+    if (embutido>carta*.30+.01) throw Error("Nesta hipótese o lance embutido supera 30% da carta. Confirme o limite do grupo antes de simular.");
 
 
     const creditoLiquido = carta - embutido;
     const complemento = Math.max(0, preco - creditoLiquido);
-    const capitalUtilizado = proprio + complemento + custos;
-    if (capitalUtilizado > capital + .01) throw Error("O lance próprio, o complemento do imóvel e as despesas excedem o capital próprio total. Informe recursos suficientes ou altere a estratégia.");
+    const capitalUtilizado = proprio + complemento;
+    if (capitalUtilizado > capital + .01) throw Error("O lance próprio e o complemento do imóvel excedem o capital próprio informado. Informe recursos suficientes ou altere o cenário.");
     const capitalInvestido = Math.max(0, capital - capitalUtilizado);
     // A divisão dos recursos e o patrimônio bruto inicial são considerados
     // no instante da contemplação hipotética, após pagamento do lance.
@@ -97,7 +192,7 @@
     const mesesLocacao = Math.max(0, horizonte - contemplacao);
     const investimentosFuturos = capitalInvestido * Math.pow(1 + rendimento / 100, mesesLocacao / 12);
     const ativosFuturos = investimentosFuturos + preco * Math.pow(1 + valorizacao / 100, mesesLocacao / 12);
-    const aluguelMedio = aluguel * (1 - vacancia / 12);
+    const aluguelMedio = aluguel;
     const receitaPeriodo = aluguelMedio * mesesLocacao;
     const valorFuturo = preco * Math.pow(1 + valorizacao / 100, mesesLocacao / 12);
     const cobertura = prazoApos > 0 ? aluguelMedio / parcelaApos * 100 : 0;
@@ -120,19 +215,20 @@
       "Contemplação no mês " + contemplacao + " é apenas uma hipótese. Sorteio ou lance não têm data garantida; sem contemplação não há aquisição nem aluguel nos meses estimados.",
       "IPCA não mede a valorização imobiliária. Sua utilização como taxa hipotética de apreciação do imóvel é apenas ilustrativa; imóveis podem valorizar menos, ficar estáveis ou perder valor.",
       "Valorização, rendimento financeiro e aluguel são premissas fornecidas, não previsões. Ativos brutos não representam patrimônio líquido, rentabilidade real ou lucro.",
-      "Prestações antes e após contemplação são informadas pelo operador, sem projetar reajustes futuros, seguros, tributos pessoais ou custo de oportunidade. Confira o demonstrativo e faça análise de sensibilidade antes de ofertar.",
+      "Prestação inicial estimada pela carta × (1 + taxa total) ÷ prazo, quando calculada. Após lance, a redução é linear e aproximada, sem reajustes, seguros, tributos pessoais ou custos de oportunidade. Confirme o demonstrativo contratual.",
       "O investimento financeiro é projetado sem novos aportes ou resgates; pressupõe que as prestações sejam custeadas por renda externa ou aluguel. Rendimento bruto não inclui tributos, taxas ou perdas.",
       "A soma nominal das prestações restantes não representa saldo devedor para quitação. Custos e prazos de liberação dependem do contrato e da aprovação da operação."
     ];
-    if (aluguel > 0) alertas.push("O aluguel pode ser interrompido por desocupação, inadimplência ou manutenção. Mesmo sem receita, a prestação permanece exigível.");
-    if (!$("a-custos").value.trim()) alertas.push("Despesas de aquisição não informadas: utilizadas como zero por hipótese. ITBI, cartório e outros custos podem reduzir o capital investido.");
+    if (aluguel > 0) alertas.push("Aluguel projetado sem vacância, inadimplência ou manutenção. Esses eventos podem reduzir receitas, mas a prestação continua exigível.");
+    alertas.push("Despesas de aquisição (ITBI, registros, cartório), vacância e impostos não foram incluídos, por solicitação de simplificação. Na prática, esses itens reduzem o capital preservado ou o retorno.");
+    if(temLance) alertas.push("Lance considerado na assembleia "+contemplacao+" apenas se vencedor; quando o mês não é informado, considera-se a assembleia seguinte (mês 1). A estimativa de parcela pós-lance é uma distribuição nominal linear, não uma prestação contratual.");
     if (creditoLiquido > preco) alertas.push("Crédito disponível excede o preço do imóvel. A diferença não deve ser tratada como dinheiro livre; sua utilização depende das regras contratuais.");
     if (isExample) alertas.unshift("EXEMPLO FICTÍCIO. Os números são ilustrativos e não devem ser apresentados como oferta válida.");
 
     const argumentos = [
-      "Com " + fmt(capital) + " de capital próprio, a estratégia reserva " + fmt(capitalUtilizado) + " para lance, eventual complemento e despesas, preservando " + fmt(capitalInvestido) + " em aplicações. Se a carta for contemplada e liberada, os ativos brutos passam a somar " + fmt(ativosNaContemplacao) + " (imóvel + aplicação), mas permanecem obrigações de pagamento.",
+      "Com " + fmt(capital) + " de capital próprio, a estratégia reserva " + fmt(capitalUtilizado) + " para lance e eventual complemento, preservando " + fmt(capitalInvestido) + " em aplicações. Se a carta for contemplada e liberada, os ativos brutos passam a somar " + fmt(ativosNaContemplacao) + " (imóvel + aplicação), mas permanecem obrigações de pagamento.",
       aluguel > 0
-        ? "Se a locação ocorrer como planejado, o aluguel líquido médio ajustado por vacância de " + fmt(aluguelMedio) + "/mês cobriria " + pc(cobertura) + " da prestação pós-contemplação de " + fmt(parcelaApos) + "; " + (diferencaMensal >= 0 ? "seriam necessários " + fmt(diferencaMensal) + "/mês adicionais." : "haveria excedente operacional estimado de " + fmt(-diferencaMensal) + "/mês, sujeito a outros custos e impostos.")
+        ? "Se a locação ocorrer como planejado, o aluguel líquido hipotético de " + fmt(aluguelMedio) + "/mês cobriria " + pc(cobertura) + " da prestação pós-contemplação de " + fmt(parcelaApos) + "; " + (diferencaMensal >= 0 ? "seriam necessários " + fmt(diferencaMensal) + "/mês adicionais." : "haveria excedente operacional estimado de " + fmt(-diferencaMensal) + "/mês, sujeito a outros custos e impostos.")
         : "Sem aluguel informado, a prestação pós-contemplação de " + fmt(parcelaApos) + " deve ser suportada com renda própria. Não há argumento de autofinanciamento por locação.",
       "Em " + (mesesLocacao / 12).toLocaleString("pt-BR",{maximumFractionDigits:1}) + " anos após a contemplação hipotética, com valorização imobiliária equivalente a um IPCA suposto de " + pc(valorizacao) + " ao ano e aplicação rendendo " + pc(rendimento) + " ao ano, os ativos brutos seriam " + fmt(ativosFuturos) + ". A evolução do patrimônio líquido exige conhecer o saldo devedor real, aportes e custos."
     ];
@@ -142,20 +238,21 @@
       ["Carta nominal", fmt(carta)],
       ["Lance próprio / embutido", fmt(proprio) + " / " + fmt(embutido)],
       ["Crédito após lance embutido", fmt(creditoLiquido)],
-      ["Complemento do preço / despesas iniciais", fmt(complemento) + " / " + fmt(custos)],
-      ["Capital próprio comprometido com lance / complemento / despesas", fmt(capitalUtilizado)],
+      ["Complemento do preço (sem despesas de aquisição)", fmt(complemento)],
+      ["Capital próprio comprometido com lance / complemento", fmt(capitalUtilizado)],
       ["Capital financeiro que permanece investido", fmt(capitalInvestido)],
       ["Ativos brutos na contemplação (imóvel + aplicação)", fmt(ativosNaContemplacao)],
+      ["Taxa total de administração + fundo de reserva", pc(taxa)],
       ["Parcela antes da contemplação", fmt(parcela) + " por " + contemplacao + " meses"],
       ["Parcela após contemplação", fmt(parcelaApos) + " por " + prazoApos + " meses"],
       ["Contemplação hipotética", "Mês " + contemplacao + " — não garantido"],
       ["Horizonte da análise", horizonte + " meses desde a contratação"],
       ["Meses potenciais de locação", num(mesesLocacao)],
-      ["Aluguel líquido médio após vacância", fmt(aluguelMedio) + "/mês"],
+      ["Aluguel mensal hipotético (sem vacância)", fmt(aluguelMedio) + "/mês"],
       ["Cobertura estimada da prestação", pc(cobertura)],
       ["Renda de aluguel no horizonte", fmt(receitaPeriodo)],
       ["Prestações nominais pagas até o horizonte", fmt(parcelasAteHorizonte)],
-      ["Saída de caixa líquida no horizonte (aportes + parcelas − aluguéis)", fmt(caixaPeriodo)],
+      ["Saída nominal de caixa (lances + complementos + parcelas − aluguéis)", fmt(caixaPeriodo)],
       ["Valorização hipotética imóvel (IPCA usado como referência)", pc(valorizacao) + " ao ano"],
       ["Rendimento hipotético investimento", pc(rendimento) + " ao ano"],
       ["Valor bruto futuro do imóvel", fmt(valorFuturo)],
@@ -170,7 +267,7 @@
       + '<p class="result-copy">Imóvel de ' + esc(fmt(preco)) + ' + capital investido de ' + esc(fmt(capitalInvestido)) + '. Parte do patrimônio é financiada pelo compromisso com o consórcio, não é riqueza líquida imediata.</p>'
       + renderMetrics([
         ["Capital próprio inicial", fmt(capital)],
-        ["Lance e despesas de aquisição", fmt(capitalUtilizado)],
+        ["Lance e complemento do imóvel", fmt(capitalUtilizado)],
         ["Capital preservado e investido", fmt(capitalInvestido)],
         ["Ativos brutos no horizonte", fmt(ativosFuturos)],
         ["Prestações nominais futuras (não é saldo devedor)", fmt(parcelasFuturasNominais)],
@@ -193,16 +290,43 @@
   if (!form) return;
   const example = {
     "a-capital":"100.000,00", "a-carta":"100.000,00", "a-preco":"100.000,00",
-    "a-proprio":"50.000,00", "a-embutido":"0,00", "a-custos":"0,00",
-    "a-parcela":"1.000,00", "a-prazo":"120",
-    "a-contemplacao":"1", "a-horizonte":"60",
-    "a-parcela-apos":"580,00", "a-prazo-apos":"119",
-    "a-aluguel":"0,00", "a-vacancia":"0",
-    "a-valorizacao":"4", "a-rendimento":"6"
+    "a-proprio":"50.000,00", "a-embutido":"0,00",
+    "a-parcela":"", "a-prazo":"120", "a-taxa":"20,00",
+    "a-contemplacao":"", "a-horizonte":"60",
+    "a-parcela-apos":"", "a-prazo-apos":"",
+    "a-aluguel":"0,00",
+    "a-valorizacao":"4.69", "a-rendimento":"12.97"
   };
+  ["a-carta","a-prazo","a-taxa","a-parcela"].forEach((id) => {
+    $(id).addEventListener("input",()=>{
+      if (id!=="a-carta") {
+        coreHistory=coreHistory.filter(x=>x!==id);
+        if ($(id).value.trim()) coreHistory.push(id);
+        coreHistory=coreHistory.slice(-2);
+        $(id).classList.remove("is-derived");
+      }
+      deriveCore();derivePost();
+    });
+  });
+  ["a-proprio","a-embutido","a-contemplacao"].forEach((id)=>{
+    $(id).addEventListener("input",()=>{derivePost();});
+  });
+  $("a-parcela-apos").addEventListener("input",()=>{
+    postManual.pay=!!$("a-parcela-apos").value.trim();
+    $("a-parcela-apos").classList.remove("is-derived");
+    derivePost();
+  });
+  $("a-prazo-apos").addEventListener("input",()=>{
+    postManual.term=!!$("a-prazo-apos").value.trim();
+    $("a-prazo-apos").classList.remove("is-derived");
+    derivePost();
+  });
   $("a-exemplo").addEventListener("click", () => {
     for (const [id,value] of Object.entries(example)) $(id).value=value;
     if (window.ConsorcioMasks) window.ConsorcioMasks.formatAll();
+    coreHistory=["a-prazo","a-taxa"];
+    postManual.pay=false;postManual.term=false;
+    deriveCore();derivePost();$("a-avancado").open=true;
     isExample=true;
     $("erro-patrimonio").textContent="Exemplo fictício carregado. Use Limpar para iniciar uma análise real.";
   });
@@ -217,7 +341,11 @@
   });
   form.addEventListener("reset", () => {
     isExample=false;
+    coreHistory=["a-prazo","a-taxa"];postManual.pay=false;postManual.term=false;
     window.setTimeout(() => {
+      $("a-avancado").open=false;
+      $("a-core-status").textContent="Preencha a carta e mais dois valores entre prazo, taxa total e prestação; o terceiro será calculado.";
+      $("a-post-status").textContent="Com lance, se o mês não for informado, considera-se a assembleia seguinte. Os dados pós-lance são estimados linearmente.";
       $("erro-patrimonio").textContent="";
       $("resultado-patrimonio").innerHTML='<div class="empty-result"><span class="empty-icon">↗</span><h3>Construa um cenário de patrimônio</h3><p>Informe os dados para avaliar capital inicial, potencial de aluguel, compromissos e argumentos de oferta.</p></div>';
       if (window.receberAnalisePatrimonial) window.receberAnalisePatrimonial(null);
