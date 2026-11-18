@@ -14,7 +14,10 @@
   function run(d) {
     const {capital,preco,capitalUtilizado,capitalInvestido,parcela,parcelaApos,
       prazoApos,contemplacao,horizonte,valorizacao,rendimento,aluguel,
-      reajusteConsorcio,reajusteAluguel} = d;
+      reajusteConsorcio,reajusteAluguel,tipoBem="imovel",periodicidadeVeiculo="anual",indiceVeiculo="ipca"} = d;
+    const vehicle=tipoBem==="veiculo";
+    const assetName=vehicle?"Veículo":"Imóvel";
+    const indexName=vehicle?(indiceVeiculo==="ipca"?"IPCA":"Contrato / tabela de referência"):"INCC-M";
     if (![rendimento,valorizacao,reajusteConsorcio,reajusteAluguel]
       .every(x=>Number.isFinite(x)&&x>-100&&x<=100)) throw Error("Revise os quatro percentuais de projeção.");
     const r=Math.pow(1+rendimento/100,1/12)-1;
@@ -27,8 +30,10 @@
     const payable=(t)=>{
       if(t<1||t>totalPostEnd)return 0;
       const original=t<=contemplacao?parcela:parcelaApos;
-      // Reajuste anual na assinatura, em meses 13, 25, 37...
-      return original*Math.pow(indexInstallment,Math.floor((t-1)/12));
+      // Imóvel e opção anual: aniversário do contrato; veículo mensal:
+      // taxa anual equivalente composta em cada mês transcorrido.
+      const exponent=vehicle&&periodicidadeVeiculo==="mensal"?(t-1)/12:Math.floor((t-1)/12);
+      return original*Math.pow(indexInstallment,exponent);
     };
     const rentAt=(t,start)=>{
       if(!(aluguel>0)||t<start)return 0;
@@ -105,15 +110,15 @@
       {id:"cash",name:"Comprar à vista",value:cash,gross:cash,
         portfolio:cashPossible?round(cashInvested):null,
         property:cashPossible?round(cashProperty):null,possible:cashPossible,
-        subtitle:cashPossible?"Imóvel, aluguel reinvestido e aportes pessoais equivalentes"
-          :"Faltam "+money(shortfall)+" para adquirir o imóvel à vista"},
+        subtitle:cashPossible?(vehicle?"Veículo sujeito à depreciação e aportes pessoais equivalentes":"Imóvel, aluguel reinvestido e aportes pessoais equivalentes")
+          :"Faltam "+money(shortfall)+" para comprar o "+(vehicle?"veículo":"imóvel")+" à vista"},
       {id:"lever",name:"Alavancagem",value:gross,gross,
         portfolio:round(leverInvested),property:round(leverProperty),possible:true,
-        subtitle:"Aluguel abate a prestação; somente a sobra da renda locatícia é aplicada"}
+        subtitle:vehicle?"Veículo adquirido na contemplação; prestações pagas com renda própria":"Aluguel abate a prestação; somente a sobra da renda locatícia é aplicada"}
     ];
     const best=scenarios.filter(s=>s.possible).reduce((a,b)=>a.value>=b.value?a:b);
     return {
-      scenarios,best,cashPossible,shortfall,
+      scenarios,best,cashPossible,shortfall,assetName,vehicle,tipoBem,indiceVeiculo,indexName,periodicidadeVeiculo,
       r,propertyRate,reajusteConsorcio,reajusteAluguel,rendimento,valorizacao,
       paidLever:round(paidLever),aportesAlternativos:round(apport),
       rentReceivedLeverage:round(rentReceivedLeverage),rentReceivedCash:round(rentReceivedCash),
@@ -144,10 +149,10 @@
           +'<small>'+(s.possible?'ativos brutos no horizonte escolhido':'capital próprio insuficiente')+'</small></div>'
           +'<p>'+esc(s.subtitle)+'</p>'
           +(s.possible?'<div class="pat-scenario-details">'
-            +'<div><span>Imóvel valorizado</span><b>'+esc(money(s.property))+'</b></div>'
+            +'<div><span>'+esc(x.vehicle?'Veículo depreciado':'Imóvel valorizado')+'</span><b>'+esc(money(s.property))+'</b></div>'
             +'<div><span>Aplicações financeiras</span><b>'+esc(money(s.portfolio))+'</b></div>'
             +'<div><span>Aportes pessoais até a data</span><b>'+esc(money(s.id==="lever"?0:x.aportesAlternativos))+'</b></div>'
-            +(s.id==="lever"?'<div><span>Aluguel usado nas prestações</span><b>'+esc(money(x.rentCovered))+'</b></div>'
+            +(s.id==="lever"&&!x.vehicle?'<div><span>Aluguel usado nas prestações</span><b>'+esc(money(x.rentCovered))+'</b></div>'
               +'<div><span>Sobra de aluguel aplicada</span><b>'+esc(money(x.rentSurplus))+'</b></div>':'')
             +'</div>':'<div class="pat-cash-shortfall">Diferença para aquisição: <strong>'+esc(money(x.shortfall))+'</strong></div>')
           +'</article>';
@@ -183,7 +188,7 @@
       +items.filter(i=>i[0]!=="cash"||x.cashPossible).map(([id,name])=>'<span><i class="pat-legend pat-legend--'+id+'"></i>'+esc(name)+'</span>').join("")+'</div>'
       +'<div class="pat-chart-scroll"><svg class="pat-chart-svg" viewBox="0 0 '+w+' '+h+'" aria-label="Gráfico comparativo da evolução patrimonial" role="img">'
       +lines+monthLabels+paths+'</svg></div>'
-      +'<p class="hint">O gráfico começa no mês 1. Cada linha mostra ativos brutos, não patrimônio líquido. A contemplação permanece hipotética; custos de aquisição, impostos e reajustes não estão incluídos.</p>'
+      +'<p class="hint">O gráfico começa no mês 1. Cada linha mostra ativos brutos, não patrimônio líquido. Contemplação hipotética; para veículos, depreciação editável, sem custos de uso. Reajustes das parcelas estão considerados, mas tributos e custos externos não.</p>'
       +'</div>';
   }
   function comparison(x) {
@@ -196,28 +201,28 @@
       +'<th scope="col">Alavancagem</th></tr></thead><tbody>'
       +row("Capital próprio inicial",[money(x.initialCapital),money(x.initialCapital),money(x.initialCapital)])
       +row("Rendimento das aplicações (90% CDI)",[x.rendimento.toFixed(2)+"% a.a.",n?x.rendimento.toFixed(2)+"% a.a.":"—",x.rendimento.toFixed(2)+"% a.a."])
-      +row("Valorização do imóvel (IGMI-R)",["—",n?x.valorizacao.toFixed(2)+"% a.a.":"—",x.valorizacao.toFixed(2)+"% a.a."])
-      +row("Reajuste anual das prestações (INCC-M)",["Base dos aportes",n?"Base dos aportes":"—",x.reajusteConsorcio.toFixed(2)+"% a.a."])
-      +row("Reajuste anual de aluguel (IGP-M)",["—",n?x.reajusteAluguel.toFixed(2)+"% a.a.":"—",x.reajusteAluguel.toFixed(2)+"% a.a."])
+      +row(x.vehicle?"Depreciação do veículo (hipótese)":"Valorização do imóvel (IGMI-R)",["—",n?x.valorizacao.toFixed(2)+"% a.a.":"—",x.valorizacao.toFixed(2)+"% a.a."])
+      +row("Reajuste das prestações ("+x.indexName+")",["Base dos aportes",n?"Base dos aportes":"—",x.reajusteConsorcio.toFixed(2)+"% a.a. "+(x.vehicle&&x.periodicidadeVeiculo==="mensal"?"(mensal equivalente)":"(anual)")])
+      +(x.vehicle?"":row("Reajuste anual de aluguel (IGP-M)",["—",n?x.reajusteAluguel.toFixed(2)+"% a.a.":"—",x.reajusteAluguel.toFixed(2)+"% a.a."]))
       +row("Parcela base antes da contemplação",["—","—",money(x.parcelaInicial)])
       +row("Parcela base após lance",["—","—",money(x.parcelaPosLance)])
       +row("Parcela no último mês da fotografia",["—","—",money(x.lastDue)])
-      +row("Aluguel inicial informado",["—",n?money(x.aluguelInicial):"—",money(x.aluguelInicial)])
-      +row("Aluguel recebido no mês final",["—",n?money(x.aluguelInicial*Math.pow(1+x.reajusteAluguel/100,Math.floor((x.horizon-1)/12))):"—",money(x.lastRent)])
-      +row("Receita de aluguel acumulada",["—",n?money(x.rentReceivedCash):"—",money(x.rentReceivedLeverage)])
-      +row("Aluguel usado no pagamento de prestações",["—","—",money(x.rentCovered)])
+      +(x.vehicle?"":row("Aluguel inicial informado",["—",n?money(x.aluguelInicial):"—",money(x.aluguelInicial)]))
+      +(x.vehicle?"":row("Aluguel recebido no mês final",["—",n?money(x.aluguelInicial*Math.pow(1+x.reajusteAluguel/100,Math.floor((x.horizon-1)/12))):"—",money(x.lastRent)]))
+      +(x.vehicle?"":row("Receita de aluguel acumulada",["—",n?money(x.rentReceivedCash):"—",money(x.rentReceivedLeverage)]))
+      +(x.vehicle?"":row("Aluguel usado no pagamento de prestações",["—","—",money(x.rentCovered)]))
       +row("Dinheiro próprio usado nas prestações",["—","—",money(x.ownOutlay)])
       +row("Aportes equivalentes até o horizonte",[money(x.aportesAlternativos),n?money(x.aportesAlternativos):"—",money(0)])
-      +row("Sobra do aluguel investida",["—",n?"Aluguel integral aplicado":"—",money(x.rentSurplus)])
+      +(x.vehicle?"":row("Sobra do aluguel investida",["—",n?"Aluguel integral aplicado":"—",money(x.rentSurplus)]))
       +row("Prestações efetivamente pagas",["—","—",money(x.paidLever)])
-      +row("Imóvel na data",[money(0),n?money(x.scenarios[1].property):"Não viável",money(x.scenarios[2].property)])
+      +row(x.assetName+" na data",[money(0),n?money(x.scenarios[1].property):"Não viável",money(x.scenarios[2].property)])
       +row("Aplicações na data",[money(x.scenarios[0].portfolio),n?money(x.scenarios[1].portfolio):"—",money(x.scenarios[2].portfolio)])
       +row("Ativos brutos na data",[money(x.investment),n?money(x.cash):"—",money(x.gross)])
       +row("Prestações restantes após a data",["—","—",int(x.left)])
       +row("Valor nominal da parcela vigente no horizonte",["—","—",money(x.installmentAtH)])
       +row("Soma restante se parcelas ficassem congeladas",["—","—",money(x.futureNominal)])
       +'</tbody></table></div>'
-      +'<p class="hint"><strong>Metodologia:</strong> o aluguel da alavancagem abate primeiro a prestação reajustada pelo INCC-M; só o desembolso que sobra do próprio bolso torna-se aporte nos cenários de investimento e compra à vista. A sobra positiva de aluguel é aplicada na alavancagem. Na compra à vista, toda receita de aluguel é aplicada, além do aporte próprio equivalente. O IGP-M reajusta o aluguel a cada 12 meses de locação, e o INCC-M reajusta a parcela a cada 12 meses da contratação. Nenhuma obrigação posterior ao mês selecionado é abatida dos ativos.</p></div>';
+      +'<p class="hint"><strong>Metodologia:</strong> '+(x.vehicle?"Veículo particular: não existe renda de aluguel; parcelas são pagas com dinheiro próprio e seu valor equivalente é aplicado apenas nas alternativas sem consórcio. O veículo deprecia segundo a taxa anual editável; reajuste contratual editável, anual ou mensal equivalente.":"Imóvel: o aluguel abate primeiro a prestação do consórcio. O restante pago do bolso vira aporte nos cenários alternativos; a sobra do aluguel é aplicada. O aluguel é reajustado por IGP-M e a prestação por INCC-M, anualmente.")+' Nenhuma obrigação posterior ao mês escolhido é abatida dos ativos.</p></div>';
   }
   function render(x) {
     const winner=x.best.name+" ("+money(x.best.value)+")";
@@ -226,7 +231,7 @@
     return '<section class="pat-comparative" aria-label="Comparação de estratégias patrimoniais">'
       +'<div class="pat-summary-head"><div><span class="result-kicker">TRÊS CENÁRIOS • FOTOGRAFIA DO MÊS '+int(x.horizon)+'</span>'
       +'<h3>Qual será o estoque de ativos na data escolhida?</h3>'
-      +'<p>90% CDI para investir, IGMI-R para o imóvel, INCC-M nas parcelas e IGP-M para reajustar o aluguel. Todas as taxas são editáveis.</p></div>'
+      +'<p>'+(x.vehicle?'Veículo com depreciação editável, investimentos a 90% do CDI e reajuste da carta conforme índice e periodicidade escolhidos.':'Imóvel com IGMI-R, investimentos a 90% do CDI, INCC-M nas parcelas e IGP-M no aluguel.')+' Todas as taxas são editáveis.</p></div>'
       +'<button type="button" class="pat-expand-btn" id="pat-expand" aria-pressed="false" title="Ampliar resultado para tela inteira">Expandir tela inteira</button></div>'
       +cards(x)
       +'<div class="pat-outcome"><strong>Maior estoque de ativos brutos nesta data:</strong> '+esc(winner)
@@ -234,7 +239,7 @@
       +' prestações; se congeladas no valor vigente de '+esc(money(x.installmentAtH))
       +', somariam '+esc(money(x.futureNominal))+' (apenas informação, sem desconto). '+esc(note)+'</span></div>'
       +timeline(x)+comparison(x)
-      +'<p class="pat-method-notice">Simulação hipotética. O aluguel reduz a prestação efetivamente desembolsada; o que o cliente não precisa pagar do próprio bolso não se transforma em aporte. Prestações e aluguéis sofrem ajustes anuais pelos índices informados; valorização e investimentos usam taxas anuais convertidas para base mensal. Os dados históricos não são previsão. Não inclui IR, vacância, aquisição, manutenção e regras específicas de reajuste/lance. Os ativos são brutos e as obrigações posteriores à fotografia continuam existindo.</p>'
+      +'<p class="pat-method-notice">Simulação hipotética. '+(x.vehicle?'A depreciação de 10% a.a. é uma hipótese genérica editável, NÃO derivada da FIPE. A tabela FIPE só pode ser aplicada por modelo e ano, conforme dados reais. Não se consideram combustível, manutenção, IPVA, seguro, multas nem uso comercial do veículo.':'O aluguel abate a prestação; somente a diferença paga do próprio bolso vira aporte. Não inclui vacância ou despesas de aquisição.')+' Reajustes contratuais dependem das regras do grupo, e os ativos são brutos: parcelas posteriores continuam existindo, sem antecipação na fotografia.</p>'
       +'</section>';
   }
 
