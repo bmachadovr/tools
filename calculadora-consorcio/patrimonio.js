@@ -162,7 +162,7 @@
   }
   function renderTimeline(items) {
     return '<div class="result-section"><h4>Evolução hipotética após a contemplação</h4><div class="pat-timeline-scroll">'
-      + '<table class="compare-table pat-timeline"><thead><tr><th>Momento</th><th>Imóvel</th><th>Investimento</th><th>Ativos brutos</th></tr></thead><tbody>'
+      + '<table class="compare-table pat-timeline"><thead><tr><th>Momento</th><th>Bem</th><th>Investimento</th><th>Ativos brutos</th></tr></thead><tbody>'
       + items.map(([label, property, invested, gross]) =>
         '<tr><td>' + esc(label) + '</td><td>' + esc(fmt(property)) + '</td><td>' + esc(fmt(invested)) + '</td><td><strong>' + esc(fmt(gross)) + '</strong></td></tr>').join("")
       + '</tbody></table></div><p class="hint">Valor bruto, sem deduzir saldo devedor, pagamentos, taxas, impostos ou inflação real. Taxas constantes escolhidas no cenário.</p></div>';
@@ -307,12 +307,12 @@
       ["Parcela após contemplação", fmt(parcelaApos) + " por " + prazoApos + " meses"],
       ["Contemplação hipotética", "Mês " + contemplacao + " — não garantido"],
       ["Horizonte da análise", horizonte + " meses desde a contratação"],
-      ["Meses potenciais de locação", num(mesesLocacao)],
+      ...(veiculo?[]:[["Meses potenciais de locação", num(mesesLocacao)],
       ["Aluguel mensal hipotético (sem vacância)", fmt(aluguelMedio) + "/mês"],
       ["Cobertura estimada da prestação", pc(cobertura)],
       ["Receitas de aluguel recebidas até o horizonte (IGP-M)", fmt(receitaPeriodo)],
       ["Aluguel utilizado para abater prestações", fmt(totalAluguelAbatido)],
-      ["Excedente de aluguel aplicado", fmt(totalAluguelExcedente)],
+      ["Excedente de aluguel aplicado", fmt(totalAluguelExcedente)]]),
       ["Prestações nominais pagas até o horizonte (INCC-M)", fmt(parcelasAteHorizonte)],
       ["Desembolso próprio nas prestações até o horizonte", fmt(totalDoBolso)],
       ["Saída nominal de recursos próprios (lance + complemento + prestações líquidas)", fmt(caixaPeriodo)],
@@ -365,7 +365,7 @@
       + renderMetrics([
         ["Capital próprio inicial",fmt(capital)],
         ["Lance e complemento do "+bemNome,fmt(capitalUtilizado)],
-        ["Capital preservado e investido",fmt(capitalInvestido)],
+        ["Capital reservado e investido na contemplação",fmt(capitalInvestido)],
         ["Ativos brutos na fotografia",fmt(comparado.gross)],
         ["Prestações nominais após o horizonte (não é saldo devedor)",fmt(comparado.futureNominal)],
         ["Prestações pagas até o horizonte",fmt(comparado.paidLever)],
@@ -455,7 +455,7 @@
     $("patrimonio-grupo-imovel").textContent=vehicle?"Veículo e depreciação":"Imóvel e renda";
     $("a-preco-label").textContent=vehicle?"Preço do veículo desejado":"Preço do imóvel desejado";
     $("a-valorizacao-label").textContent=vehicle?
-      "Desvalorização hipotética do veículo":"Valorização hipotética do imóvel pelo IGMI-R";
+      "Variação anual do valor do veículo":"Valorização hipotética do imóvel pelo IGMI-R";
     $("a-valorizacao-unit").textContent=vehicle?"% a.a. · use negativo para depreciação":"% a.a. · residencial";
     $("a-bem-descricao").textContent=vehicle?
       "Defina o valor do veículo e quanto espera que ele perca por ano, sem atribuir renda de aluguel.":
