@@ -6,11 +6,11 @@
   <meta name="theme-color" content="#f5f7fa">
   <meta name="description" content="Compare alternativas de aquisição e explore cenários de formação patrimonial com custos e premissas transparentes.">
   <title>Calculadora de Consórcio | Central de Estratégias</title>
-  <link rel="stylesheet" href="styles.css?v=20261118-01">
+  <link rel="stylesheet" href="styles.css?v=20261118-02">
   <script src="input-masks.js?v=20261117-09" defer></script>
   <script src="compare-v2.js?v=20261117-09" defer></script>
   <script src="app.js?v=20261118-01" defer></script>
-  <script src="patrimonio.js?v=20261118-01" defer></script>
+  <script src="patrimonio.js?v=20261118-02" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -131,20 +131,21 @@
 
     <section class="panel" id="painel-patrimonio" role="tabpanel" aria-labelledby="tab-patrimonio" hidden>
       <div class="panel-head">
-        <div><span class="section-kicker">PLANEJAMENTO DE PATRIMÔNIO</span><h2>O consórcio pode ajudar a construir patrimônio?</h2><p>Explore a aquisição de imóvel para renda, o capital próprio necessário e o efeito possível de aluguel e valorização. Os resultados dependem da contemplação e das condições do contrato.</p></div>
+        <div><span class="section-kicker">PLANEJAMENTO DE PATRIMÔNIO</span><h2>Como ampliar o alcance do seu capital?</h2><p>Divida o capital próprio entre lance e investimentos, simule a aquisição de um imóvel e acompanhe os dois ativos ao longo do tempo — sempre separando ativos brutos das obrigações do consórcio.</p></div>
         <button type="button" class="example" id="a-exemplo">Preencher exemplo</button>
       </div>
       <div class="content-grid">
         <form id="form-patrimonio" class="form-card" autocomplete="off" novalidate>
-          <div class="how"><strong>Como usar</strong><p>Informe a carta, o preço do imóvel, os recursos próprios e a parcela. Depois escolha um <b>mês hipotético</b> de contemplação e um prazo para analisar. Aluguel, vacância e valorização são hipóteses ajustáveis. Veja quanto precisaria aportar e obtenha argumentos para a proposta.</p></div>
-          <div class="form-section"><h3>Imóvel e recursos</h3>
+          <div class="how"><strong>Como usar</strong><p>Informe seu <b>capital total</b>, a carta, o valor do imóvel e o lance próprio. O valor não utilizado no lance e nas despesas permanece aplicado. Depois defina um mês hipotético de contemplação, as parcelas e os rendimentos anuais para projetar os ativos e as obrigações. A locação é opcional.</p></div>
+          <div class="form-section"><h3>Capital, carta e divisão dos recursos</h3>
             <div class="fields">
+              <label>Capital próprio total disponível <span>R$</span><input id="a-capital" inputmode="decimal" required placeholder="Ex.: 100.000,00"></label>
               <label>Carta de crédito <span>R$</span><input id="a-carta" inputmode="decimal" required placeholder="Ex.: 300.000,00"></label>
               <label>Preço do imóvel desejado <span>R$</span><input id="a-preco" inputmode="decimal" required placeholder="Ex.: 300.000,00"></label>
               <label>Lance com recursos próprios <span>R$ · opcional</span><input id="a-proprio" inputmode="decimal" placeholder="0,00"></label>
               <label>Lance embutido <span>R$ · opcional</span><input id="a-embutido" inputmode="decimal" placeholder="0,00"></label>
               <label>Despesas iniciais da aquisição <span>R$ · ITBI, registros etc.</span><input id="a-custos" inputmode="decimal" placeholder="0,00"></label>
-            </div><p class="hint">Lance embutido reduz o crédito disponível. O lance próprio não entra no valor da carta. Os limites e a possibilidade de utilização precisam ser confirmados no contrato.</p>
+            </div><p class="hint">O lance próprio é pago com parte do capital informado. O saldo não usado no lance, complemento ou despesas continua investido. Lance embutido reduz a carta, não o caixa. O percentual de lance e a contemplação devem ser confirmados conforme o grupo.</p>
           </div>
           <div class="form-section"><h3>Compromissos e horizonte</h3>
             <div class="fields">
@@ -156,12 +157,13 @@
               <label>Prestações após contemplação/lance <span>meses · se houver lance, obrigatório</span><input id="a-prazo-apos" type="number" min="0" max="600" placeholder="Ex.: 162"></label>
             </div><p class="hint">Sem contemplação não há liberação do crédito nem imóvel alugado. Se houver lance, preencha a parcela e o prazo após abatimento de acordo com o demonstrativo do plano; o sistema não inventa essa amortização.</p>
           </div>
-          <div class="form-section"><h3>Renda e valorização <span class="inline-tag">hipóteses</span></h3>
+          <div class="form-section"><h3>Projeção dos dois ativos <span class="inline-tag">hipóteses</span></h3>
             <div class="fields">
               <label>Aluguel mensal líquido esperado <span>R$ · após despesas usuais</span><input id="a-aluguel" inputmode="decimal" placeholder="0,00"></label>
               <label>Meses desocupados por ano <span>0 a 12</span><input id="a-vacancia" type="number" min="0" max="12" value="1" required></label>
-              <label>Valorização hipotética do imóvel <span>% ao ano (pode ser negativa)</span><input id="a-valorizacao" type="number" min="-50" max="50" step="0.1" value="0" required></label>
-            </div><p class="hint">O aluguel começa, por hipótese, no mês posterior à contemplação. A renda média é ajustada pela vacância indicada. Valorização não é garantida e não representa retorno líquido.</p>
+              <label>IPCA hipotético aplicado à valorização do imóvel <span>% ao ano (pode ser negativo)</span><input id="a-valorizacao" type="number" min="-50" max="50" step="0.1" value="0" required></label>
+              <label>Rendimento hipotético do capital investido <span>% ao ano · bruto</span><input id="a-rendimento" type="number" min="-50" max="50" step="0.1" value="0" required></label>
+            </div><p class="hint">O IPCA não mede o preço dos imóveis: aqui é usado apenas como uma <b>hipótese editável</b> para valorização. O rendimento do investimento também é hipotético, antes de impostos. Ambos começam, nesta projeção, no mês da contemplação. Aluguel é opcional.</p>
           </div>
           <div class="actions"><button type="submit" class="primary">Gerar análise patrimonial</button><button type="reset" class="ghost">Limpar</button></div>
           <p class="form-error" id="erro-patrimonio" role="alert" aria-live="polite"></p>
