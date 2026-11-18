@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f5f7fa">
   <meta name="description" content="Compare alternativas de aquisição e explore cenários de formação patrimonial com custos e premissas transparentes.">
   <title>Calculadora de Consórcio | Central de Estratégias</title>
-  <link rel="stylesheet" href="styles.css?v=20261118-02">
+  <link rel="stylesheet" href="styles.css?v=20261118-03">
   <script src="input-masks.js?v=20261117-09" defer></script>
   <script src="compare-v2.js?v=20261117-09" defer></script>
   <script src="app.js?v=20261118-01" defer></script>
@@ -37,12 +37,14 @@
     <section class="panel active" id="painel-comparar" role="tabpanel" aria-labelledby="tab-comparar">
       <div class="panel-head"><div><span class="section-kicker">ANÁLISE FINANCEIRA</span><h2>Consórcio ou financiamento?</h2><p>Compare prestações e desembolsos com base nas condições atuais. Se houver lance, a simulação considera a assembleia seguinte e a primeira prestação integral.</p></div><div class="panel-tools"><button type="button" class="example" data-example="comparar">Preencher exemplo</button><button type="reset" form="form-comparar" class="example" aria-label="Limpar todos os dados da comparação">Limpar</button></div></div>
       <div class="content-grid"><form id="form-comparar" class="form-card" autocomplete="off" novalidate>
-        <div class="how"><strong>Como usar</strong><p>Escolha <b>Veículos</b> ou <b>Imóveis</b> acima e informe o valor do bem/carta. No consórcio, preencha dois entre prazo, taxa total e parcela. No financiamento, preencha três entre entrada, juros, prazo e parcela. <b>Entrada = lance com recursos próprios.</b> Use <b>Preencher exemplo</b> para ver uma demonstração ou <b>Limpar</b> para começar de novo.</p></div>
-        <div class="form-section"><h3>Valores de referência</h3><div class="fields">
-          <label>Valor do bem / carta de crédito <span>R$</span><input id="c-carta" inputmode="decimal" placeholder="0,00" required></label>
+        <div class="how"><strong>Como usar</strong><p>Escolha <b>Veículos</b> ou <b>Imóveis</b> acima. Preencha primeiro o bloco <b>Consórcio</b> (carta e dois entre prazo, taxa total e parcela); depois o bloco <b>Financiamento</b> (três entre entrada, juros, prazo e parcela). A entrada do financiamento equivale ao lance próprio. Os detalhes opcionais ficam dentro de cada produto.</p></div>
+        <section class="product-group product-group--consorcio" aria-labelledby="comparar-grupo-consorcio">
+          <div class="product-heading"><div class="product-step" aria-hidden="true">01</div><div class="product-heading-copy"><span class="product-label">PRODUTO 1</span><h3 id="comparar-grupo-consorcio">Consórcio</h3><p>Informe o valor da carta e as condições do plano. Os lances, reajustes e custos adicionais ficam neste mesmo grupo.</p></div></div>
+          <div class="form-section"><h3>Crédito de referência</h3><div class="fields">
+          <label>Valor da carta / bem de referência <span>R$</span><input id="c-carta" inputmode="decimal" placeholder="0,00" required></label>
           
         </div><p class="hint">O valor informado serve de referência para o bem e a carta. Com lance, a hipótese é participação na próxima assembleia: 1ª parcela integral, eventual lance em seguida e abatimento nas posteriores. Sem lance, nenhuma data de contemplação é estimada.</p></div>
-        <div class="form-section"><h3>Consórcio <span class="inline-tag">preencha 2 campos</span></h3><div class="fields">
+        <div class="form-section"><h3>Condições do consórcio <span class="inline-tag">preencha 2 campos</span></h3><div class="fields">
           <label>Prestações a pagar <span>meses</span><input id="c-prazo" type="number" min="1" max="600" placeholder="Ex.: 100"></label>
           <label>Taxa de administração + fundo reserva <span>% total</span><input id="c-taxa" inputmode="decimal" placeholder="Ex.: 20,00"></label>
           <label>Valor da parcela <span>R$</span><input id="c-parcela" inputmode="decimal" placeholder="Calculado automaticamente"></label>
@@ -57,7 +59,10 @@
           <label>Outros custos fora das parcelas <span>R$</span><input id="c-extras" inputmode="decimal" placeholder="0,00"></label>
           <label>Reajuste anual hipotético <span>% a.a. · editável</span><input id="c-reajuste" inputmode="decimal" value="4,69" placeholder="Índice de referência"></label>
         </div><p class="hint" id="c-reajuste-info">Referência para veículos: <strong>IPCA, 4,69% a.a.</strong> — média anualizada de nov/2023 a out/2026. <a href="https://www.ibge.gov.br/indicadores-e-sistemas/indices-e-certificados/16855-ipca.html" target="_blank" rel="noopener noreferrer">Fonte: IBGE</a>. Pode alterar a taxa.</p><p class="hint">Lance próprio = entrada do financiamento. O lance embutido diminui a carta disponível, sem alterar a entrada. Na hipótese de lance, a primeira parcela é integral; das seguintes, use a nova prestação ou quantidade obtida no simulador, se disponíveis. Sem esses dados, a ferramenta estima redução das demais prestações, mantendo o prazo.</p></details></div>
-        <div class="form-section"><h3>Financiamento <span class="inline-tag">preencha 3 campos</span></h3><div class="fields">
+        </section>
+        <section class="product-group product-group--financiamento" aria-labelledby="comparar-grupo-financiamento">
+          <div class="product-heading"><div class="product-step" aria-hidden="true">02</div><div class="product-heading-copy"><span class="product-label">PRODUTO 2</span><h3 id="comparar-grupo-financiamento">Financiamento</h3><p>Utiliza o mesmo preço do bem acima para calcular o valor financiado. Informe os juros e as condições de pagamento.</p></div></div>
+          <div class="form-section"><h3>Condições do financiamento <span class="inline-tag">preencha 3 campos</span></h3><div class="fields">
           <label>Entrada <span>R$ · vinculada ao lance próprio</span><input id="c-entrada" inputmode="decimal" placeholder="Mesmo valor do lance próprio"></label>
           <label id="c-taxa-label">Juros <span id="c-taxa-unidade">% ao mês</span><input id="c-fintaxa" inputmode="decimal" placeholder="Ex.: 1,50"></label>
           <label>Prazo <span>meses</span><input id="c-finprazo" type="number" min="1" max="600"></label>
@@ -78,6 +83,7 @@
           <div class="iof-estimate" id="c-iof-display" aria-live="polite">IOF: calculado conforme modalidade, amortização e vencimentos.</div>
           <p class="hint">IOF exclusivo do financiamento quando tributável; <strong>consórcio não possui IOF</strong>. Estimativa para pessoa física: 0,0082% ao dia por amortização (até 365 dias) + 0,38% adicional. Datas ausentes: intervalos de 30 dias. Operações habitacionais elegíveis podem ser isentas. Confirme as condições na proposta; financiamentos imobiliários não incluem TR ou correções contratuais neste cálculo.</p>
         </details></div>
+        </section>
         <div class="actions"><button type="submit" class="primary">Comparar alternativas</button><button type="reset" class="ghost">Limpar</button></div><p class="form-error" id="erro-comparar" role="alert"></p>
       </form><aside id="resultado-comparar" class="result-card" aria-live="polite"><div class="empty-result"><span class="empty-icon">↗</span><h3>Compare as duas estratégias</h3><p>Preencha ou ajuste os dados para calcular o financiamento, o consórcio e a diferença nominal.</p></div></aside></div>
     </section>
@@ -136,35 +142,47 @@
       </div>
       <div class="content-grid">
         <form id="form-patrimonio" class="form-card" autocomplete="off" novalidate>
-          <div class="how"><strong>Como usar</strong><p>Informe seu <b>capital total</b>, a carta, o valor do imóvel e o lance próprio. O valor não utilizado no lance e nas despesas permanece aplicado. Depois defina um mês hipotético de contemplação, as parcelas e os rendimentos anuais para projetar os ativos e as obrigações. A locação é opcional.</p></div>
-          <div class="form-section"><h3>Capital, carta e divisão dos recursos</h3>
+          <div class="how"><strong>Como usar</strong><p>Preencha os grupos na ordem: <b>Capital e investimentos</b>, <b>Consórcio</b>, <b>Imóvel</b> e <b>Horizonte</b>. Informe condições reais do plano e taxas hipotéticas para a projeção. O aluguel é opcional; a contemplação não é garantida.</p></div>
+          <section class="product-group product-group--investimento" aria-labelledby="patrimonio-grupo-investimento">
+            <div class="product-heading"><div class="product-step" aria-hidden="true">01</div><div class="product-heading-copy"><span class="product-label">RECURSOS PRÓPRIOS</span><h3 id="patrimonio-grupo-investimento">Capital e investimentos</h3><p>Defina quanto o cliente possui e a rentabilidade hipotética dos recursos que permanecerem aplicados.</p></div></div>
             <div class="fields">
               <label>Capital próprio total disponível <span>R$</span><input id="a-capital" inputmode="decimal" required placeholder="Ex.: 100.000,00"></label>
+              <label>Rendimento hipotético do capital investido <span>% ao ano · bruto</span><input id="a-rendimento" type="number" min="-50" max="50" step="0.1" value="0" required></label>
+            </div>
+            <p class="hint">O capital aplicado será o saldo depois do lance próprio, das despesas e de eventual complemento do imóvel. A taxa é hipotética e não considera impostos ou resgates.</p>
+          </section>
+          <section class="product-group product-group--consorcio" aria-labelledby="patrimonio-grupo-consorcio">
+            <div class="product-heading"><div class="product-step" aria-hidden="true">02</div><div class="product-heading-copy"><span class="product-label">PRODUTO 1</span><h3 id="patrimonio-grupo-consorcio">Consórcio</h3><p>Reúna a carta, a estratégia de lance e as prestações antes e depois da contemplação.</p></div></div>
+            <div class="fields">
               <label>Carta de crédito <span>R$</span><input id="a-carta" inputmode="decimal" required placeholder="Ex.: 300.000,00"></label>
-              <label>Preço do imóvel desejado <span>R$</span><input id="a-preco" inputmode="decimal" required placeholder="Ex.: 300.000,00"></label>
               <label>Lance com recursos próprios <span>R$ · opcional</span><input id="a-proprio" inputmode="decimal" placeholder="0,00"></label>
               <label>Lance embutido <span>R$ · opcional</span><input id="a-embutido" inputmode="decimal" placeholder="0,00"></label>
-              <label>Despesas iniciais da aquisição <span>R$ · ITBI, registros etc.</span><input id="a-custos" inputmode="decimal" placeholder="0,00"></label>
-            </div><p class="hint">O lance próprio é pago com parte do capital informado. O saldo não usado no lance, complemento ou despesas continua investido. Lance embutido reduz a carta, não o caixa. O percentual de lance e a contemplação devem ser confirmados conforme o grupo.</p>
-          </div>
-          <div class="form-section"><h3>Compromissos e horizonte</h3>
-            <div class="fields">
               <label>Parcela antes da contemplação <span>R$</span><input id="a-parcela" inputmode="decimal" required placeholder="Ex.: 2.300,00"></label>
               <label>Prazo total a pagar <span>meses</span><input id="a-prazo" type="number" min="1" max="600" required placeholder="Ex.: 180"></label>
               <label>Mês hipotético da contemplação <span>não é previsão</span><input id="a-contemplacao" type="number" min="1" max="600" required placeholder="Ex.: 18"></label>
-              <label>Horizonte da análise <span>meses desde a contratação</span><input id="a-horizonte" type="number" min="1" max="600" required placeholder="Ex.: 60"></label>
               <label>Parcela após contemplação/lance <span>R$ · se houver lance, obrigatório</span><input id="a-parcela-apos" inputmode="decimal" placeholder="Informe o valor do demonstrativo"></label>
               <label>Prestações após contemplação/lance <span>meses · se houver lance, obrigatório</span><input id="a-prazo-apos" type="number" min="0" max="600" placeholder="Ex.: 162"></label>
-            </div><p class="hint">Sem contemplação não há liberação do crédito nem imóvel alugado. Se houver lance, preencha a parcela e o prazo após abatimento de acordo com o demonstrativo do plano; o sistema não inventa essa amortização.</p>
-          </div>
-          <div class="form-section"><h3>Projeção dos dois ativos <span class="inline-tag">hipóteses</span></h3>
+            </div>
+            <p class="hint">O lance próprio utiliza recursos do capital inicial; o lance embutido reduz o crédito líquido. A contemplação é hipotética. Com lance, informe as prestações posteriores conforme demonstrativo real; não estimamos o abatimento.</p>
+          </section>
+          <section class="product-group product-group--imovel" aria-labelledby="patrimonio-grupo-imovel">
+            <div class="product-heading"><div class="product-step" aria-hidden="true">03</div><div class="product-heading-copy"><span class="product-label">ATIVO PATRIMONIAL</span><h3 id="patrimonio-grupo-imovel">Imóvel e renda</h3><p>Defina o imóvel, os custos de aquisição e as hipóteses de aluguel e valorização.</p></div></div>
             <div class="fields">
+              <label>Preço do imóvel desejado <span>R$</span><input id="a-preco" inputmode="decimal" required placeholder="Ex.: 300.000,00"></label>
+              <label>Despesas iniciais da aquisição <span>R$ · ITBI, registros etc.</span><input id="a-custos" inputmode="decimal" placeholder="0,00"></label>
               <label>Aluguel mensal líquido esperado <span>R$ · após despesas usuais</span><input id="a-aluguel" inputmode="decimal" placeholder="0,00"></label>
               <label>Meses desocupados por ano <span>0 a 12</span><input id="a-vacancia" type="number" min="0" max="12" value="1" required></label>
               <label>IPCA hipotético aplicado à valorização do imóvel <span>% ao ano (pode ser negativo)</span><input id="a-valorizacao" type="number" min="-50" max="50" step="0.1" value="0" required></label>
-              <label>Rendimento hipotético do capital investido <span>% ao ano · bruto</span><input id="a-rendimento" type="number" min="-50" max="50" step="0.1" value="0" required></label>
-            </div><p class="hint">O IPCA não mede o preço dos imóveis: aqui é usado apenas como uma <b>hipótese editável</b> para valorização. O rendimento do investimento também é hipotético, antes de impostos. Ambos começam, nesta projeção, no mês da contemplação. Aluguel é opcional.</p>
-          </div>
+            </div>
+            <p class="hint">O aluguel é opcional e considera a vacância informada. O IPCA é usado somente como referência de valorização hipotética: não mede o preço de imóveis.</p>
+          </section>
+          <section class="product-group product-group--cenario" aria-labelledby="patrimonio-grupo-cenario">
+            <div class="product-heading"><div class="product-step" aria-hidden="true">04</div><div class="product-heading-copy"><span class="product-label">PROJEÇÃO</span><h3 id="patrimonio-grupo-cenario">Horizonte da análise</h3><p>Escolha por quanto tempo deseja acompanhar a evolução dos investimentos e do imóvel.</p></div></div>
+            <div class="fields">
+              <label>Horizonte da análise <span>meses desde a contratação</span><input id="a-horizonte" type="number" min="1" max="600" required placeholder="Ex.: 60"></label>
+            </div>
+            <p class="hint">O horizonte é medido desde a contratação; a valorização do imóvel e o rendimento do capital preservado são projetados a partir da contemplação hipotética.</p>
+          </section>
           <div class="actions"><button type="submit" class="primary">Gerar análise patrimonial</button><button type="reset" class="ghost">Limpar</button></div>
           <p class="form-error" id="erro-patrimonio" role="alert" aria-live="polite"></p>
         </form>
@@ -179,7 +197,7 @@
         <div class="how"><strong>Como usar</strong><p>Faça primeiro uma comparação de alternativas ou análise patrimonial. Volte aqui para copiar o resumo, compartilhar pelo WhatsApp ou imprimir. Revise valores e condições antes de enviar.</p></div>
         <div class="form-section"><h3>Personalização</h3><div class="fields"><label>Nome do cliente <span>opcional</span><input id="o-nome" type="text" maxlength="70" placeholder="Não é obrigatório"></label><label>Objetivo da proposta<input id="o-objetivo" type="text" maxlength="110" placeholder="Ex.: Aquisição de veículo"></label></div></div>
         <div class="actions"><button type="button" class="primary" id="o-copiar">Copiar texto</button><button type="button" class="secondary" id="o-whatsapp">Enviar pelo WhatsApp</button><button type="button" class="ghost" id="o-imprimir">Imprimir / salvar PDF</button></div><p class="form-error" id="erro-oferta" role="status"></p><div class="notice">Os números são estimativas matemáticas baseadas nos dados fornecidos. Esta ferramenta não faz reservas, não garante contemplação e não substitui a proposta ou as regras do grupo.</div>
-      </div><aside class="result-card proposal-card"><div class="result-top"><span class="result-kicker">PRÉVIA DA PROPOSTA</span><span class="status-pill">Editável nos campos ao lado</span></div><pre id="o-previa">Faça uma análise no comparador ou na alavancagem patrimonial abas para gerar seu resumo comercial.</pre></aside></div>
+      </div><aside class="result-card proposal-card"><div class="result-top"><span class="result-kicker">PRÉVIA DA PROPOSTA</span><span class="status-pill">Editável nos campos ao lado</span></div><pre id="o-previa">Faça uma análise no comparador ou na alavancagem patrimonial para gerar seu resumo comercial.</pre></aside></div>
     </section>
   </main>
   <footer><p>Simulação matemática orientativa. Os resultados dependem das condições informadas e não garantem contemplação. Reajustes, encargos e regras contratuais podem alterar os valores.</p><p>Desenvolvido por: bmachado.dev – 2026.</p></footer>
