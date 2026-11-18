@@ -1,6 +1,7 @@
 "use strict";
-// Comparação econômica indicativa de três estratégias com mesmos recursos
-// iniciais e capacidade mensal. Não representa CET, saldo devedor ou oferta.
+// Comparação com os mesmos recursos iniciais e sem novos aportes.
+// Parcelas do consórcio são pagas com renda externa e descontadas como
+// custo de oportunidade na posição ajustada, sem reter economia pós-lance.
 (function () {
   const money = (n) => Number(n).toLocaleString("pt-BR", {style:"currency",currency:"BRL"});
   const int = (n) => Number(n).toLocaleString("pt-BR",{maximumFractionDigits:0});
@@ -13,7 +14,6 @@
       prazoApos,contemplacao,horizonte,valorizacao,rendimento,aluguel} = d;
     const r = Math.pow(1+rendimento/100,1/12)-1;
     const propertyRate = Math.pow(1+valorizacao/100,1/12)-1;
-    const budget = Math.max(parcela,parcelaApos);
     const cashPossible = capital+0.005>=preco;
     const shortfall = Math.max(0,preco-capital);
     const totalPostEnd = contemplacao+prazoApos;
@@ -22,8 +22,7 @@
     let cashProperty = cashPossible?preco:null;
     let leverInvested = capital;
     let leverProperty = 0;
-    let monthOwnRent=0, rentLeverage=0, paidLever=0, savedFromBudget=0;
-    let maxMonthlyPaid = 0;
+    let monthOwnRent=0, rentLeverage=0, paidLever=0, paidLeverFV=0;
     let annual = [];
 
     function pvLater(month) {
@@ -41,24 +40,26 @@
         invested:round(invested),
         cash:cashPossible?round(cashInvested+cashProperty):null,
         leverGross:round(leverInvested+leverProperty),
-        leverAdj:round(leverInvested+leverProperty-pv),
+        leverAdj:round(leverInvested+leverProperty-pv-paidLeverFV),
+        paidFV:round(paidLeverFV),
         futurePv:round(pv)
       };
     }
     for(let t=1;t<=horizonte;t++) {
-      invested=invested*(1+r)+budget;
+      // O capital inicial é o único montante aplicado: sem aportes mensais.
+      invested*=1+r;
       if(cashPossible) {
-        cashInvested=cashInvested*(1+r)+budget+aluguel;
+        cashInvested=cashInvested*(1+r)+aluguel;
         cashProperty*=1+propertyRate;
         monthOwnRent+=aluguel;
       }
-      // Patrimônio do consórcio antes da contemplação permanece em aplicações.
       if(leverProperty>0) leverProperty*=1+propertyRate;
       const due=t<=contemplacao?parcela:t<=totalPostEnd?parcelaApos:0;
-      maxMonthlyPaid=Math.max(maxMonthlyPaid,due);
       paidLever+=due;
-      leverInvested=leverInvested*(1+r)+(budget-due);
-      savedFromBudget+=budget-due;
+      // A prestação efetiva é paga pela renda externa.
+      // O custo de oportunidade é acumulado para comparação no horizonte.
+      paidLeverFV=paidLeverFV*(1+r)+due;
+      leverInvested*=1+r;
       if(t===contemplacao) {
         if(leverInvested+0.005<capitalUtilizado) {
           throw Error("Na data hipotética da contemplação, o saldo aplicado não cobre lance e complemento. Ajuste capital, prazo ou taxas para evitar aporte adicional não previsto.");
@@ -80,31 +81,34 @@
     const investment=round(invested);
     const cash=cashPossible?round(cashInvested+cashProperty):null;
     const gross=round(leverInvested+leverProperty);
-    const adjusted=round(gross-pvFuture);
+    const adjustedAssets=round(gross-pvFuture);
+    const adjusted=round(adjustedAssets-paidLeverFV);
     const scenarios=[
       {id:"invest",name:"Manter investido",value:investment,gross:investment,
         portfolio:round(invested),property:0,pv:0,possible:true,
-        subtitle:"Capital total e aportes mensais rendendo à taxa editável"},
+        subtitle:"Somente o capital inicial aplicado, sem aportes adicionais"},
       {id:"cash",name:"Comprar à vista",value:cash,gross:cash,
         portfolio:cashPossible?round(cashInvested):null,
         property:cashPossible?round(cashProperty):null,pv:0,possible:cashPossible,
-        subtitle:cashPossible?"Compra imediata do imóvel; excedentes seguem aplicados"
+        subtitle:cashPossible?"Compra imediata do imóvel; excedentes seguem aplicados sem novos aportes"
           :"Faltam "+money(shortfall)+" para comprar o imóvel hoje"},
       {id:"lever",name:"Alavancagem",value:adjusted,gross,
         portfolio:round(leverInvested),property:round(leverProperty),
         pv:round(pvFuture),possible:true,
-        subtitle:"Imóvel após contemplação hipotética e parcelas a vencer descontadas"}
+        paidFV:round(paidLeverFV),adjustedAssets,
+        subtitle:"Imóvel e capital aplicado, deduzidos custos de parcelas e obrigações futuras"}
     ];
     const best=scenarios.filter(s=>s.possible).reduce((a,b)=>a.value>=b.value?a:b);
     return {
-      scenarios,best,cashPossible,shortfall,budget,
-      r,propertyRate,paidLever:round(paidLever),rentLeverage:round(rentLeverage),
-      monthOwnRent:round(monthOwnRent),savedFromBudget:round(savedFromBudget),
+      scenarios,best,cashPossible,shortfall,
+      r,propertyRate,paidLever:round(paidLever),paidLeverFV:round(paidLeverFV),rentLeverage:round(rentLeverage),
+      monthOwnRent:round(monthOwnRent),
       left,futureNominal:round(futureNominal),pvFuture:round(pvFuture),
-      gross,adjusted,investment,cash,annual,
+      gross,adjusted,adjustedAssets,investment,cash,annual,
       extraComparedToInvest:round(adjusted-investment),
       propertyPrice:preco,capitalInvestido,
-      horizon:horizonte,contemplacao,initialCapital:capital
+      horizon:horizonte,contemplacao,initialCapital:capital,
+      parcelaInicial:parcela,parcelaPosLance:parcelaApos
     };
   }
 
