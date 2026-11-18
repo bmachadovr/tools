@@ -6,12 +6,12 @@
   <meta name="theme-color" content="#f5f7fa">
   <meta name="description" content="Compare alternativas de aquisição e explore cenários de formação patrimonial com custos e premissas transparentes.">
   <title>Calculadora de Consórcio | Central de Estratégias</title>
-  <link rel="stylesheet" href="styles.css?v=20261118-05">
+  <link rel="stylesheet" href="styles.css?v=20261118-08">
   <script src="input-masks.js?v=20261118-04" defer></script>
   <script src="compare-v2.js?v=20261117-09" defer></script>
   <script src="app.js?v=20261118-05" defer></script>
-  <script src="patrimonio-comparativo.js?v=20261118-07" defer></script>
-  <script src="patrimonio.js?v=20261118-07" defer></script>
+  <script src="patrimonio-comparativo.js?v=20261118-08" defer></script>
+  <script src="patrimonio.js?v=20261118-08" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -143,14 +143,14 @@
       </div>
       <div class="content-grid">
         <form id="form-patrimonio" class="form-card" autocomplete="off" novalidate>
-          <div class="how"><strong>Como usar</strong><p>Preencha os campos de cada grupo. No <b>Consórcio</b>, informe a carta e mais dois dados entre prazo, taxa total e prestação: o terceiro é preenchido automaticamente. Abra <b>Lances e contemplação</b> somente se quiser simular essas condições. As taxas de CDI e IPCA são referências históricas editáveis.</p></div>
+          <div class="how"><strong>Como usar</strong><p>Preencha os campos de cada grupo. No <b>Consórcio</b>, informe a carta e mais dois dados entre prazo, taxa total e prestação: o terceiro é preenchido automaticamente. Abra <b>Lances e contemplação</b> somente se quiser simular essas condições. Use as quatro taxas históricas pré-preenchidas (90% CDI, IGMI-R, INCC-M e IGP-M) ou altere-as. No resultado, use <b>Expandir tela</b> para apresentar os cenários sem os campos.</p></div>
           <section class="product-group product-group--investimento" aria-labelledby="patrimonio-grupo-investimento">
             <div class="product-heading"><div class="product-step" aria-hidden="true">01</div><div class="product-heading-copy"><span class="product-label">RECURSOS PRÓPRIOS</span><h3 id="patrimonio-grupo-investimento">Capital e investimentos</h3><p>Defina o capital inicial e a taxa para comparar a aplicação integral com recursos preservados após o lance.</p></div></div>
             <div class="fields">
               <label>Capital próprio total disponível <span>R$</span><input id="a-capital" inputmode="decimal" required placeholder="Ex.: 100.000,00"></label>
-              <label>Rendimento hipotético do capital investido <span>% a.a. · CDI médio 36 meses</span><input id="a-rendimento" type="number" min="-50" max="50" step="0.01" value="12.97" required></label>
+              <label>Rentabilidade hipotética do investimento <span>% a.a. · 90% do CDI</span><input id="a-rendimento" type="number" min="-50" max="50" step="0.01" value="12.81" required></label>
             </div>
-            <p class="hint">O capital investido será o saldo após o lance próprio e eventual complemento do imóvel. Referência editável: <strong>CDI 12,97% a.a.</strong>, média anualizada composta de 36 meses fechados (nov/2023–out/2026). <a href="https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarGraficoPorId&amp;hdOidSeriesSelecionadas=4391" target="_blank" rel="noopener noreferrer">Fonte: BCB, SGS 4391</a>. Retorno bruto hipotético; não considera impostos, taxas ou resgates.</p>
+            <p class="hint">Padrão editável: <strong>90% de 14,23% do CDI acumulado em 12 meses até out/2026 ≈ 12,81% a.a.</strong> <a href="https://www.bcb.gov.br/" target="_blank" rel="noopener noreferrer">Fonte: BCB/B3 (SGS 4391)</a>. Multiplicação aproximada da taxa anual por 90%; não simula a capitalização diária de um título real ou impostos.</p>
           </section>
           <section class="product-group product-group--consorcio" aria-labelledby="patrimonio-grupo-consorcio">
             <div class="product-heading"><div class="product-step" aria-hidden="true">02</div><div class="product-heading-copy"><span class="product-label">ALAVANCAGEM</span><h3 id="patrimonio-grupo-consorcio">Consórcio</h3><p>Informe a carta, prazo e taxa total ou parcela. O campo restante será calculado automaticamente por uma aproximação linear.</p></div></div>
@@ -160,6 +160,8 @@
               <label>Taxa de administração + fundo de reserva <span>% total</span><input id="a-taxa" inputmode="decimal" required placeholder="Ex.: 20,00"></label>
               <label>Parcela antes da contemplação <span>R$</span><input id="a-parcela" inputmode="decimal" required placeholder="Calculada automaticamente"></label>
             </div>
+            <div class="fields"><label>Reajuste do consórcio pelo INCC-M <span>% a.a. · a cada 12 meses</span><input id="a-reajuste-consorcio" type="number" min="-50" max="50" step="0.01" value="6.75"></label></div>
+            <p class="hint">Padrão editável: <strong>INCC-M 6,75%</strong> acumulado em 12 meses até out/2026. <a href="https://portal.fgv.br/noticias/incc-m-outubro-2026" target="_blank" rel="noopener noreferrer">Fonte: FGV IBRE</a>. A projeção reajusta prestações anualmente (mês 13, 25, ...), não recalcula o crédito liberado. O índice, sua periodicidade e a aplicação real dependem do contrato.</p>
             <p class="calc-status" id="a-core-status" role="status" aria-live="polite">Preencha a carta e mais dois valores entre prazo, taxa total e prestação; o terceiro será calculado.</p>
             <details class="finance-advanced" id="a-avancado">
               <summary>Lances e contemplação <span>opcional · toque para expandir</span></summary>
@@ -179,16 +181,17 @@
             <div class="fields">
               <label>Preço do imóvel desejado <span>R$</span><input id="a-preco" inputmode="decimal" required placeholder="Ex.: 300.000,00"></label>
               <label>Aluguel mensal líquido esperado <span>R$ · após despesas usuais</span><input id="a-aluguel" inputmode="decimal" placeholder="0,00"></label>
-              <label>Valorização hipotética do imóvel pelo IPCA <span>% a.a. · média 36 meses</span><input id="a-valorizacao" type="number" min="-50" max="50" step="0.01" value="4.69" required></label>
+              <label>Valorização hipotética do imóvel pelo IGMI-R <span>% a.a. · residencial</span><input id="a-valorizacao" type="number" min="-50" max="50" step="0.01" value="12.58" required></label>
+              <label>Reajuste anual do aluguel pelo IGP-M <span>% a.a. · contrato de locação</span><input id="a-reajuste-aluguel" type="number" min="-50" max="50" step="0.01" value="5.24"></label>
             </div>
-            <p class="hint">O aluguel é opcional e, se informado, é projetado sem descontar vacância. Referência editável: <strong>IPCA 4,69% a.a.</strong>, média anualizada composta de 36 meses fechados (nov/2023–out/2026). <a href="https://www.ibge.gov.br/indicadores" target="_blank" rel="noopener noreferrer">Fonte: IBGE</a>. O IPCA não mede preços de imóveis. ITBI, cartório, despesas, vacância e tributação não estão incluídos na projeção.</p>
+            <p class="hint"><strong>IGMI-R Brasil 12,58%:</strong> alta residencial em 12 meses até set/2026 (<a href="https://www.abecip.org.br/igmi-r-abecip/mes-a-mes" target="_blank" rel="noopener noreferrer">ABECIP</a>). <strong>IGP-M 5,24%:</strong> acumulado em 12 meses até out/2026 (<a href="https://portal.fgv.br/noticias/igp-m-outubro-2026" target="_blank" rel="noopener noreferrer">FGV IBRE</a>). Taxas editáveis; a valorização de um imóvel específico não é garantida. O aluguel reajusta anualmente após 12 meses de locação. Não considera vacância, impostos, ITBI ou cartório.</p>
           </section>
           <section class="product-group product-group--cenario" aria-labelledby="patrimonio-grupo-cenario">
             <div class="product-heading"><div class="product-step" aria-hidden="true">04</div><div class="product-heading-copy"><span class="product-label">PROJEÇÃO</span><h3 id="patrimonio-grupo-cenario">Horizonte da análise</h3><p>Escolha por quanto tempo deseja acompanhar a evolução dos investimentos e do imóvel.</p></div></div>
             <div class="fields">
               <label>Horizonte da análise <span>meses desde a contratação</span><input id="a-horizonte" type="number" min="1" max="600" required placeholder="Ex.: 60"></label>
             </div>
-            <p class="hint">A fotografia termina exatamente no mês indicado. No investimento e na compra à vista, os aportes mensais equivalem às prestações do consórcio até esse mês. Na alavancagem, os aportes pagam as parcelas. Obrigações após o horizonte são informadas, mas não são antecipadas nem descontadas dos ativos brutos. Sem lance, informe o mês hipotético de contemplação.</p>
+            <p class="hint">Fotografia até o mês indicado. O aluguel <strong>abate primeiro a parcela do consórcio</strong>; nos cenários alternativos, o cliente investe apenas o desembolso que sobraria do próprio bolso. Eventual aluguel excedente ao pagamento é aplicado na alavancagem. INCC-M reajusta as prestações e IGP-M reajusta o aluguel anualmente. Prestações posteriores são informadas, mas não descontadas dos ativos brutos. Sem lance, indique o mês hipotético de contemplação.</p>
           </section>
           <div class="actions"><button type="submit" class="primary">Gerar análise patrimonial</button><button type="reset" class="ghost">Limpar</button></div>
           <p class="form-error" id="erro-patrimonio" role="alert" aria-live="polite"></p>
