@@ -63,7 +63,8 @@
     const embutido = readOptionalNumber("a-embutido") || 0;
     const lance = proprio+embutido;
     const indicado = readOptionalNumber("a-contemplacao");
-    const mes = Number.isInteger(indicado) && indicado>0 ? indicado : lance>0 ? 1 : NaN;
+    const mesPreenchido = $("a-contemplacao").value.trim().length>0;
+    const mes = mesPreenchido ? indicado : lance>0 ? 1 : NaN;
     const status = $("a-post-status");
     if (!(carta>0 && Number.isInteger(prazo) && prazo>=1 && parcela>0)) {
       status.textContent="Informe primeiro carta, prazo, taxa e parcela para estimar os valores pós-lance.";
@@ -84,9 +85,27 @@
       const pagoApos = valorAAbater;
       const userCount = readOptionalNumber("a-prazo-apos");
       const userPay = readOptionalNumber("a-parcela-apos");
-      if(postManual.term && Number.isInteger(userCount) && userCount>=1 && userCount<=restantes) n=userCount;
-      if(postManual.pay && userPay>0) p=userPay;
-      if(postManual.pay && !postManual.term) n=Math.ceil(pagoApos/p);
+      if(postManual.term){
+        if(!Number.isInteger(userCount)||userCount<1||userCount>restantes) {
+          status.textContent="O prazo pós-contemplação deve ser inteiro, positivo e não ultrapassar as parcelas disponíveis.";
+          return null;
+        }
+        n=userCount;
+      }
+      if(postManual.pay) {
+        if(!(userPay>0)) {
+          status.textContent="A prestação após a contemplação deve ser positiva.";
+          return null;
+        }
+        p=userPay;
+      }
+      if(postManual.pay && !postManual.term) {
+        n=Math.ceil(pagoApos/p);
+        if(n>restantes) {
+          status.textContent="Parcela pós-lance informada é insuficiente para liquidar o saldo nominal dentro do prazo original.";
+          return null;
+        }
+      }
       else if(postManual.term && !postManual.pay) p=pagoApos/n;
       else if(!postManual.pay && !postManual.term) p=pagoApos/n;
       if(!postManual.term) showDerived("a-prazo-apos",n);
@@ -153,11 +172,11 @@
   }
 
   function calculate() {
+    if(!deriveCore()) throw Error("Informe a carta e mais dois valores entre prazo, taxa total e parcela; o terceiro será calculado.");
     const capital = money("a-capital");
     const carta = money("a-carta"), preco = money("a-preco");
     const proprio = money("a-proprio", true), embutido = money("a-embutido", true);
     const parcela = money("a-parcela"), aluguel = money("a-aluguel", true);
-    if(!deriveCore()) throw Error("Informe carta e dois valores coerentes entre prazo, taxa total e parcela. A ferramenta calculará o quarto.");
     const taxa = money("a-taxa");
     if(taxa>200) throw Error("Taxa total do consórcio acima de 200%. Revise os dados.");
     const prazo = integer("a-prazo", 1, 600);
@@ -344,6 +363,7 @@
     coreHistory=["a-prazo","a-taxa"];postManual.pay=false;postManual.term=false;
     window.setTimeout(() => {
       $("a-avancado").open=false;
+      form.querySelectorAll(".is-derived").forEach(el=>el.classList.remove("is-derived"));
       $("a-core-status").textContent="Preencha a carta e mais dois valores entre prazo, taxa total e prestação; o terceiro será calculado.";
       $("a-post-status").textContent="Com lance, se o mês não for informado, considera-se a assembleia seguinte. Os dados pós-lance são estimados linearmente.";
       $("erro-patrimonio").textContent="";
