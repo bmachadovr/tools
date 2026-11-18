@@ -5,7 +5,7 @@
   const $ = (id) => document.getElementById(id);
   const fmt = (v) => Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   const num = (v) => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 0 });
-  const pc = (v) => Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%";
+  const pc = (v) => Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%";
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
     ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[c]);
   let isExample = false;
