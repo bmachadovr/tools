@@ -77,6 +77,8 @@
       panel.classList.toggle("active", selected);
       panel.hidden = !selected;
     });
+    const modePicker = document.querySelector(".mode-picker");
+    if (modePicker) modePicker.hidden = id !== "comparar";
     if (id === "oferta") renderOffer();
     const heading = $("painel-" + id).querySelector("h2");
     if (heading) heading.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -92,6 +94,15 @@
     lastAnalysis = { kind, rows, warnings, example: !!examplesUsed[kind] };
     renderOffer();
   }
+  // Interface mínima para incorporar análises patrimoniais ao gerador de propostas.
+  window.receberAnalisePatrimonial = (analysis) => {
+    if (!analysis) {
+      if (lastAnalysis && lastAnalysis.kind === "patrimonio") lastAnalysis = null;
+    } else {
+      lastAnalysis = {kind:"patrimonio", rows:analysis.rows, warnings:analysis.warnings, example:!!analysis.example};
+    }
+    renderOffer();
+  };
   function explain(sectionTitle, contents) {
     return '<div class="result-section"><h4>' + escapeHtml(sectionTitle) + '</h4>' + contents + '</div>';
   }
@@ -393,10 +404,10 @@
   }
 
   function buildOfferText() {
-    if (!lastAnalysis) return "Faça uma análise em uma das três primeiras abas para gerar seu resumo comercial.";
+    if (!lastAnalysis) return "Faça uma comparação de alternativas ou uma análise patrimonial para gerar seu resumo comercial.";
     const nome = $("o-nome").value.trim();
     const objetivo = $("o-objetivo").value.trim();
-    const title = { comparar: "COMPARAÇÃO DE ALTERNATIVAS", lances: "ESTRATÉGIA DE LANCE", propostas: "COMPARAÇÃO DE PROPOSTAS" }[lastAnalysis.kind];
+    const title = { comparar: "COMPARAÇÃO DE ALTERNATIVAS", lances: "ESTRATÉGIA DE LANCE", propostas: "COMPARAÇÃO DE PROPOSTAS", patrimonio: "FORMAÇÃO E ALAVANCAGEM PATRIMONIAL" }[lastAnalysis.kind];
     const rows = lastAnalysis.rows.map((entry) => entry[0] + ": " + entry[1]);
     const intro = [title, "Data: " + new Date().toLocaleDateString("pt-BR")];
     if (lastAnalysis.example) intro.unshift("EXEMPLO ILUSTRATIVO — NÃO UTILIZAR COMO OFERTA REAL");
