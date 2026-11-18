@@ -1386,3 +1386,21 @@ Implementação:
 - Exemplo da primeira prestação integral: com carta 100.000, taxa total 20%, prazo 120 e lance próprio 50.000, a primeira é 1.000; abatimento linear do lance nas outras 119 produz prestação pós-lance estimada de 579,83, mantendo 119 meses pós-assembleia. Em planos reais, regras de lance e de amortização mudam o resultado; valores devem ser confrontados com demonstrativo do grupo.
 - Removidos campos de despesas de aquisição e meses de vacância, por simplificação solicitada. **Ressalva obrigatória**: despesas, tributos e meses vazios não fazem parte do cálculo; podem reduzir o saldo aplicado e a renda líquida real.
 - Estados calculados automaticamente marcados no formulário, com campos pós-lance editáveis para utilizar o demonstrativo real; não confundir valores inferidos com valores verificados.
+
+
+### Comparação de três estratégias — 18/11/2026
+
+A função **Alavancagem patrimonial** agora exibe análise comparativa de:
+1. **Manter recursos investidos:** aplicar o capital próprio total e acrescentar aportes mensais.
+2. **Comprar imóvel à vista:** comprar imediatamente pelo preço informado, aplicar eventual sobra e aportar mensalmente; se o capital inicial for inferior ao preço, marcar o cenário como **não viável**, exibindo a diferença em reais.
+3. **Alavancagem com consórcio:** manter capital aplicado até a contemplação hipotética, utilizar lance próprio + complemento para adquirir o imóvel com carta líquida, aplicar recursos remanescentes e investir as sobras da capacidade mensal após pagar as prestações.
+
+**Equivalência operacional:** todos os cenários partem do mesmo capital disponível, de igual horizonte e de um **orçamento mensal adicional igual à maior das prestações informadas/estimadas** (antes e depois da contemplação). O que não é pago em parcela é investido à taxa hipotética de aplicação; os aluguéis informados, quando houver imóvel e a partir da posse hipotética, também são reinvestidos. É indispensável que o usuário realmente disponha desses aportes mensais externos — caso contrário, a comparação não é válida.
+
+**Passivo econômico:** os ativos brutos da alavancagem são ajustados pelo **valor presente das prestações previstas após o horizonte**, descontadas à mesma taxa hipotética mensal derivada da remuneração da aplicação. O VP é **indicativo e NÃO é saldo devedor contratual nem valor de quitação**. Os outros cenários não têm a obrigação futura do consórcio. Exibir ativos brutos e VP de pagamentos futuros separadamente, sem promover a alavancagem como melhor alternativa por padrão.
+
+**Interface:** cartões com os três cenários, gráfico temporal, tabela comparativa, conclusão calculada e detalhamento expansível. Botão **Ampliar cenários / Reduzir cenários** muda o painel de resultados para a maior parte da largura de desktop; em telas compactas, a ampliação deixa os campos fora de vista, com botão reversível para editá-los.
+
+**Exclusões:** custos cartorários, impostos, vacância, custos dos investimentos, risco, reajustes reais do consórcio e diferentes regras de lance não foram modelados. Premissas de valorização pelo IPCA e rendimento ao CDI são editáveis. Não prometer contemplação ou lucro. Gerador de propostas recebe os três resultados e as ressalvas.
+
+**Casos mínimos de teste:** exemplo 100 mil capital, 100 mil carta/imóvel, 50 mil lance, 20% administração+reserva, 120 meses, contemplação hipotética no mês 1, horizonte 60, IPCA 4,69% e CDI 12,97%; capital inferior ao preço deve inviabilizar compra à vista sem impedir os demais cenários; período de análise após o fim do consórcio deve descontar VP igual a zero; alterações de taxa e aluguel devem atualizar todas as estratégias.
