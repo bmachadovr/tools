@@ -286,32 +286,35 @@
       contemplacao,horizonte,valorizacao,rendimento,aluguel
     });
     const comparaveis = [
-      ["Aportes extras aos investimentos",fmt(0)+" em todos os cenários"],
-      ["Prestação original do consórcio",fmt(parcela)],
-      ["Prestação após o lance",fmt(parcelaApos)],
-      ["Manter recursos integralmente investidos — posição projetada",fmt(comparado.investment)],
-      ["Comprar imóvel à vista — posição projetada",comparado.cashPossible ? fmt(comparado.cash) : "Não viável com capital disponível; faltam "+fmt(comparado.shortfall)],
-      ["Alavancagem — ativos brutos projetados",fmt(comparado.gross)],
-      ["Alavancagem — prestações já pagas (nominais)",fmt(comparado.paidLever)],
-      ["Alavancagem — prestações já pagas (custo acumulado)",fmt(comparado.paidLeverFV)],
-      ["Alavancagem — VP estimado das parcelas futuras",fmt(comparado.pvFuture)+" (não é saldo devedor)"],
-      ["Alavancagem — posição ajustada projetada",fmt(comparado.adjusted)],
-      ["Diferença da alavancagem frente ao investimento",fmt(comparado.extraComparedToInvest)],
-      ["Maior posição projetada sob as premissas",comparado.best.name+" — "+fmt(comparado.best.value)]
+      ["Horizonte da fotografia",horizonte+" meses"],
+      ["Capital próprio inicial",fmt(capital)],
+      ["Prestação inicial do consórcio",fmt(parcela)],
+      ["Prestação após a contemplação/lance",fmt(parcelaApos)],
+      ["Aportes alternativos em investimento / compra à vista",fmt(comparado.aportesAlternativos)+" até o horizonte"],
+      ["Aplicação integral — ativos no horizonte",fmt(comparado.investment)],
+      ["Compra do imóvel à vista — ativos no horizonte",comparado.cashPossible?fmt(comparado.cash):"Inviável; faltam "+fmt(comparado.shortfall)],
+      ["Alavancagem — imóvel no horizonte",fmt(comparado.scenarios[2].property)],
+      ["Alavancagem — aplicações no horizonte",fmt(comparado.scenarios[2].portfolio)],
+      ["Alavancagem — ativos brutos no horizonte",fmt(comparado.gross)],
+      ["Alavancagem — parcelas efetivamente pagas até o horizonte",fmt(comparado.paidLever)],
+      ["Alavancagem — prestações posteriores ao horizonte",comparado.left+" × "+fmt(parcelaApos)],
+      ["Alavancagem — soma nominal das parcelas posteriores (informativa)",fmt(comparado.futureNominal)],
+      ["Cenário com maior estoque bruto de ativos na data",comparado.best.name+" — "+fmt(comparado.best.value)]
     ];
-    const contraste = comparado.extraComparedToInvest > 0.01
-      ? "Nesta hipótese, a alavancagem supera a aplicação integral em "+fmt(comparado.extraComparedToInvest)+" na posição ajustada, mas o resultado não incorpora todos os custos e riscos."
-      : comparado.extraComparedToInvest < -0.01
-      ? "Nesta hipótese, a aplicação integral supera a posição ajustada da alavancagem em "+fmt(-comparado.extraComparedToInvest)+". Exibir apenas os ativos brutos do imóvel ocultaria essa diferença."
-      : "Nesta hipótese, os cenários de alavancagem e aplicação integral resultam em posição ajustada semelhante.";
+    const contraste = "No mês "+horizonte+", a aplicação integral acumula "+fmt(comparado.investment)
+      +", a compra à vista "+(comparado.cashPossible?fmt(comparado.cash):"não é viável com o capital disponível")
+      +" e a alavancagem soma "+fmt(comparado.gross)+" em ativos brutos. O consórcio já teve "
+      +fmt(comparado.paidLever)+" pagos e ainda prevê "+comparado.left
+      +" prestações após o horizonte (soma nominal "+fmt(comparado.futureNominal)
+      +"). Não se descontam fluxos posteriores da fotografia. Ativos brutos não equivalem a patrimônio líquido.";
     const detalhes = '<details class="pat-report-details"><summary>Ver composição da alavancagem, premissas e memória de cálculo</summary><div class="pat-report-inner">'
       + renderMetrics([
         ["Capital próprio inicial",fmt(capital)],
         ["Lance e complemento do imóvel",fmt(capitalUtilizado)],
         ["Capital preservado e investido",fmt(capitalInvestido)],
-        ["Ativos brutos da alavancagem",fmt(ativosFuturos)],
-        ["Prestações nominais futuras (não é saldo devedor)",fmt(parcelasFuturasNominais)],
-        ["Prestações pagas — custo de oportunidade",fmt(comparado.paidLeverFV)],
+        ["Ativos brutos na fotografia",fmt(comparado.gross)],
+        ["Prestações nominais após o horizonte (não é saldo devedor)",fmt(comparado.futureNominal)],
+        ["Prestações pagas até o horizonte",fmt(comparado.paidLever)],
         ["Aluguel / prestação",pc(cobertura)]
       ])
       + renderTimeline(timeline) + renderArguments(argumentos)
@@ -332,8 +335,8 @@
           ...comparaveis, ...rows,
           ["Conclusão contextual",contraste],
           ...argumentos.map((a,i)=>["Argumento "+(i+1),a])],
-        warnings: ["Os três cenários partem do mesmo capital, sem aportes extras. A prestação do consórcio reduz após o lance e o cliente paga apenas a parcela efetiva, com renda externa. Não presumimos reinvestimento da economia mensal. Aluguéis informados são reinvestidos.",
-          "A posição econômica ajustada deduz o custo de oportunidade das prestações efetivamente pagas, capitalizado até o horizonte, e o valor presente das parcelas futuras, ambos à taxa hipotética de investimento. Não equivale a patrimônio líquido contábil nem saldo devedor contratual.",
+        warnings: ["Fotografia até o mês escolhido: aportes nos cenários investimento e compra à vista equivalem apenas às prestações efetivas do consórcio em cada mês. Na alavancagem, a prestação é paga com renda externa e sua redução após o lance não é reaplicada automaticamente.",
+          "Prestações após o horizonte não são descontadas nem antecipadas. A quantidade e soma nominal remanescentes são exibidas separadamente. Ativos brutos não representam patrimônio líquido ou valor de quitação.",
           ...alertas],
         example: isExample
       });
