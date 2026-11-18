@@ -205,11 +205,16 @@
     const capitalUtilizado = proprio + complemento;
     if (capitalUtilizado > capital + .01) throw Error("O lance próprio e o complemento do imóvel excedem o capital próprio informado. Informe recursos suficientes ou altere o cenário.");
     const capitalInvestido = Math.max(0, capital - capitalUtilizado);
-    // A divisão dos recursos e o patrimônio bruto inicial são considerados
-    // no instante da contemplação hipotética, após pagamento do lance.
-    const ativosNaContemplacao = preco + capitalInvestido;
+    // Mesma convenção temporal do comparador: rendimento até o mês da
+    // contemplação, quando se deduz lance próprio/complemento.
+    const taxaMensal = Math.pow(1 + rendimento / 100, 1 / 12) - 1;
+    const investimentoNaContemplacao = capital * Math.pow(1 + taxaMensal, contemplacao) - capitalUtilizado;
+    const ativosNaContemplacao = preco + investimentoNaContemplacao;
     const mesesLocacao = Math.max(0, horizonte - contemplacao);
-    const investimentosFuturos = capitalInvestido * Math.pow(1 + rendimento / 100, mesesLocacao / 12);
+    const rendaAplicada = (m) => aluguel * (Math.abs(taxaMensal) < 1e-12 ? m :
+      (Math.pow(1 + taxaMensal, m) - 1) / taxaMensal);
+    const investimentosFuturos = investimentoNaContemplacao * Math.pow(1 + taxaMensal, mesesLocacao)
+      + rendaAplicada(mesesLocacao);
     const ativosFuturos = investimentosFuturos + preco * Math.pow(1 + valorizacao / 100, mesesLocacao / 12);
     const aluguelMedio = aluguel;
     const receitaPeriodo = aluguelMedio * mesesLocacao;
@@ -226,7 +231,7 @@
     if (mesesLocacao > 0) marcos.push(mesesLocacao);
     const timeline = marcos.map((m) => {
       const propriedade = preco * Math.pow(1 + valorizacao / 100, m / 12);
-      const aplicacao = capitalInvestido * Math.pow(1 + rendimento / 100, m / 12);
+      const aplicacao = investimentoNaContemplacao * Math.pow(1 + taxaMensal, m) + rendaAplicada(m);
       return [m === 0 ? "Contemplação" : "Após " + (m/12).toLocaleString("pt-BR",{maximumFractionDigits:1}) + " anos",
         propriedade, aplicacao, propriedade + aplicacao];
     });
@@ -235,8 +240,8 @@
       "IPCA não mede a valorização imobiliária. Sua utilização como taxa hipotética de apreciação do imóvel é apenas ilustrativa; imóveis podem valorizar menos, ficar estáveis ou perder valor.",
       "Valorização, rendimento financeiro e aluguel são premissas fornecidas, não previsões. Ativos brutos não representam patrimônio líquido, rentabilidade real ou lucro.",
       "Prestação inicial estimada pela carta × (1 + taxa total) ÷ prazo, quando calculada. Após lance, a redução é linear e aproximada, sem reajustes, seguros, tributos pessoais ou custos de oportunidade. Confirme o demonstrativo contratual.",
-      "O investimento financeiro é projetado sem novos aportes ou resgates; pressupõe que as prestações sejam custeadas por renda externa ou aluguel. Rendimento bruto não inclui tributos, taxas ou perdas.",
-      "A soma nominal das prestações restantes não representa saldo devedor para quitação. Custos e prazos de liberação dependem do contrato e da aprovação da operação."
+      "Na alavancagem, o investimento não recebe aportes mensais externos: a renda paga as prestações. Aluguéis informados são aplicados depois da contemplação. Nas alternativas de investimento e compra à vista, aportes mensais equivalem às prestações efetivas. Rendimento bruto não considera impostos ou perdas.",
+      "A fotografia termina no horizonte escolhido. As parcelas posteriores não são antecipadas nem abatidas dos ativos; sua quantidade e soma nominal são exibidas à parte e não representam saldo devedor para quitação. Ativos brutos não equivalem a patrimônio líquido."
     ];
     if (aluguel > 0) alertas.push("Aluguel projetado sem vacância, inadimplência ou manutenção. Esses eventos podem reduzir receitas, mas a prestação continua exigível.");
     alertas.push("Despesas de aquisição (ITBI, registros, cartório), vacância e impostos não foram incluídos, por solicitação de simplificação. Na prática, esses itens reduzem o capital preservado ou o retorno.");
@@ -249,7 +254,7 @@
       aluguel > 0
         ? "Se a locação ocorrer como planejado, o aluguel líquido hipotético de " + fmt(aluguelMedio) + "/mês cobriria " + pc(cobertura) + " da prestação pós-contemplação de " + fmt(parcelaApos) + "; " + (diferencaMensal >= 0 ? "seriam necessários " + fmt(diferencaMensal) + "/mês adicionais." : "haveria excedente operacional estimado de " + fmt(-diferencaMensal) + "/mês, sujeito a outros custos e impostos.")
         : "Sem aluguel informado, a prestação pós-contemplação de " + fmt(parcelaApos) + " deve ser suportada com renda própria. Não há argumento de autofinanciamento por locação.",
-      "Em " + (mesesLocacao / 12).toLocaleString("pt-BR",{maximumFractionDigits:1}) + " anos após a contemplação hipotética, com valorização imobiliária equivalente a um IPCA suposto de " + pc(valorizacao) + " ao ano e aplicação rendendo " + pc(rendimento) + " ao ano, os ativos brutos seriam " + fmt(ativosFuturos) + ". A evolução do patrimônio líquido exige conhecer o saldo devedor real, aportes e custos."
+      "Em " + (mesesLocacao / 12).toLocaleString("pt-BR",{maximumFractionDigits:1}) + " anos após a contemplação hipotética, com valorização imobiliária equivalente a um IPCA suposto de " + pc(valorizacao) + " ao ano e aplicação rendendo " + pc(rendimento) + " ao ano, os ativos brutos seriam " + fmt(ativosFuturos) + ". As prestações após o horizonte não são descontadas; os ativos brutos não são patrimônio líquido."
     ];
     const rows = [
       ["Capital próprio inicial", fmt(capital)],
@@ -259,7 +264,8 @@
       ["Crédito após lance embutido", fmt(creditoLiquido)],
       ["Complemento do preço (sem despesas de aquisição)", fmt(complemento)],
       ["Capital próprio comprometido com lance / complemento", fmt(capitalUtilizado)],
-      ["Capital financeiro que permanece investido", fmt(capitalInvestido)],
+      ["Capital inicial reservado para investimento", fmt(capitalInvestido)],
+      ["Aplicação após contemplação hipotética (inclui rendimento até a data)", fmt(investimentoNaContemplacao)],
       ["Ativos brutos na contemplação (imóvel + aplicação)", fmt(ativosNaContemplacao)],
       ["Taxa total de administração + fundo de reserva", pc(taxa)],
       ["Parcela antes da contemplação", fmt(parcela) + " por " + contemplacao + " meses"],
