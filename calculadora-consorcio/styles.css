@@ -380,3 +380,91 @@ footer p{margin:0;max-width:620px}
   .product-heading p{font-size:.78rem}
   .product-group .form-section+.form-section{margin-top:15px;padding-top:15px}
 }
+
+
+/* Comparação patrimonial: três estratégias, mesma capacidade mensal. */
+#resultado-patrimonio{container-type:inline-size}
+#painel-patrimonio.pat-results-expanded .content-grid{
+  grid-template-columns:minmax(290px,.36fr) minmax(0,1.64fr);
+  align-items:start;
+}
+.shell:has(#painel-patrimonio.pat-results-expanded){width:min(1530px,calc(100% - 36px))}
+#painel-patrimonio.pat-results-expanded #resultado-patrimonio{position:static}
+.pat-summary-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0 0 18px}
+.pat-summary-head h3{font-size:1.33rem;line-height:1.2;letter-spacing:-.035em;margin:8px 0 7px}
+.pat-summary-head p{font-size:.81rem;line-height:1.55;color:#687f89;margin:0}
+.pat-expand-btn{flex:0 0 auto;border:1px solid #bcd8df;border-radius:10px;background:#eef8f8;padding:10px 12px;color:#145868;font-weight:770;font-size:.78rem;min-height:40px}
+.pat-expand-btn:hover{background:#dff0f2}
+.pat-expand-btn[aria-pressed="true"]{background:#174e5f;color:#fff;border-color:#174e5f}
+.pat-scenario-grid{display:grid;grid-template-columns:1fr;gap:11px}
+.pat-scenario{min-width:0;border:1px solid #dce6e9;border-top:3px solid var(--scenario-color);background:#fbfcfd;border-radius:13px;padding:15px}
+.pat-scenario--invest{--scenario-color:#4175ad}
+.pat-scenario--cash{--scenario-color:#658a68}
+.pat-scenario--lever{--scenario-color:#9a6eab}
+.pat-scenario-heading{display:flex;gap:9px;align-items:center}
+.pat-scenario-heading span{font-size:.68rem;font-weight:800;color:var(--scenario-color);letter-spacing:.08em}
+.pat-scenario-heading h4{font-size:.9rem;margin:0;letter-spacing:-.015em}
+.pat-scenario-value{margin-top:12px;font-size:clamp(1.13rem,2.1vw,1.65rem);font-weight:850;letter-spacing:-.035em;color:#1b404c;line-height:1.2;overflow-wrap:anywhere}
+.pat-scenario-value small{display:block;font-size:.69rem;letter-spacing:0;font-weight:550;color:#758992;margin-top:5px}
+.pat-scenario p{font-size:.75rem;line-height:1.5;color:#67808b;min-height:2em;margin:13px 0 0}
+.pat-scenario-details{margin-top:15px;border-top:1px solid #dfe9ec;padding-top:7px}
+.pat-scenario-details div{display:flex;align-items:baseline;justify-content:space-between;gap:10px;border-bottom:1px solid #ebf0f2;padding:8px 0}
+.pat-scenario-details div:last-child{border-bottom:0}
+.pat-scenario-details span{font-size:.73rem;line-height:1.4;color:#67818c}
+.pat-scenario-details b{font-size:.79rem;text-align:right;overflow-wrap:anywhere;color:#224654;white-space:nowrap}
+.pat-cash-shortfall{margin-top:12px;color:#7b603d;font-size:.76rem;line-height:1.5}
+.pat-cash-shortfall strong{display:block}
+.pat-outcome{border-top:1px solid #dce7ea;margin:20px 0 0;padding-top:15px;font-size:.84rem;line-height:1.6;color:#234655}
+.pat-outcome strong{font-weight:820}
+.pat-outcome span{display:block;margin-top:6px;color:#778a95;font-size:.79rem}
+.pat-chartwrap,.pat-comparison-table{margin-top:23px;border-top:1px solid #e0e8ec;padding-top:19px;min-width:0}
+.pat-chart-head h4,.pat-comparison-table h4{font-size:1rem;margin:0 0 6px;color:#1a3e4c}
+.pat-chart-head p{font-size:.77rem;line-height:1.5;color:#738692;margin:0}
+.pat-chart-legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin:15px 0 5px}
+.pat-chart-legend span{display:flex;gap:6px;align-items:center;font-size:.7rem;font-weight:710;color:#466571}
+.pat-legend{display:inline-block;width:17px;height:4px;border-radius:4px}
+.pat-legend--invest{background:#4175ad}
+.pat-legend--cash{background:#658a68}
+.pat-legend--lever{background:#9a6eab}
+.pat-chart-scroll,.pat-table-scroll{overflow-x:auto;max-width:100%;overscroll-behavior-x:contain}
+.pat-chart-svg{display:block;width:100%;min-width:490px;height:auto}
+.pat-gridline{stroke:#dae4e9;stroke-width:1;stroke-dasharray:3 5}
+.pat-chart-label{fill:#77909a;font-size:12px;font-weight:650}
+.pat-line{stroke-width:3.4;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.pat-line--invest{stroke:#4175ad}
+.pat-line--cash{stroke:#658a68}
+.pat-line--lever{stroke:#9a6eab}
+.pat-dot--invest{fill:#4175ad}.pat-dot--cash{fill:#658a68}.pat-dot--lever{fill:#9a6eab}
+.pat-comparison-table table{min-width:690px;width:100%;border-collapse:collapse;font-size:.78rem}
+.pat-comparison-table thead{background:#eff5f7;color:#244b59}
+.pat-comparison-table th,.pat-comparison-table td{text-align:right;vertical-align:top;padding:11px 9px;border-bottom:1px solid #e5ecef;line-height:1.5}
+.pat-comparison-table th:first-child,.pat-comparison-table td:first-child{text-align:left}
+.pat-comparison-table tbody th{color:#617987;font-weight:700;min-width:168px}
+.pat-comparison-table th:last-child,.pat-comparison-table td:last-child{font-weight:790;color:#244b58}
+.pat-method-notice{border-top:1px solid #e1eaed;margin:20px 0;padding-top:14px;color:#718591;font-size:.77rem;line-height:1.65}
+.pat-contrast{font-weight:700;font-size:.84rem;color:#315567;line-height:1.6;margin:16px 0 19px}
+.pat-report-details{border:1px solid #dce7ea;border-radius:13px;margin-top:20px}
+.pat-report-details>summary{cursor:pointer;color:#275f70;font-size:.84rem;font-weight:770;padding:16px}
+.pat-report-inner{padding:0 15px 18px}
+.pat-report-details .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+@container (min-width: 700px){
+  .pat-scenario-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .pat-scenario{padding:13px}
+  .pat-scenario-details div{flex-wrap:wrap;gap:3px}
+  .pat-scenario-details b{width:100%;text-align:left}
+}
+@container (min-width: 990px){
+  .pat-scenario-details div{flex-wrap:nowrap;gap:8px}
+  .pat-scenario-details b{width:auto;text-align:right}
+}
+@media(max-width:980px){
+  #painel-patrimonio.pat-results-expanded .content-grid{grid-template-columns:1fr}
+  #painel-patrimonio.pat-results-expanded #form-patrimonio{display:none}
+}
+@media(max-width:600px){
+  .pat-summary-head{align-items:stretch;flex-direction:column}
+  .pat-expand-btn{align-self:flex-start}
+  .pat-scenario-value{font-size:1.45rem}
+  .pat-comparison-table table{font-size:.75rem}
+  .pat-chart-svg{min-width:490px}
+}
