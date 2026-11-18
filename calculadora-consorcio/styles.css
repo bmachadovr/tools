@@ -323,3 +323,15 @@ footer p{margin:0;max-width:620px}
   .tabs .tab:last-child{grid-column:1/-1}
   #painel-patrimonio .result-section .compare-table{table-layout:fixed}
 }
+
+/* Evolução patrimonial em tabela com rolagem horizontal somente onde necessário. */
+.pat-timeline-scroll{width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+.pat-timeline{min-width:470px;table-layout:auto}
+.pat-timeline td,.pat-timeline th{text-align:right;white-space:nowrap}
+.pat-timeline td:first-child,.pat-timeline th:first-child{text-align:left}
+.pat-timeline td:last-child strong{color:#135769}
+#painel-patrimonio .pat-timeline td:first-child{width:auto}
+@media(max-width:600px){
+  #painel-patrimonio .pat-timeline td,
+  #painel-patrimonio .pat-timeline th{font-size:.72rem;white-space:nowrap}
+}
