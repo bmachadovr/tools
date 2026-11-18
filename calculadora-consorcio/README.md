@@ -1404,3 +1404,22 @@ A função **Alavancagem patrimonial** agora exibe análise comparativa de:
 **Exclusões:** custos cartorários, impostos, vacância, custos dos investimentos, risco, reajustes reais do consórcio e diferentes regras de lance não foram modelados. Premissas de valorização pelo IPCA e rendimento ao CDI são editáveis. Não prometer contemplação ou lucro. Gerador de propostas recebe os três resultados e as ressalvas.
 
 **Casos mínimos de teste:** exemplo 100 mil capital, 100 mil carta/imóvel, 50 mil lance, 20% administração+reserva, 120 meses, contemplação hipotética no mês 1, horizonte 60, IPCA 4,69% e CDI 12,97%; capital inferior ao preço deve inviabilizar compra à vista sem impedir os demais cenários; período de análise após o fim do consórcio deve descontar VP igual a zero; alterações de taxa e aluguel devem atualizar todas as estratégias.
+
+
+### Revisão de realismo do comparador — 18/11/2026
+
+**Motivação:** após um lance com recursos próprios, a prestação mensal de um plano de consórcio pode ser reduzida. Cliente que reduz sua prestação de 1.000 para ~579,83 **não necessariamente aplica os 420,17 economizados**. O modelo anterior supunha que continuaria aportando até completar 1.000/mês, o que inflava o patrimônio.
+
+**Novo padrão:** nenhum dos três cenários recebe depósitos mensais adicionais. As aplicações iniciais rendem a taxa anual editável, sem aportes ou saques (exceto lance/complemento e receita líquida de aluguel). Na alavancagem, a renda externa paga **somente a prestação efetiva** (inicial até a contemplação hipotética, pós-lance até o fim do contrato) e o excedente não é reaplicado automaticamente.
+
+Para não esconder o custo do consórcio e tornar a comparação operacionalmente mais transparente, separar:
+- **Ativos brutos**: imóvel projetado + aplicações financeiras, sem subtração das obrigações.
+- **Valor presente das parcelas futuras**: desconto por taxa mensal equivalente ao rendimento hipotético financeiro. Não é saldo devedor para quitação.
+- **Custo de oportunidade das parcelas já pagas**: cada parcela nominal efetivamente paga com renda externa é acumulada à mesma taxa mensal até o horizonte.
+- **Posição econômica ajustada**: ativos brutos menos o valor presente das parcelas futuras menos o custo acumulado das parcelas pagas. Indicador econômico comparável, **não** patrimônio líquido contratual.
+
+Nas alternativas de aplicar integralmente e comprar à vista não presumimos aportes posteriores; caso haja aluguel, reinvestir este fluxo hipotético, explicitando que vacância e tributos não são calculados.
+
+Exemplo de lance: carta 100.000, taxa 20%, prazo 120, lance próprio 50.000 na assembleia 1 → parcela pré-lance 1.000; parcela pós-lance ~579,83 por 119 meses (regra linear ilustrativa). **Não presumir aporte adicional de 420,17.**
+
+Observação de produto: a posição econômica ajustada é um índice de oportunidade que deduz desembolsos externos; não pode ser apresentada como saldo financeiro disponível na conta do cliente ou patrimônio líquido contábil. Mostre separadamente ativos, fluxo de pagamentos e posição ajustada.
