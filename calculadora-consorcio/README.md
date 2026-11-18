@@ -1372,3 +1372,17 @@ Implementação:
 - Prestações do consórcio antes e após o lance devem ser informadas; se houver lance e faltar cronograma pós-lance, bloquear o cálculo. As parcelas futuras nominais são apresentadas como **obrigações não quitadas**, não como saldo devedor formal.
 - Modelo pressupõe que o investimento preservado não seja resgatado para pagar prestações; estas são pagas por renda externa ou aluguel, conforme a análise. Sem renda suficiente, o cenário pode não ser viável.
 - Comparar crescimento dos ativos com retorno líquido ou com a alternativa de investir 100% dos recursos fica para evolução posterior, após parametrizar saldo devedor, encargos, custos, impostos e cashflows.
+
+
+### Atualização do simulador patrimonial — 18/11/2026 (formulário e parâmetros)
+
+- Taxas de referência estáticas e **editáveis**, calculadas sobre **36 meses completos (nov/2023 a out/2026)**, com capitalização mensal e conversão geométrica para taxa anual equivalente:
+  - CDI: **12,97% a.a.**, acumulado de 36 meses de aproximadamente **44,17%**, extraído da série mensal de taxa DI SGS **4391** (BCB/B3).
+  - IPCA: **4,69% a.a.**, acumulado de 36 meses de aproximadamente **14,74%**, variações mensais do IPCA/IBGE SGS **433**.
+  - Fórmula de ambas: `((produto((1 + indice_mensal/100), 36 meses)) ** (12/36) - 1) * 100`. Não são previsões de mercado nem valorização imobiliária comprovada. Atualização requer nova coleta de dados; não chamar de indicador em tempo real.
+  - Fontes públicas: [SGS 4391](https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarGraficoPorId&hdOidSeriesSelecionadas=4391), [IPCA IBGE](https://www.ibge.gov.br/indicadores); apoio: tabelas anuais de índice mensal.
+- Grupo **Alavancagem / Consórcio**: carta, prazo, taxa de administração+reserva, prestação inicial. Todos os quatro valores precisam estar válidos para emitir a análise, mas o operador pode informar a carta mais dois dentre prazo/taxa/prestação: o terceiro é preenchido automaticamente. Modelo inicial **linear**, não contratual.
+- Lance próprio, embutido, mês de contemplação e valores pós-lance agora estão dentro de detalhes recolhidos. Se o mês estiver vazio **e houver lance**, considerar mês 1 por hipótese. **Sem lance e sem mês, exigir mês hipotético**: não afirmar aquisição automática.
+- Exemplo da primeira prestação integral: com carta 100.000, taxa total 20%, prazo 120 e lance próprio 50.000, a primeira é 1.000; abatimento linear do lance nas outras 119 produz prestação pós-lance estimada de 579,83, mantendo 119 meses pós-assembleia. Em planos reais, regras de lance e de amortização mudam o resultado; valores devem ser confrontados com demonstrativo do grupo.
+- Removidos campos de despesas de aquisição e meses de vacância, por simplificação solicitada. **Ressalva obrigatória**: despesas, tributos e meses vazios não fazem parte do cálculo; podem reduzir o saldo aplicado e a renda líquida real.
+- Estados calculados automaticamente marcados no formulário, com campos pós-lance editáveis para utilizar o demonstrativo real; não confundir valores inferidos com valores verificados.
