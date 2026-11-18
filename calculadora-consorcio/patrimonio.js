@@ -286,10 +286,14 @@
       contemplacao,horizonte,valorizacao,rendimento,aluguel
     });
     const comparaveis = [
-      ["Aporte mensal equivalente nos três cenários",fmt(comparado.budget)],
+      ["Aportes extras aos investimentos",fmt(0)+" em todos os cenários"],
+      ["Prestação original do consórcio",fmt(parcela)],
+      ["Prestação após o lance",fmt(parcelaApos)],
       ["Manter recursos integralmente investidos — posição projetada",fmt(comparado.investment)],
       ["Comprar imóvel à vista — posição projetada",comparado.cashPossible ? fmt(comparado.cash) : "Não viável com capital disponível; faltam "+fmt(comparado.shortfall)],
       ["Alavancagem — ativos brutos projetados",fmt(comparado.gross)],
+      ["Alavancagem — prestações já pagas (nominais)",fmt(comparado.paidLever)],
+      ["Alavancagem — prestações já pagas (custo acumulado)",fmt(comparado.paidLeverFV)],
       ["Alavancagem — VP estimado das parcelas futuras",fmt(comparado.pvFuture)+" (não é saldo devedor)"],
       ["Alavancagem — posição ajustada projetada",fmt(comparado.adjusted)],
       ["Diferença da alavancagem frente ao investimento",fmt(comparado.extraComparedToInvest)],
@@ -307,6 +311,7 @@
         ["Capital preservado e investido",fmt(capitalInvestido)],
         ["Ativos brutos da alavancagem",fmt(ativosFuturos)],
         ["Prestações nominais futuras (não é saldo devedor)",fmt(parcelasFuturasNominais)],
+        ["Prestações pagas — custo de oportunidade",fmt(comparado.paidLeverFV)],
         ["Aluguel / prestação",pc(cobertura)]
       ])
       + renderTimeline(timeline) + renderArguments(argumentos)
@@ -327,8 +332,8 @@
           ...comparaveis, ...rows,
           ["Conclusão contextual",contraste],
           ...argumentos.map((a,i)=>["Argumento "+(i+1),a])],
-        warnings: ["Os cenários partem do mesmo capital e de aportes mensais iguais à maior parcela do consórcio. Sobras mensais e aluguéis informados são reinvestidos.",
-          "O valor presente das parcelas futuras usa o rendimento hipotético do investimento como taxa de desconto, não é saldo devedor contratual.",
+        warnings: ["Os três cenários partem do mesmo capital, sem aportes extras. A prestação do consórcio reduz após o lance e o cliente paga apenas a parcela efetiva, com renda externa. Não presumimos reinvestimento da economia mensal. Aluguéis informados são reinvestidos.",
+          "A posição econômica ajustada deduz o custo de oportunidade das prestações efetivamente pagas, capitalizado até o horizonte, e o valor presente das parcelas futuras, ambos à taxa hipotética de investimento. Não equivale a patrimônio líquido contábil nem saldo devedor contratual.",
           ...alertas],
         example: isExample
       });
