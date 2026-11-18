@@ -66,6 +66,16 @@
     if (!(carta > 0 && preco > 0 && parcela > 0)) throw Error("Carta, preço do imóvel e parcela precisam ser maiores que zero.");
     if (embutido >= carta) throw Error("O lance embutido não pode consumir toda a carta.");
     if (proprio + embutido > carta) throw Error("A soma dos lances supera o valor da carta. Confirme as regras ou revise os valores.");
+    const temLance = proprio + embutido > 0;
+    const preencheuParcelaApos = $("a-parcela-apos").value.trim() !== "";
+    const preencheuPrazoApos = $("a-prazo-apos").value.trim() !== "";
+    if (temLance && (!preencheuParcelaApos || !preencheuPrazoApos)) {
+      throw Error("Com lance, informe a prestação e a quantidade de parcelas após abatimento, conforme o demonstrativo real. Sem esses dados, a projeção duplicaria parte do desembolso.");
+    }
+    const parcelaApos = preencheuParcelaApos ? money("a-parcela-apos") : parcela;
+    const prazoApos = preencheuPrazoApos ? integer("a-prazo-apos", 0, prazo - contemplacao) : prazo - contemplacao;
+    if (prazoApos > 0 && !(parcelaApos > 0)) throw Error("A prestação após a contemplação precisa ser positiva.");
+
 
     const creditoLiquido = carta - embutido;
     const complemento = Math.max(0, preco - creditoLiquido);
@@ -74,15 +84,15 @@
     const aluguelMedio = aluguel * (1 - vacancia / 12);
     const receitaPeriodo = aluguelMedio * mesesLocacao;
     const valorFuturo = preco * Math.pow(1 + valorizacao / 100, mesesLocacao / 12);
-    const cobertura = aluguelMedio / parcela * 100;
-    const diferencaMensal = parcela - aluguelMedio;
-    const parcelasAteHorizonte = Math.min(prazo, horizonte) * parcela;
-    const parcelasRestantes = Math.max(0, prazo - horizonte);
+    const cobertura = prazoApos > 0 ? aluguelMedio / parcelaApos * 100 : 0;
+    const diferencaMensal = prazoApos > 0 ? parcelaApos - aluguelMedio : -aluguelMedio;
+    const parcelasAteHorizonte = contemplacao * parcela + Math.min(Math.max(0,horizonte-contemplacao),prazoApos) * parcelaApos;
+    const parcelasRestantes = Math.max(0, prazoApos - Math.max(0,horizonte-contemplacao));
     const caixaPeriodo = capitalInicial + parcelasAteHorizonte - receitaPeriodo;
     const alertas = [
       "Contemplação no mês " + contemplacao + " é apenas uma hipótese. Sorteio ou lance não têm data garantida; sem contemplação não há aquisição nem aluguel nos meses estimados.",
       "Valorização e aluguel são premissas fornecidas para explorar cenários, não previsões. O valor projetado do imóvel é bruto, não representa lucro nem patrimônio líquido.",
-      "Prestações consideradas constantes, sem reajustes futuros, seguros, tributos pessoais, custo de oportunidade ou mudança contratual. Confira a proposta e faça análise de sensibilidade antes de ofertar.",
+      "Prestações antes e após contemplação são informadas pelo operador, sem projetar reajustes futuros, seguros, tributos pessoais ou custo de oportunidade. Confira o demonstrativo e faça análise de sensibilidade antes de ofertar.",
       "A soma nominal das prestações restantes não representa saldo devedor para quitação. Custos e prazos de liberação dependem do contrato e da aprovação da operação."
     ];
     if (aluguel > 0) alertas.push("O aluguel pode ser interrompido por desocupação, inadimplência ou manutenção. Mesmo sem receita, a prestação permanece exigível.");
@@ -90,10 +100,10 @@
     if (isExample) alertas.unshift("EXEMPLO FICTÍCIO. Os números são ilustrativos e não devem ser apresentados como oferta válida.");
 
     const argumentos = [
-      "Com " + fmt(capitalInicial) + " de recursos iniciais projetados (lance próprio, complemento da compra e despesas), o cenário considera um imóvel de " + fmt(preco) + ". A diferença é viabilizada por crédito com " + num(prazo) + " prestações, condicionado à contemplação e às regras do grupo.",
+      "O cenário de aquisição de imóvel de " + fmt(preco) + " exige " + fmt(capitalInicial) + " em recursos próprios para lance, eventual complemento e despesas (em momentos diferentes). O uso do crédito depende de contemplação e de aprovação contratual; haverá obrigações mensais.",
       aluguel > 0
-        ? "Se a locação ocorrer como planejado, o aluguel líquido médio ajustado por vacância de " + fmt(aluguelMedio) + "/mês cobriria " + pc(cobertura) + " da prestação de " + fmt(parcela) + "; " + (diferencaMensal >= 0 ? "seriam necessários " + fmt(diferencaMensal) + "/mês adicionais." : "haveria excedente operacional estimado de " + fmt(-diferencaMensal) + "/mês, sujeito a outros custos e impostos.")
-        : "Sem aluguel informado, a prestação de " + fmt(parcela) + " deve ser suportada integralmente com renda própria. Não há argumento de autofinanciamento por locação.",
+        ? "Se a locação ocorrer como planejado, o aluguel líquido médio ajustado por vacância de " + fmt(aluguelMedio) + "/mês cobriria " + pc(cobertura) + " da prestação pós-contemplação de " + fmt(parcelaApos) + "; " + (diferencaMensal >= 0 ? "seriam necessários " + fmt(diferencaMensal) + "/mês adicionais." : "haveria excedente operacional estimado de " + fmt(-diferencaMensal) + "/mês, sujeito a outros custos e impostos.")
+        : "Sem aluguel informado, a prestação pós-contemplação de " + fmt(parcelaApos) + " deve ser suportada com renda própria. Não há argumento de autofinanciamento por locação.",
       "Se o imóvel variar " + pc(valorizacao) + " ao ano por " + (mesesLocacao / 12).toLocaleString("pt-BR",{maximumFractionDigits:1}) + " anos após a contemplação hipotética, o valor bruto seria " + fmt(valorFuturo) + ". Isso não desconta prestações, obrigações ou custos e não equivale a ganho líquido."
     ];
     const rows = [
@@ -102,8 +112,9 @@
       ["Lance próprio / embutido", fmt(proprio) + " / " + fmt(embutido)],
       ["Crédito após lance embutido", fmt(creditoLiquido)],
       ["Complemento do preço / despesas iniciais", fmt(complemento) + " / " + fmt(custos)],
-      ["Capital próprio inicial projetado", fmt(capitalInicial)],
-      ["Parcela / prazo", fmt(parcela) + " × " + prazo + " meses"],
+      ["Recursos próprios previstos para lance e aquisição", fmt(capitalInicial)],
+      ["Parcela antes da contemplação", fmt(parcela) + " por " + contemplacao + " meses"],
+      ["Parcela após contemplação", fmt(parcelaApos) + " por " + prazoApos + " meses"],
       ["Contemplação hipotética", "Mês " + contemplacao + " — não garantido"],
       ["Horizonte da análise", horizonte + " meses desde a contratação"],
       ["Meses potenciais de locação", num(mesesLocacao)],
@@ -117,7 +128,7 @@
     ];
     $("resultado-patrimonio").innerHTML =
       '<div class="result-top"><span class="result-kicker">CENÁRIO DE FORMAÇÃO PATRIMONIAL</span><span class="status-pill">Hipóteses editáveis</span></div>'
-      + '<div class="hero-number">' + esc(fmt(capitalInicial)) + '<small>capital próprio inicial projetado para aquisição</small></div>'
+      + '<div class="hero-number">' + esc(fmt(capitalInicial)) + '<small>recursos próprios necessários para lance e aquisição</small></div>'
       + '<p class="result-copy">Imóvel de ' + esc(fmt(preco)) + ' condicionado à contemplação hipotética no mês ' + contemplacao + '. O patrimônio projetado é bruto; não significa lucro ou riqueza líquida.</p>'
       + renderMetrics([
         ["Crédito após embutido", fmt(creditoLiquido)],
@@ -144,6 +155,7 @@
     "a-carta":"300.000,00", "a-preco":"300.000,00", "a-proprio":"60.000,00",
     "a-embutido":"0,00", "a-custos":"12.000,00", "a-parcela":"2.300,00",
     "a-prazo":"180", "a-contemplacao":"18", "a-horizonte":"60",
+    "a-parcela-apos":"1.900,00", "a-prazo-apos":"162",
     "a-aluguel":"1.800,00", "a-vacancia":"1", "a-valorizacao":"3"
   };
   $("a-exemplo").addEventListener("click", () => {
