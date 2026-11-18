@@ -48,6 +48,13 @@
       + rows.map(([a,b]) => '<tr><td>' + esc(a) + '</td><td>' + esc(b) + '</td></tr>').join("")
       + '</tbody></table></div>';
   }
+  function renderTimeline(items) {
+    return '<div class="result-section"><h4>Evolução hipotética após a contemplação</h4><div class="pat-timeline-scroll">'
+      + '<table class="compare-table pat-timeline"><thead><tr><th>Momento</th><th>Imóvel</th><th>Investimento</th><th>Ativos brutos</th></tr></thead><tbody>'
+      + items.map(([label, property, invested, gross]) =>
+        '<tr><td>' + esc(label) + '</td><td>' + esc(fmt(property)) + '</td><td>' + esc(fmt(invested)) + '</td><td><strong>' + esc(fmt(gross)) + '</strong></td></tr>').join("")
+      + '</tbody></table></div><p class="hint">Valor bruto, sem deduzir saldo devedor, pagamentos, taxas, impostos ou inflação real. Taxas constantes escolhidas no cenário.</p></div>';
+  }
   function renderWarnings(warnings) {
     return warnings.map((t) => '<div class="callout warn">' + esc(t) + '</div>').join("");
   }
@@ -99,6 +106,16 @@
     const parcelasRestantes = Math.max(0, prazoApos - Math.max(0,horizonte-contemplacao));
     const caixaPeriodo = capitalUtilizado + parcelasAteHorizonte - receitaPeriodo;
     const parcelasFuturasNominais = parcelasRestantes * parcelaApos;
+    const saltoMeses = Math.max(12, Math.ceil(mesesLocacao / 120) * 12);
+    const marcos = [0];
+    for (let m = saltoMeses; m < mesesLocacao; m += saltoMeses) marcos.push(m);
+    if (mesesLocacao > 0) marcos.push(mesesLocacao);
+    const timeline = marcos.map((m) => {
+      const propriedade = preco * Math.pow(1 + valorizacao / 100, m / 12);
+      const aplicacao = capitalInvestido * Math.pow(1 + rendimento / 100, m / 12);
+      return [m === 0 ? "Contemplação" : "Após " + (m/12).toLocaleString("pt-BR",{maximumFractionDigits:1}) + " anos",
+        propriedade, aplicacao, propriedade + aplicacao];
+    });
     const alertas = [
       "Contemplação no mês " + contemplacao + " é apenas uma hipótese. Sorteio ou lance não têm data garantida; sem contemplação não há aquisição nem aluguel nos meses estimados.",
       "IPCA não mede a valorização imobiliária. Sua utilização como taxa hipotética de apreciação do imóvel é apenas ilustrativa; imóveis podem valorizar menos, ficar estáveis ou perder valor.",
@@ -159,7 +176,7 @@
         ["Prestações nominais futuras (não é saldo devedor)", fmt(parcelasFuturasNominais)],
         ["Cobertura da prestação pelo aluguel", pc(cobertura)]
       ])
-      + renderArguments(argumentos) + renderRows(rows)
+      + renderTimeline(timeline) + renderArguments(argumentos) + renderRows(rows)
       + renderWarnings(alertas)
       + '<div class="result-actions"><button type="button" class="to-offer">Gerar proposta com esta análise →</button></div>';
 
