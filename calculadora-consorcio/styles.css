@@ -404,6 +404,18 @@ footer p{margin:0;max-width:620px}
 .pat-scenario-heading{display:flex;gap:9px;align-items:center}
 .pat-scenario-heading span{font-size:.68rem;font-weight:800;color:var(--scenario-color);letter-spacing:.08em}
 .pat-scenario-heading h4{font-size:.9rem;margin:0;letter-spacing:-.015em}
+/* Seleção independente de cenários para inclusão na oferta comercial. */
+.pat-offer-selection{margin:13px 0 12px;color:#244d5c}
+.pat-offer-selection strong{font-size:.9rem;display:block}
+.pat-offer-selection p{font-size:.78rem;line-height:1.5;color:#68808d;margin:4px 0 0}
+.pat-offer-check{display:inline-flex;gap:7px;align-items:center;cursor:pointer;border:1px solid #cbdce2;border-radius:9px;padding:8px 10px;min-height:40px;background:#fff;margin-top:11px;font-size:.74rem;font-weight:730;color:#486877}
+.pat-offer-check input{width:17px;height:17px;flex:0 0 auto;accent-color:#1b7180;cursor:pointer}
+.pat-offer-check:focus-within{outline:2px solid #5f9eaa;outline-offset:2px}
+.pat-scenario.is-offer-selected{border-color:var(--scenario-color);background:#fcfefe}
+.pat-scenario.is-offer-selected .pat-offer-check{background:#eaf7f5;border-color:#9bc9c9;color:#195464}
+.pat-offer-status{font-size:.78rem;color:#547381;margin:12px 0 0}
+#resultado-patrimonio .to-offer:disabled{opacity:.5;cursor:not-allowed}
+
 .pat-scenario-value{margin-top:12px;font-size:clamp(1.13rem,2.1vw,1.65rem);font-weight:850;letter-spacing:-.035em;color:#1b404c;line-height:1.2;overflow-wrap:anywhere}
 .pat-scenario-value small{display:block;font-size:.69rem;letter-spacing:0;font-weight:550;color:#758992;margin-top:5px}
 .pat-scenario p{font-size:.75rem;line-height:1.5;color:#67808b;min-height:2em;margin:13px 0 0}
