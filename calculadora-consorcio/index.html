@@ -6,12 +6,12 @@
   <meta name="theme-color" content="#f5f7fa">
   <meta name="description" content="Compare alternativas de aquisição e explore cenários de formação patrimonial com custos e premissas transparentes.">
   <title>Calculadora de Consórcio | Central de Estratégias</title>
-  <link rel="stylesheet" href="styles.css?v=20261119-01">
+  <link rel="stylesheet" href="styles.css?v=20261119-02">
   <script src="input-masks.js?v=20261118-04" defer></script>
   <script src="compare-v2.js?v=20261119-01" defer></script>
   <script src="app.js?v=20261118-05" defer></script>
-  <script src="patrimonio-comparativo.js?v=20261118-11" defer></script>
-  <script src="patrimonio.js?v=20261118-12" defer></script>
+  <script src="patrimonio-comparativo.js?v=20261119-02" defer></script>
+  <script src="patrimonio.js?v=20261119-02" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -206,7 +206,15 @@
             <div class="fields">
               <label><span id="a-preco-label">Preço do imóvel desejado</span> <span>R$</span><input id="a-preco" inputmode="decimal" required placeholder="Ex.: 300.000,00"></label>
               <label class="pat-property-only">Aluguel mensal líquido esperado <span>R$ · após despesas usuais</span><input id="a-aluguel" inputmode="decimal" placeholder="0,00"></label>
-              <label><span id="a-valorizacao-label">Valorização hipotética do imóvel pelo IGMI-R</span> <span id="a-valorizacao-unit">% a.a. · residencial</span><input id="a-valorizacao" type="number" min="-50" max="80" step="0.01" value="8.92" required></label>
+              <label class="pat-vehicle-only" hidden>Perfil de depreciação do veículo
+                <select id="a-perfil-veiculo">
+                  <option value="novo">Zero-quilômetro — curva por idade</option>
+                  <option value="usado">Usado — curva a partir da idade atual</option>
+                  <option value="personalizado">Personalizado — percentual anual fixo</option>
+                </select>
+              </label>
+              <label id="a-idade-field" class="pat-vehicle-only" hidden>Idade do veículo na aquisição <span>anos completos</span><input id="a-idade-veiculo" type="number" min="1" max="30" step="1" value="3"></label>
+              <label id="a-rate-field" class="pat-depreciacao-detalhe"><span id="a-valorizacao-label">Valorização hipotética do imóvel pelo IGMI-R</span> <span id="a-valorizacao-unit">% a.a. · residencial</span><input id="a-valorizacao" type="number" min="-50" max="80" step="0.01" value="8.92" required></label>
               <label class="pat-property-only">Reajuste anual do aluguel pelo IGP-M <span>% a.a. · contrato de locação</span><input id="a-reajuste-aluguel" type="number" min="-50" max="50" step="0.01" value="6.30"></label>
             </div>
             <p class="hint" id="a-nota-bem"><strong>Mesma janela histórica de 10 anos (set/2016–ago/2026)</strong>. IGMI-R Brasil residencial: valorização acumulada de 134,93%, média composta de <strong>8,92% a.a.</strong> (<a href="https://www.abecip.org.br/igmi-r-abecip/serie-historica" target="_blank" rel="noopener noreferrer">ABECIP, índices ago/2016–ago/2026</a>). IGP-M: 84,18% acumulados, média composta de <strong>6,30% a.a.</strong> (<a href="https://corrigirvalor.com.br/tabela/igp-m" target="_blank" rel="noopener noreferrer">FGV IBRE / BCB, SGS 189</a>). Taxas editáveis. O aluguel reajusta anualmente após 12 meses de locação; não inclui vacância, impostos, ITBI ou cartório.</p>
