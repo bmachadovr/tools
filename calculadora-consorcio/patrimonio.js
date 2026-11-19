@@ -443,6 +443,9 @@
     const profile=$("a-perfil-veiculo").value;
     $("a-idade-field").hidden=!(vehicle&&profile==="usado");
     $("a-rate-field").hidden=vehicle&&profile!=="personalizado";
+    // Também aplica display diretamente para evitar conflitos com regras gerais de labels.
+    $("a-idade-field").style.display=$("a-idade-field").hidden?"none":"";
+    $("a-rate-field").style.display=$("a-rate-field").hidden?"none":"";
     $("a-valorizacao").required=!vehicle||profile==="personalizado";
     $("a-valorizacao").min=vehicle?"0":"-50";
     $("a-valorizacao").max=vehicle?"50":"80";
