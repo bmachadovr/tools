@@ -227,7 +227,7 @@ window.ConsorcioCompareV2 = (function () {
       ?"Imóveis: escolha Price ou SAC nos campos opcionais. Taxa anual efetiva convertida para mensal."
       :"Veículos: financiamento CDC, com prestações Price. SAC não é oferecido nesta modalidade.";
     if(!isProperty || changed)get("c-sistema").value="price";
-    document.querySelectorAll(".mode-card").forEach(el=>{
+    document.querySelectorAll("#painel-comparar .pat-mode-card").forEach(el=>{
       const selected=el.dataset.mode===mode;
       el.classList.toggle("selected",selected);
       el.setAttribute("aria-pressed",String(selected));
@@ -268,7 +268,7 @@ window.ConsorcioCompareV2 = (function () {
     autoLoan();
   }
   function init(){
-    document.querySelectorAll(".mode-card").forEach(btn=>btn.addEventListener("click",()=>setMode(btn.dataset.mode,true)));
+    document.querySelectorAll("#painel-comparar .pat-mode-card").forEach(btn=>btn.addEventListener("click",()=>setMode(btn.dataset.mode,true)));
     CORE.forEach(id=>get(id).addEventListener("input",()=>onCoreChange(id)));
     LOAN.forEach(id=>get(id).addEventListener("input",()=>onLoanChange(id)));
     get("c-carta").addEventListener("input",()=>{deriveCore();deriveNet();autoLoan();});
