@@ -191,7 +191,16 @@
     if(!post) throw Error("Informe um mês hipotético de contemplação sem lance, ou revise a composição do lance.");
     const contemplacao = post.mes;
     const horizonte = integer("a-horizonte", contemplacao, 600);
-    const valorizacao = percent("a-valorizacao", -50, 50);
+    const perfilVeiculo = veiculo ? $("a-perfil-veiculo").value : "novo";
+    const idadeVeiculo = veiculo && perfilVeiculo === "usado" ? integer("a-idade-veiculo", 1, 30) : 0;
+    const depreciacaoPersonalizada = veiculo && perfilVeiculo === "personalizado"
+      ? percent("a-valorizacao", 0, 50) : 10;
+    const valorizacao = veiculo ? -depreciacaoPersonalizada : percent("a-valorizacao", -50, 50);
+    const descricaoDepreciacao = !veiculo ? "" : perfilVeiculo === "novo"
+      ? "0 km: 15% no 1º ano, 8% do 2º ao 5º, 5% a partir do 6º"
+      : perfilVeiculo === "usado"
+      ? "usado de " + idadeVeiculo + " ano(s): 8% a.a. até 5 anos de idade, depois 5% a.a."
+      : pc(depreciacaoPersonalizada) + " a.a. fixos (personalizado)";
     const rendimento = percent("a-rendimento", -50, 50);
     const reajusteConsorcio = percent("a-reajuste-consorcio", -50, 50);
     const reajusteAluguel = veiculo?0:percent("a-reajuste-aluguel", -50, 50);
@@ -218,7 +227,9 @@
     // no fim do mês; INCC na parcela a cada 12 meses de contratação,
     // IGP-M no aluguel a cada 12 meses contados da primeira locação.
     const taxaMensal = Math.pow(1+rendimento/100,1/12)-1;
-    const taxaImovelMensal = Math.pow(1+valorizacao/100,1/12)-1;
+    if (!window.PatrimonioComparador || typeof window.PatrimonioComparador.vehicleMonthFactor !== "function")
+      throw Error("O motor da análise patrimonial não foi carregado. Atualize a página.");
+    const taxaImovelMensal = veiculo ? 0 : Math.pow(1+valorizacao/100,1/12)-1;
     const dueAt = (t) => t>contemplacao+prazoApos?0:
       (t<=contemplacao?parcela:parcelaApos)*Math.pow(1+reajusteConsorcio/100,
         veiculo&&periodicidadeVeiculo==="mensal"?(t-1)/12:Math.floor((t-1)/12));
@@ -232,7 +243,9 @@
     for(let t=1;t<=horizonte;t++){
       const prestacao=dueAt(t),rendLocacao=rentAt(t);
       saldoAplicado*=1+taxaMensal;
-      if(saldoImovel>0) saldoImovel*=1+taxaImovelMensal;
+      if(saldoImovel>0) saldoImovel*=veiculo
+        ? window.PatrimonioComparador.vehicleMonthFactor(perfilVeiculo,idadeVeiculo,depreciacaoPersonalizada,t-contemplacao)
+        : 1+taxaImovelMensal;
       if(t===contemplacao){
         saldoAplicado-=capitalUtilizado;
         saldoImovel=preco;
@@ -270,7 +283,7 @@
     });
     const alertas = [
       "Contemplação no mês " + contemplacao + " é apenas uma hipótese. Sorteio ou lance não têm data garantida; sem contemplação não há aquisição"+(veiculo?" do veículo.":" do imóvel nem aluguel nos meses estimados."),
-      veiculo?"A taxa de depreciação informada é hipótese editável, não uma média da FIPE. A variação do preço depende do modelo, ano, conservação e mercado.":"IGMI-R é índice agregado de preços residenciais e não garante valorização do imóvel específico. A taxa histórica constante não é previsão de preços futuros.",
+      veiculo?"A curva de depreciação selecionada é hipótese editável, não uma média oficial da FIPE. A variação do preço depende do modelo, ano, conservação e mercado.":"IGMI-R é índice agregado de preços residenciais e não garante valorização do imóvel específico. A taxa histórica constante não é previsão de preços futuros.",
       veiculo?"Depreciação, rendimento do investimento e reajuste contratual são hipóteses, não previsões. Ativos brutos não representam patrimônio líquido nem lucro.":"Valorização, rendimento financeiro e aluguel são premissas fornecidas, não previsões. Ativos brutos não representam patrimônio líquido, rentabilidade real ou lucro.",
       "Prestação inicial estimada linearmente. Após lance, redução ilustrativa. Reajuste por "+indiceConsorcio+" simulado "+(veiculo&&periodicidadeVeiculo==="mensal"?"mensalmente na taxa equivalente":"anualmente")+"; índice e regras efetivas dependem do contrato.",
       veiculo?"Veículo particular não gera aluguel na hipótese. Prestações são pagas do bolso; nas estratégias sem consórcio, seus valores equivalentes são aplicados mensalmente. Custos de utilização não incluídos.":"Aluguel na alavancagem abate primeiro a prestação; somente a sobra é aplicada. Nas alternativas, o aporte mensal equivale apenas ao desembolso efetivo do próprio bolso na prestação do consórcio. O IGP-M simulado reajusta o aluguel anualmente.",
@@ -288,7 +301,7 @@
         : aluguel > 0
         ? "Se a locação ocorrer como planejado, o aluguel líquido hipotético de " + fmt(aluguelMedio) + "/mês cobriria " + pc(cobertura) + " da prestação pós-contemplação de " + fmt(parcelaApos) + "; " + (diferencaMensal >= 0 ? "seriam necessários " + fmt(diferencaMensal) + "/mês adicionais." : "haveria excedente operacional estimado de " + fmt(-diferencaMensal) + "/mês, sujeito a outros custos e impostos.")
         : "Sem aluguel informado, a prestação pós-contemplação de " + fmt(parcelaApos) + " deve ser suportada com renda própria. Não há argumento de autofinanciamento por locação.",
-      "No horizonte de "+horizonte+" meses, o "+bemNome+" projetado por "+tipoIndiceBem+" de "+pc(valorizacao)+" ao ano e a aplicação hipotética de "+pc(rendimento)+" ao ano formam ativos brutos de "+fmt(ativosFuturos)+". As prestações são reajustadas por "+indiceConsorcio+" na periodicidade informada; nenhum pagamento posterior ao horizonte é antecipado."
+      "No horizonte de "+horizonte+" meses, o "+bemNome+" projetado por "+(veiculo?descricaoDepreciacao:tipoIndiceBem+" de "+pc(valorizacao)+" ao ano")+" e a aplicação hipotética de "+pc(rendimento)+" ao ano formam ativos brutos de "+fmt(ativosFuturos)+". As prestações são reajustadas por "+indiceConsorcio+" na periodicidade informada; nenhum pagamento posterior ao horizonte é antecipado."
     ];
     const rows = [
       ["Capital próprio inicial", fmt(capital)],
@@ -316,7 +329,7 @@
       ["Prestações nominais pagas até o horizonte ("+indiceConsorcio+")", fmt(parcelasAteHorizonte)],
       ["Desembolso próprio nas prestações até o horizonte", fmt(totalDoBolso)],
       ["Saída nominal de recursos próprios (lance + complemento + prestações líquidas)", fmt(caixaPeriodo)],
-      [veiculo?"Desvalorização hipotética do veículo":"Valorização hipotética do imóvel (IGMI-R)", pc(valorizacao) + " ao ano"],
+      [veiculo?"Desvalorização hipotética do veículo":"Valorização hipotética do imóvel (IGMI-R)", veiculo?descricaoDepreciacao:pc(valorizacao) + " ao ano"],
       ...(veiculo?[]:[["Reajuste anual do aluguel (IGP-M)", pc(reajusteAluguel) + " ao ano"]]),
       ["Reajuste de prestações ("+indiceConsorcio+")", pc(reajusteConsorcio) + " ao ano — "+(veiculo&&periodicidadeVeiculo==="mensal"?"mensal equivalente":"anual")],
       ["Rendimento hipotético investimento", pc(rendimento) + " ao ano"],
@@ -330,13 +343,14 @@
     const comparado = window.PatrimonioComparador.run({
       capital,preco,capitalUtilizado,capitalInvestido,parcela,parcelaApos,prazoApos,
       contemplacao,horizonte,valorizacao,rendimento,aluguel,reajusteConsorcio,reajusteAluguel,
-      tipoBem,indiceVeiculo,periodicidadeVeiculo
+      tipoBem,indiceVeiculo,periodicidadeVeiculo,
+      perfilVeiculo,idadeVeiculo,depreciacaoPersonalizada,descricaoDepreciacao
     });
     const comparaveis = [
       ["Horizonte da fotografia",horizonte+" meses"],
       ["Tipo de bem",veiculo?"Veículo":"Imóvel"],
       ["Investimentos: 90% CDI hipotético",pc(rendimento)+" a.a."],
-      [veiculo?"Veículo: depreciação hipotética":"Imóvel: IGMI-R hipotético",pc(valorizacao)+" a.a."],
+      [veiculo?"Veículo: depreciação hipotética":"Imóvel: IGMI-R hipotético",veiculo?descricaoDepreciacao:pc(valorizacao)+" a.a."],
       ["Consórcio: "+indiceConsorcio+" hipotético",pc(reajusteConsorcio)+" a.a. — "+(veiculo&&periodicidadeVeiculo==="mensal"?"mensal equivalente":"anual")],
       ...(veiculo?[]:[["Aluguéis: IGP-M hipotético",pc(reajusteAluguel)+" a.a."]]),
       ["Capital próprio inicial",fmt(capital)],
@@ -360,7 +374,7 @@
       +" e a alavancagem soma "+fmt(comparado.gross)+" em ativos brutos. O consórcio já teve "
       +fmt(comparado.paidLever)+" pagos e ainda prevê "+comparado.left
       +" prestações após o horizonte (soma nominal congelada na data "+fmt(comparado.futureNominal)
-      +"). "+(veiculo?"O veículo deprecia conforme hipótese editável e as parcelas saem integralmente do bolso.":"O aluguel abate as parcelas e os aportes alternativos correspondem só à diferença do bolso.")+" Obrigações posteriores não são descontadas dos ativos brutos, que não equivalem a patrimônio líquido." ;
+      +"). "+(veiculo?"O veículo deprecia conforme o perfil escolhido e as parcelas saem integralmente do bolso.":"O aluguel abate as parcelas e os aportes alternativos correspondem só à diferença do bolso.")+" Obrigações posteriores não são descontadas dos ativos brutos, que não equivalem a patrimônio líquido." ;
     const detalhes = '<details class="pat-report-details"><summary>Ver composição da alavancagem, premissas e memória de cálculo</summary><div class="pat-report-inner">'
       + renderMetrics([
         ["Capital próprio inicial",fmt(capital)],
@@ -392,7 +406,7 @@
           ...comparaveis, ...rows,
           ["Conclusão contextual",contraste],
           ...argumentos.map((a,i)=>["Argumento "+(i+1),a])],
-        warnings: [veiculo?"Veículo: depreciação anual hipotética editável, sem aluguel. Reajuste do consórcio por "+indiceConsorcio+" ("+(periodicidadeVeiculo==="mensal"?"mensal equivalente":"anual")+"); taxa específica contratual deve ser confirmada.":"Imóvel: IGMI-R para valorização; IGP-M reajusta o aluguel, que reduz a prestação ajustada pelo INCC-M. Só o desembolso próprio vira aporte nas alternativas.",
+        warnings: [veiculo?"Veículo: curva hipotética de depreciação por idade ou taxa personalizada, sem aluguel. Reajuste do consórcio por "+indiceConsorcio+" ("+(periodicidadeVeiculo==="mensal"?"mensal equivalente":"anual")+"); taxa específica contratual deve ser confirmada.":"Imóvel: IGMI-R para valorização; IGP-M reajusta o aluguel, que reduz a prestação ajustada pelo INCC-M. Só o desembolso próprio vira aporte nas alternativas.",
           "Prestações após o horizonte não são descontadas nem antecipadas. A soma nominal informativa pressupõe o valor vigente congelado, sem novos reajustes. Ativos brutos não representam patrimônio líquido ou valor de quitação.",
           ...alertas],
         example: isExample
@@ -407,13 +421,13 @@
   const savedModes={
     imovel:null,
     veiculo:{
-      "a-preco":"","a-valorizacao":"-10.00",
+      "a-preco":"","a-valorizacao":"10.00",
       "a-reajuste-consorcio":"4.89","a-aluguel":"0,00",
       "a-reajuste-aluguel":"6.30"
     }
   };
   const modeFieldIds=["a-preco","a-valorizacao","a-reajuste-consorcio",
-    "a-aluguel","a-reajuste-aluguel"];
+    "a-aluguel","a-reajuste-aluguel","a-perfil-veiculo","a-idade-veiculo"];
   const snapshotMode=()=>Object.fromEntries(modeFieldIds.map(id=>[id,$(id).value]));
   const vehicleIndexHint=()=>{
     const index=$("a-indice-veiculo").value;
@@ -433,7 +447,7 @@
         "a-aluguel":"0,00","a-reajuste-aluguel":"6.30"
       };
       savedModes.veiculo={
-        "a-preco":"","a-valorizacao":"-10.00","a-reajuste-consorcio":"4.89",
+        "a-preco":"","a-valorizacao":"10.00","a-reajuste-consorcio":"4.89",
         "a-aluguel":"0,00","a-reajuste-aluguel":"6.30"
       };
     } else if(previous!==mode) {
@@ -525,7 +539,7 @@
     "a-proprio":"20.000,00","a-embutido":"0,00","a-parcela":"",
     "a-prazo":"80","a-taxa":"18,00","a-contemplacao":"",
     "a-horizonte":"36","a-parcela-apos":"","a-prazo-apos":"",
-    "a-aluguel":"0,00","a-valorizacao":"-10.00","a-rendimento":"8.41",
+    "a-aluguel":"0,00","a-valorizacao":"10.00","a-rendimento":"8.41",
     "a-reajuste-consorcio":"4.89","a-reajuste-aluguel":"6.30"
   };
   ["a-carta","a-prazo","a-taxa","a-parcela"].forEach((id) => {
