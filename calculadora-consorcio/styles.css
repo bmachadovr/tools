@@ -536,6 +536,7 @@ body.pat-fullscreen-active{overflow:hidden!important}
 .pat-mode-card .mode-info small{font-size:.69rem;line-height:1.3}
 .pat-mode-card .mode-check{margin-left:auto;align-self:flex-start}
 .pat-mode-card.selected{background:#dff3f1;border-color:#73bcb4;color:#164b57;box-shadow:0 4px 13px #154b5714}
+.pat-mode-card.selected .mode-check{opacity:1}
 .pat-mode-card:hover{border-color:#6eabae;background:#e7f6f5}
 .pat-mode-card:focus-visible{outline:3px solid #93d2da;outline-offset:3px}
 #painel-patrimonio .pat-vehicle-only[hidden],
