@@ -9,6 +9,8 @@
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
     ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[c]);
   let isExample = false;
+  // Todas as alternativas seguem visíveis no estudo; esta lista controla só a oferta.
+  let offerSelection = ["invest","cash","lever"];
   // Últimos dois campos efetivamente informados pelo operador são a fonte
   // dos cálculos; o terceiro campo é derivado automaticamente.
   let coreHistory = ["a-prazo","a-taxa"];
@@ -389,16 +391,91 @@
       ])
       + renderTimeline(timeline) + renderArguments(argumentos)
       + renderRows(rows) + renderWarnings(alertas) + '</div></details>';
-    $("resultado-patrimonio").innerHTML = window.PatrimonioComparador.render(comparado)
+    $("resultado-patrimonio").innerHTML = window.PatrimonioComparador.render(comparado, offerSelection)
       + '<div class="pat-contrast">'+esc(contraste)+'</div>'
       + detalhes
-      + '<div class="result-actions"><button type="button" class="to-offer">Gerar proposta com esta análise →</button></div>';
+      + '<div class="result-actions"><button type="button" class="to-offer"'+(offerSelection.length?'':' disabled')+'>Gerar proposta com os cenários selecionados →</button></div>';
     const expandButton = $("pat-expand");
     if(expandButton && $("painel-patrimonio").classList.contains("pat-results-expanded")) {
       expandButton.textContent="Sair da tela inteira";
       expandButton.setAttribute("aria-pressed","true");
     }
 
+    const rowsForOffer = {
+      invest: {
+        title:"Manter investido",
+        rows:[
+          ["Capital aplicado inicialmente",fmt(capital)],
+          ["Aportes mensais equivalentes ao desembolso próprio projetado",fmt(comparado.aportesAlternativos)+" acumulados até o horizonte"],
+          ["Ativos financeiros no mês "+horizonte,fmt(comparado.investment)]
+        ]
+      },
+      cash: {
+        title:"Comprar à vista",
+        rows:comparado.cashPossible?[
+          ["Compra do "+bemNome+" à vista",fmt(preco)],
+          ["Recursos aplicados após a compra",fmt(Math.max(0,capital-preco))],
+          ["Valor projetado do "+bemNome+" no mês "+horizonte,fmt(comparado.scenarios[1].property)],
+          ["Aplicações no mês "+horizonte,fmt(comparado.scenarios[1].portfolio)],
+          ["Ativos brutos totais no mês "+horizonte,fmt(comparado.cash)],
+          ...(veiculo?[]:[["Aluguel recebido até o horizonte (hipótese)",fmt(comparado.rentReceivedCash)]])
+        ]:[
+          ["Viabilidade","Compra à vista inviável com os recursos atuais"],
+          ["Capital necessário para a compra",fmt(preco)],
+          ["Capital próprio informado",fmt(capital)],
+          ["Recursos adicionais necessários",fmt(comparado.shortfall)]
+        ]
+      },
+      lever: {
+        title:"Consórcio / alavancagem",
+        rows:[
+          ["Carta de crédito nominal",fmt(carta)],
+          ["Taxa de administração e fundo de reserva",pc(taxa)],
+          ["Capital próprio comprometido (lance e complemento)",fmt(capitalUtilizado)],
+          ["Lance próprio / embutido",fmt(proprio)+" / "+fmt(embutido)],
+          ["Crédito disponível após lance embutido",fmt(creditoLiquido)],
+          ["Contemplação","Hipótese no mês "+contemplacao+" — não garantida"],
+          ["Prestação inicial",fmt(parcela)],
+          ["Prestação após contemplação",fmt(parcelaApos)],
+          ["Prestações pagas até o horizonte",fmt(comparado.paidLever)],
+          ["Prestações após o horizonte",num(comparado.left)],
+          ["Soma nominal restante, com parcelas congeladas na data",fmt(comparado.futureNominal)],
+          ...(veiculo?[]:[
+            ["Aluguel utilizado para abater prestações",fmt(comparado.rentCovered)],
+            ["Excedente do aluguel aplicado",fmt(comparado.rentSurplus)]
+          ]),
+          ["Valor do "+bemNome+" no mês "+horizonte,fmt(comparado.scenarios[2].property)],
+          ["Aplicações financeiras no mês "+horizonte,fmt(comparado.scenarios[2].portfolio)],
+          ["Ativos brutos totais no mês "+horizonte,fmt(comparado.gross)]
+        ]
+      }
+    };
+    const offerData = {
+      selected:offerSelection.slice(),
+      common:[
+        ["Tipo de bem",veiculo?"Veículo":"Imóvel"],
+        ["Horizonte da projeção",horizonte+" meses"],
+        ["Capital próprio inicial",fmt(capital)],
+        ["Valor do "+bemNome+" na aquisição",fmt(preco)],
+        ["Rendimento financeiro hipotético",pc(rendimento)+" a.a. — referência de 90% CDI"],
+        [veiculo?"Depreciação hipotética":"Valorização hipotética (IGMI-R)",veiculo?descricaoDepreciacao:pc(valorizacao)+" a.a."]
+      ],
+      scenarios:rowsForOffer,
+      warnings:[
+        "Cenários hipotéticos, calculados pelas premissas informadas; valores nominais não são garantias de retorno.",
+        "Os valores exibidos são ativos brutos e não representam patrimônio líquido, lucro nem obrigação quitada.",
+        veiculo
+          ?"Depreciação ilustrativa: o valor de revenda depende do modelo, da idade, da conservação e do mercado; custos de uso não estão incluídos."
+          :"Valorização e aluguel são projeções; não estão incluídos vacância, despesas de aquisição ou custos não informados."
+      ],
+      leverWarnings:[
+        "A contemplação é uma hipótese, não uma promessa ou previsão. Lance e abatimento dependem do contrato.",
+        "Prestações futuras permanecem exigíveis. Sua soma nominal foi calculada com valores congelados no horizonte, sem novos reajustes.",
+        "O reajuste do consórcio foi projetado por "+indiceConsorcio+" ("+pc(reajusteConsorcio)+" ao ano), conforme periodicidade escolhida, e pode diferir do contrato."
+      ],
+      cashWarnings:comparado.cashPossible?[]:["A aquisição à vista não é viável com o capital próprio inicial informado."],
+      scenarioValues:Object.fromEntries(comparado.scenarios.map(c=>[c.id,{possible:c.possible,value:c.value}]))
+    };
     if (typeof window.receberAnalisePatrimonial === "function") {
       window.receberAnalisePatrimonial({
         rows: [["Estratégia", "Comparação entre investimento, compra à vista e alavancagem patrimonial"],
@@ -409,13 +486,33 @@
         warnings: [veiculo?"Veículo: curva hipotética de depreciação por idade ou taxa personalizada, sem aluguel. Reajuste do consórcio por "+indiceConsorcio+" ("+(periodicidadeVeiculo==="mensal"?"mensal equivalente":"anual")+"); taxa específica contratual deve ser confirmada.":"Imóvel: IGMI-R para valorização; IGP-M reajusta o aluguel, que reduz a prestação ajustada pelo INCC-M. Só o desembolso próprio vira aporte nas alternativas.",
           "Prestações após o horizonte não são descontadas nem antecipadas. A soma nominal informativa pressupõe o valor vigente congelado, sem novos reajustes. Ativos brutos não representam patrimônio líquido ou valor de quitação.",
           ...alertas],
-        example: isExample
+        example: isExample,
+        offer: offerData
       });
     }
   }
 
   const form = $("form-patrimonio");
   if (!form) return;
+  $("resultado-patrimonio").addEventListener("change",(event)=>{
+    const checkbox=event.target.closest('input[data-offer-scenario]');
+    if(!checkbox) return;
+    offerSelection=Array.from($("resultado-patrimonio").querySelectorAll('input[data-offer-scenario]:checked'))
+      .map(input=>input.dataset.offerScenario);
+    $("resultado-patrimonio").querySelectorAll(".pat-scenario").forEach(card=>{
+      const input=card.querySelector('input[data-offer-scenario]');
+      card.classList.toggle("is-offer-selected",!!input&&input.checked);
+    });
+    const status=$("pat-offer-status");
+    if(status)status.textContent=offerSelection.length
+      ?offerSelection.length+" cenário(s) selecionado(s) para a oferta."
+      :"Selecione pelo menos um cenário para gerar a oferta.";
+    const button=$("resultado-patrimonio").querySelector(".to-offer");
+    if(button)button.disabled=offerSelection.length===0;
+    if(typeof window.atualizarSelecaoOfertaPatrimonial==="function")
+      window.atualizarSelecaoOfertaPatrimonial(offerSelection);
+  });
+
 
   // A categoria é selecionada visualmente, sem depender do comparador principal.
   const savedModes={
@@ -616,6 +713,7 @@
   });
   form.addEventListener("reset", () => {
     isExample=false;
+    offerSelection=["invest","cash","lever"];
     $("painel-patrimonio").classList.remove("pat-results-expanded");
     document.body.classList.remove("pat-fullscreen-active");
     coreHistory=["a-prazo","a-taxa"];postManual.pay=false;postManual.term=false;
