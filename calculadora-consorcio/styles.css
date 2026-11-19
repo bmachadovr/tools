@@ -541,6 +541,7 @@ body.pat-fullscreen-active{overflow:hidden!important}
 .pat-mode-card:focus-visible{outline:3px solid #93d2da;outline-offset:3px}
 #painel-patrimonio .pat-vehicle-only[hidden],
 #painel-patrimonio .pat-property-only[hidden]{display:none!important}
+#painel-patrimonio .pat-depreciacao-detalhe[hidden]{display:none!important}
 @media(max-width:600px){
   .pat-mode-picker{gap:9px}
   .pat-mode-card{flex-direction:column;text-align:center;align-items:center;gap:7px;padding:10px 7px}
