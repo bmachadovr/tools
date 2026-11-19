@@ -11,15 +11,34 @@
   const round = (n) => Math.round((n+Number.EPSILON)*100)/100;
   const blank = "—";
 
+  // Curva de depreciação nominal ilustrativa: a idade conta desde a aquisição.
+  // O preço do veículo usado já considera sua idade ao iniciar a simulação.
+  function vehicleMonthFactor(profile, ageAtPurchase, customRate, monthOwned) {
+    if (!(monthOwned >= 1)) return 1;
+    const year = Math.floor((monthOwned - 1) / 12);
+    let annualLoss;
+    if (profile === "personalizado") annualLoss = customRate;
+    else if (profile === "usado") annualLoss = ageAtPurchase + year < 5 ? 8 : 5;
+    else annualLoss = year === 0 ? 15 : year < 5 ? 8 : 5;
+    return Math.pow(1 - annualLoss / 100, 1 / 12);
+  }
+
   function run(d) {
     const {capital,preco,capitalUtilizado,capitalInvestido,parcela,parcelaApos,
       prazoApos,contemplacao,horizonte,valorizacao,rendimento,aluguel,
-      reajusteConsorcio,reajusteAluguel,tipoBem="imovel",periodicidadeVeiculo="anual",indiceVeiculo="ipca"} = d;
+      reajusteConsorcio,reajusteAluguel,tipoBem="imovel",periodicidadeVeiculo="anual",indiceVeiculo="ipca",
+      perfilVeiculo="novo",idadeVeiculo=0,depreciacaoPersonalizada=10,descricaoDepreciacao=""} = d;
     const vehicle=tipoBem==="veiculo";
     const assetName=vehicle?"Veículo":"Imóvel";
     const indexName=vehicle?(indiceVeiculo==="ipca"?"IPCA":"Contrato / tabela de referência"):"INCC-M";
     if (![rendimento,valorizacao,reajusteConsorcio,reajusteAluguel]
       .every(x=>Number.isFinite(x)&&x>-100&&x<=100)) throw Error("Revise os quatro percentuais de projeção.");
+    if (vehicle && !["novo","usado","personalizado"].includes(perfilVeiculo))
+      throw Error("Selecione um perfil válido de depreciação.");
+    if (vehicle && perfilVeiculo === "usado" && (!Number.isInteger(idadeVeiculo) || idadeVeiculo < 1 || idadeVeiculo > 30))
+      throw Error("Informe a idade do veículo usado, de 1 a 30 anos.");
+    if (vehicle && perfilVeiculo === "personalizado" && !(depreciacaoPersonalizada >= 0 && depreciacaoPersonalizada <= 50))
+      throw Error("Informe uma depreciação personalizada de 0% a 50%.");
     const r=Math.pow(1+rendimento/100,1/12)-1;
     const propertyRate=Math.pow(1+valorizacao/100,1/12)-1;
     const indexInstallment=1+reajusteConsorcio/100;
@@ -71,12 +90,16 @@
       invested=invested*(1+r)+outlay;
       if(cashPossible){
         cashInvested=cashInvested*(1+r)+outlay+rentCash;
-        cashProperty*=1+propertyRate;
+        cashProperty*=vehicle
+          ? vehicleMonthFactor(perfilVeiculo,idadeVeiculo,depreciacaoPersonalizada,t)
+          : 1+propertyRate;
         rentReceivedCash+=rentCash;
       }
       // Consórcio: aluguel quita a prestação; somente a sobra é aplicada.
       leverInvested=leverInvested*(1+r);
-      if(leverProperty>0) leverProperty*=1+propertyRate;
+      if(leverProperty>0) leverProperty*=vehicle
+        ? vehicleMonthFactor(perfilVeiculo,idadeVeiculo,depreciacaoPersonalizada,t-contemplacao)
+        : 1+propertyRate;
       if(t===contemplacao){
         if(leverInvested+0.005<capitalUtilizado)
           throw Error("Na contemplação hipotética, o capital aplicado não cobre lance e complemento do imóvel.");
@@ -120,6 +143,7 @@
     return {
       scenarios,best,cashPossible,shortfall,assetName,vehicle,tipoBem,indiceVeiculo,indexName,periodicidadeVeiculo,
       r,propertyRate,reajusteConsorcio,reajusteAluguel,rendimento,valorizacao,
+      perfilVeiculo,idadeVeiculo,depreciacaoPersonalizada,descricaoDepreciacao,
       paidLever:round(paidLever),aportesAlternativos:round(apport),
       rentReceivedLeverage:round(rentReceivedLeverage),rentReceivedCash:round(rentReceivedCash),
       rentCovered:round(rentCovered),rentSurplus:round(rentSurplus),ownOutlay:round(ownOutlay),
@@ -201,7 +225,7 @@
       +'<th scope="col">Alavancagem</th></tr></thead><tbody>'
       +row("Capital próprio inicial",[money(x.initialCapital),money(x.initialCapital),money(x.initialCapital)])
       +row("Rendimento das aplicações (90% CDI)",[x.rendimento.toFixed(2)+"% a.a.",n?x.rendimento.toFixed(2)+"% a.a.":"—",x.rendimento.toFixed(2)+"% a.a."])
-      +row(x.vehicle?"Depreciação do veículo (hipótese)":"Valorização do imóvel (IGMI-R)",["—",n?x.valorizacao.toFixed(2)+"% a.a.":"—",x.valorizacao.toFixed(2)+"% a.a."])
+      +row(x.vehicle?"Depreciação do veículo (hipótese)":"Valorização do imóvel (IGMI-R)",["—",n?(x.vehicle?x.descricaoDepreciacao:x.valorizacao.toFixed(2)+"% a.a."):"—",x.vehicle?x.descricaoDepreciacao:x.valorizacao.toFixed(2)+"% a.a."])
       +row("Reajuste das prestações ("+x.indexName+")",["Base dos aportes",n?"Base dos aportes":"—",x.reajusteConsorcio.toFixed(2)+"% a.a. "+(x.vehicle&&x.periodicidadeVeiculo==="mensal"?"(mensal equivalente)":"(anual)")])
       +(x.vehicle?"":row("Reajuste anual de aluguel (IGP-M)",["—",n?x.reajusteAluguel.toFixed(2)+"% a.a.":"—",x.reajusteAluguel.toFixed(2)+"% a.a."]))
       +row("Parcela base antes da contemplação",["—","—",money(x.parcelaInicial)])
@@ -222,7 +246,7 @@
       +row("Valor nominal da parcela vigente no horizonte",["—","—",money(x.installmentAtH)])
       +row("Soma restante se parcelas ficassem congeladas",["—","—",money(x.futureNominal)])
       +'</tbody></table></div>'
-      +'<p class="hint"><strong>Metodologia:</strong> '+(x.vehicle?"Veículo particular: não existe renda de aluguel; parcelas são pagas com dinheiro próprio e seu valor equivalente é aplicado apenas nas alternativas sem consórcio. O veículo deprecia segundo a taxa anual editável; reajuste contratual editável, anual ou mensal equivalente.":"Imóvel: o aluguel abate primeiro a prestação do consórcio. O restante pago do bolso vira aporte nos cenários alternativos; a sobra do aluguel é aplicada. O aluguel é reajustado por IGP-M e a prestação por INCC-M, anualmente.")+' Nenhuma obrigação posterior ao mês escolhido é abatida dos ativos.</p></div>';
+      +'<p class="hint"><strong>Metodologia:</strong> '+(x.vehicle?"Veículo particular: não existe renda de aluguel; parcelas são pagas com dinheiro próprio e seu valor equivalente é aplicado apenas nas alternativas sem consórcio. O veículo deprecia conforme a curva selecionada ou taxa personalizada; o reajuste contratual continua editável, anual ou mensal equivalente.":"Imóvel: o aluguel abate primeiro a prestação do consórcio. O restante pago do bolso vira aporte nos cenários alternativos; a sobra do aluguel é aplicada. O aluguel é reajustado por IGP-M e a prestação por INCC-M, anualmente.")+' Nenhuma obrigação posterior ao mês escolhido é abatida dos ativos.</p></div>';
   }
   function render(x) {
     const winner=x.best.name+" ("+money(x.best.value)+")";
@@ -231,7 +255,7 @@
     return '<section class="pat-comparative" aria-label="Comparação de estratégias patrimoniais">'
       +'<div class="pat-summary-head"><div><span class="result-kicker">TRÊS CENÁRIOS • FOTOGRAFIA DO MÊS '+int(x.horizon)+'</span>'
       +'<h3>Qual será o estoque de ativos na data escolhida?</h3>'
-      +'<p>'+(x.vehicle?'Veículo com depreciação editável, investimentos a 90% do CDI e reajuste da carta conforme índice e periodicidade escolhidos.':'Imóvel com IGMI-R, investimentos a 90% do CDI, INCC-M nas parcelas e IGP-M no aluguel.')+' Todas as taxas são editáveis.</p></div>'
+      +'<p>'+(x.vehicle?'Veículo com depreciação por perfil, investimentos a 90% do CDI e reajuste da carta conforme índice e periodicidade escolhidos.':'Imóvel com IGMI-R, investimentos a 90% do CDI, INCC-M nas parcelas e IGP-M no aluguel.')+' Todas as taxas são editáveis.</p></div>'
       +'<button type="button" class="pat-expand-btn" id="pat-expand" aria-pressed="false" title="Ampliar resultado para tela inteira">Expandir tela inteira</button></div>'
       +cards(x)
       +'<div class="pat-outcome"><strong>Maior estoque de ativos brutos nesta data:</strong> '+esc(winner)
@@ -239,9 +263,9 @@
       +' prestações; se congeladas no valor vigente de '+esc(money(x.installmentAtH))
       +', somariam '+esc(money(x.futureNominal))+' (apenas informação, sem desconto). '+esc(note)+'</span></div>'
       +timeline(x)+comparison(x)
-      +'<p class="pat-method-notice">Simulação hipotética. '+(x.vehicle?'A depreciação de 10% a.a. é uma hipótese genérica editável, NÃO derivada da FIPE. A tabela FIPE só pode ser aplicada por modelo e ano, conforme dados reais. Não se consideram combustível, manutenção, IPVA, seguro, multas nem uso comercial do veículo.':'O aluguel abate a prestação; somente a diferença paga do próprio bolso vira aporte. Não inclui vacância ou despesas de aquisição.')+' Reajustes contratuais dependem das regras do grupo, e os ativos são brutos: parcelas posteriores continuam existindo, sem antecipação na fotografia.</p>'
+      +'<p class="pat-method-notice">Simulação hipotética. '+(x.vehicle?'Curva ilustrativa de depreciação (0 km: 15% no primeiro ano, 8% do segundo ao quinto e 5% a partir do sexto; usados: 8% até completar cinco anos e 5% depois), ou taxa personalizada. Não é índice oficial nem previsão da FIPE, que depende de modelo e ano. Não se consideram combustível, manutenção, IPVA, seguro, multas nem uso comercial do veículo.':'O aluguel abate a prestação; somente a diferença paga do próprio bolso vira aporte. Não inclui vacância ou despesas de aquisição.')+' Reajustes contratuais dependem das regras do grupo, e os ativos são brutos: parcelas posteriores continuam existindo, sem antecipação na fotografia.</p>'
       +'</section>';
   }
 
-  window.PatrimonioComparador={run,render};
+  window.PatrimonioComparador={run,render,vehicleMonthFactor};
 }());
