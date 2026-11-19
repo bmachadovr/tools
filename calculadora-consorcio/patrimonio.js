@@ -438,6 +438,24 @@
       'Veículo: <strong>IPCA de 4,89% a.a.</strong> como referência histórica de dez anos (set/2016–ago/2026). <a href="https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados?formato=json" target="_blank" rel="noopener noreferrer">Fonte: BCB, SGS 433</a>. O contrato pode prever tabela FIPE, preço de montadora ou outro critério. Configure periodicidade anual ou mensal equivalente.':
       'Veículo: informe a taxa anual equivalente segundo a <strong>regra do seu contrato</strong> (FIPE por modelo/ano, tabela da montadora ou índice indicado). Não existe uma taxa FIPE universal; confirme a base e a periodicidade do grupo.';
   };
+  function syncVehicleProfile() {
+    const vehicle=$("a-tipo-bem").value==="veiculo";
+    const profile=$("a-perfil-veiculo").value;
+    $("a-idade-field").hidden=!(vehicle&&profile==="usado");
+    $("a-rate-field").hidden=vehicle&&profile!=="personalizado";
+    $("a-valorizacao").required=!vehicle||profile==="personalizado";
+    $("a-valorizacao").min=vehicle?"0":"-50";
+    $("a-valorizacao").max=vehicle?"50":"80";
+    if(vehicle) {
+      const scenario=profile==="novo"
+        ? "0 km: <strong>15% no primeiro ano, 8% entre o 2º e o 5º, e 5% a partir do 6º.</strong>"
+        :profile==="usado"
+        ? "Usado: <strong>8% ao ano até completar 5 anos de idade, e 5% depois</strong>, considerando a idade informada."
+        : "Personalizado: <strong>taxa anual fixa de depreciação informada por você</strong>, com sinal positivo.";
+      $("a-nota-bem").innerHTML=scenario+
+        ' Curvas ilustrativas, não índices históricos oficiais. <a href="https://veiculos.fipe.org.br/" target="_blank" rel="noopener noreferrer">Tabela FIPE</a> permite consultar o valor de cada modelo/ano. Despesas de uso, documentação e revenda não incluídas.';
+    }
+  }
   function setAssetMode(mode, options={}) {
     if(!["imovel","veiculo"].includes(mode))return;
     const previous=$("a-tipo-bem").value;
@@ -469,20 +487,21 @@
     $("patrimonio-grupo-imovel").textContent=vehicle?"Veículo e depreciação":"Imóvel e renda";
     $("a-preco-label").textContent=vehicle?"Preço do veículo desejado":"Preço do imóvel desejado";
     $("a-valorizacao-label").textContent=vehicle?
-      "Variação anual do valor do veículo":"Valorização hipotética do imóvel pelo IGMI-R";
-    $("a-valorizacao-unit").textContent=vehicle?"% a.a. · use negativo para depreciação":"% a.a. · residencial";
+      "Desvalorização anual personalizada do veículo":"Valorização hipotética do imóvel pelo IGMI-R";
+    $("a-valorizacao-unit").textContent=vehicle?"% a.a. · use percentual positivo":"% a.a. · residencial";
     $("a-bem-descricao").textContent=vehicle?
-      "Defina o valor do veículo e quanto espera que ele perca por ano, sem atribuir renda de aluguel.":
+      "Defina o preço e escolha uma curva de depreciação ou uma taxa personalizada, sem renda de aluguel.":
       "Defina o preço do imóvel e as hipóteses opcionais de locação e valorização.";
     $("a-tipo-nota").textContent=vehicle?
-      "Veículo de uso particular: depreciação editável, sem aluguel e reajuste do consórcio conforme contrato.":
+      "Veículo particular: curva de depreciação por idade, sem aluguel, e reajuste contratual do consórcio independente.":
       "Imóvel: IGMI-R para valorização, INCC-M para reajuste do consórcio e IGP-M para aluguel.";
     $("a-nota-bem").innerHTML=vehicle?
-      '<strong>Depreciação ilustrativa de −10% a.a.</strong> (valor negativo e editável). Não é um índice histórico FIPE; os valores reais dependem do modelo, ano, km e mercado. <a href="https://veiculos.fipe.org.br/" target="_blank" rel="noopener noreferrer">Tabela FIPE</a> é uma referência por veículo específico. Não são considerados combustível, manutenção, seguro, IPVA, licenciamento ou revenda com impostos.':
+      '<strong>Curva de depreciação ilustrativa</strong> por perfil de veículo. Os valores reais dependem do modelo, ano, conservação e mercado.':
       '<strong>Janela histórica de 10 anos (set/2016–ago/2026)</strong>. IGMI-R Brasil: <strong>8,92% a.a.</strong> (<a href="https://www.abecip.org.br/igmi-r-abecip/serie-historica" target="_blank" rel="noopener noreferrer">ABECIP</a>); IGP-M: <strong>6,30% a.a.</strong> (<a href="https://corrigirvalor.com.br/tabela/igp-m" target="_blank" rel="noopener noreferrer">FGV/BCB</a>). Taxas editáveis; sem custos e vacância.';
     $("a-nota-horizonte").innerHTML=vehicle?
       "Fotografia até o mês informado: no consórcio, paga-se a prestação do próprio bolso. Nas alternativas, investe-se esse mesmo valor. O veículo deprecia até o horizonte; reajuste conforme índice e periodicidade escolhidos. Obrigações posteriores são mostradas separadamente, sem serem descontadas dos ativos brutos.":
       "Fotografia até o mês informado. O aluguel <strong>abate primeiro a prestação</strong>; nas alternativas, investe-se somente a diferença do bolso. Sobras de aluguel são aplicadas no consórcio, com IGP-M no aluguel e INCC-M nas parcelas. Obrigações posteriores são apenas informativas.";
+    syncVehicleProfile();
     if(vehicle)vehicleIndexHint();
     else{
       $("a-reajuste-consorcio-label").textContent="Reajuste do consórcio pelo INCC-M";
@@ -505,6 +524,8 @@
       vehicleIndexHint();
     }
   });
+  $("a-perfil-veiculo").addEventListener("change",syncVehicleProfile);
+  $("a-idade-veiculo").addEventListener("input",syncVehicleProfile);
   setAssetMode("imovel",{keepResult:true});
 
   $("painel-patrimonio").addEventListener("click",(e)=>{
@@ -540,7 +561,8 @@
     "a-prazo":"80","a-taxa":"18,00","a-contemplacao":"",
     "a-horizonte":"36","a-parcela-apos":"","a-prazo-apos":"",
     "a-aluguel":"0,00","a-valorizacao":"10.00","a-rendimento":"8.41",
-    "a-reajuste-consorcio":"4.89","a-reajuste-aluguel":"6.30"
+    "a-reajuste-consorcio":"4.89","a-reajuste-aluguel":"6.30",
+    "a-perfil-veiculo":"novo","a-idade-veiculo":"3"
   };
   ["a-carta","a-prazo","a-taxa","a-parcela"].forEach((id) => {
     $(id).addEventListener("input",()=>{
@@ -571,6 +593,7 @@
     const ex=isVehicle?vehicleExample:example;
     if(isVehicle){$("a-indice-veiculo").value="ipca";$("a-periodicidade-veiculo").value="anual";vehicleIndexHint();}
     for (const [id,value] of Object.entries(ex)) $(id).value=value;
+    syncVehicleProfile();
     savedModes[$("a-tipo-bem").value]=snapshotMode();
     if (window.ConsorcioMasks) window.ConsorcioMasks.formatAll();
     coreHistory=["a-prazo","a-taxa"];
