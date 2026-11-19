@@ -18,16 +18,6 @@
   <header class="hero">
     <div class="hero-top"><a class="back" href="../">← Todas as ferramentas</a><span class="eyebrow">SIMULAÇÃO E PLANEJAMENTO</span></div>
     <div class="hero-main"><div><h1>Calculadora de <span>Consórcio</span></h1><p>Compare alternativas, avalie estratégias de formação patrimonial e prepare propostas. Sem cadastro, direto no navegador.</p></div><div class="hero-mark" aria-hidden="true"><span>01</span><span>02</span><span>03</span></div></div>
-    <div class="mode-picker" role="group" aria-label="Escolha a modalidade para comparar">
-      <button type="button" class="mode-card selected" data-mode="veiculos" aria-pressed="true">
-        <span class="mode-art" aria-hidden="true"><svg viewBox="0 0 180 104" role="img"><defs><linearGradient id="carPaint" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d4f5ee"/><stop offset="1" stop-color="#8ed3cf"/></linearGradient></defs><path d="M17 73l12-24c3-7 9-11 17-11h68c8 0 15 4 19 11l11 17 16 5c6 2 9 6 9 12v3H11v-6c0-5 2-7 6-7z" fill="url(#carPaint)"/><path d="M43 43h69c6 0 10 2 13 7l9 14H32z" fill="#1d5061"/><path d="M87 44v19" stroke="#a7e4e1" stroke-width="3"/><path d="M19 75h147" stroke="#ffffff" stroke-width="3" opacity=".5"/><circle cx="43" cy="86" r="12" fill="#0b2e3f" stroke="#b6ebdf" stroke-width="5"/><circle cx="136" cy="86" r="12" fill="#0b2e3f" stroke="#b6ebdf" stroke-width="5"/><path d="M16 64h15" stroke="#d9f6eb" stroke-width="4" stroke-linecap="round"/></svg></span>
-        <span class="mode-info"><strong>Veículos</strong><small>Financiamento com taxa mensal</small></span><span class="mode-check" aria-hidden="true">✓</span>
-      </button>
-      <button type="button" class="mode-card" data-mode="imoveis" aria-pressed="false">
-        <span class="mode-art" aria-hidden="true"><svg viewBox="0 0 180 104" role="img"><defs><linearGradient id="homePaint" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#d4f5ee"/><stop offset="1" stop-color="#8ed3cf"/></linearGradient></defs><path d="M26 52L87 12l64 40v44H26z" fill="url(#homePaint)"/><path d="M19 54l68-45 71 45" fill="none" stroke="#f3fffc" stroke-linecap="round" stroke-linejoin="round" stroke-width="7"/><rect x="76" y="62" width="27" height="34" rx="3" fill="#174a59"/><rect x="39" y="61" width="25" height="20" rx="3" fill="#2b7d8c"/><rect x="116" y="61" width="24" height="20" rx="3" fill="#2b7d8c"/><path d="M18 97h145" stroke="#ffffff99" stroke-width="3" stroke-linecap="round"/></svg></span>
-        <span class="mode-info"><strong>Imóveis</strong><small>Financiamento com taxa anual</small></span><span class="mode-check" aria-hidden="true">✓</span>
-      </button>
-    </div>
   </header>
   <nav class="tabs" role="tablist" aria-label="Funcionalidades da calculadora">
     <button class="tab active" id="tab-comparar" role="tab" aria-selected="true" aria-controls="painel-comparar" data-tab="comparar"><span class="tab-num">01</span> Comparar alternativas</button>
@@ -38,7 +28,24 @@
     <section class="panel active" id="painel-comparar" role="tabpanel" aria-labelledby="tab-comparar">
       <div class="panel-head"><div><span class="section-kicker">ANÁLISE FINANCEIRA</span><h2>Consórcio ou financiamento?</h2><p>Compare prestações e desembolsos com base nas condições atuais. Se houver lance, a simulação considera a assembleia seguinte e a primeira prestação integral.</p></div><div class="panel-tools"><button type="button" class="example" data-example="comparar">Preencher exemplo</button><button type="reset" form="form-comparar" class="example" aria-label="Limpar todos os dados da comparação">Limpar</button></div></div>
       <div class="content-grid"><form id="form-comparar" class="form-card" autocomplete="off" novalidate>
-        <div class="how"><strong>Como usar</strong><p>Escolha <b>Veículos</b> ou <b>Imóveis</b> acima. Preencha primeiro o bloco <b>Consórcio</b> (carta e dois entre prazo, taxa total e parcela); depois o bloco <b>Financiamento</b> (três entre entrada, juros, prazo e parcela). A entrada do financiamento equivale ao lance próprio. Os detalhes opcionais ficam dentro de cada produto.</p></div>
+        <div class="how"><strong>Como usar</strong><p>Escolha <b>Veículos</b> ou <b>Imóveis</b> abaixo. Preencha primeiro o bloco <b>Consórcio</b> (carta e dois entre prazo, taxa total e parcela); depois o bloco <b>Financiamento</b> (três entre entrada, juros, prazo e parcela). A entrada do financiamento equivale ao lance próprio. Os detalhes opcionais ficam dentro de cada produto.</p></div>
+          <div class="pat-asset-picker">
+            <strong class="pat-picker-label" id="c-tipo-titulo">O que você quer comparar?</strong>
+
+            <div class="pat-mode-picker" role="group" aria-labelledby="c-tipo-titulo">
+              <button type="button" class="pat-mode-card selected" data-mode="veiculos" aria-pressed="true">
+                <span class="mode-art" aria-hidden="true"><svg viewBox="0 0 180 104" role="img"><defs><linearGradient id="cmpCarPaint" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d4f5ee"/><stop offset="1" stop-color="#8ed3cf"/></linearGradient></defs><path d="M17 73l12-24c3-7 9-11 17-11h68c8 0 15 4 19 11l11 17 16 5c6 2 9 6 9 12v3H11v-6c0-5 2-7 6-7z" fill="url(#cmpCarPaint)"/><path d="M43 43h69c6 0 10 2 13 7l9 14H32z" fill="#1d5061"/><path d="M87 44v19" stroke="#a7e4e1" stroke-width="3"/><path d="M19 75h147" stroke="#ffffff" stroke-width="3" opacity=".5"/><circle cx="43" cy="86" r="12" fill="#0b2e3f" stroke="#b6ebdf" stroke-width="5"/><circle cx="136" cy="86" r="12" fill="#0b2e3f" stroke="#b6ebdf" stroke-width="5"/><path d="M16 64h15" stroke="#d9f6eb" stroke-width="4" stroke-linecap="round"/></svg></span>
+                <span class="mode-info"><strong>Veículo</strong><small>Financiamento CDC / Price</small></span>
+                <span class="mode-check" aria-hidden="true">✓</span>
+              </button>
+              <button type="button" class="pat-mode-card" data-mode="imoveis" aria-pressed="false">
+                <span class="mode-art" aria-hidden="true"><svg viewBox="0 0 180 104" role="img"><defs><linearGradient id="cmpHomePaint" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#d4f5ee"/><stop offset="1" stop-color="#8ed3cf"/></linearGradient></defs><path d="M26 52L87 12l64 40v44H26z" fill="url(#cmpHomePaint)"/><path d="M19 54l68-45 71 45" fill="none" stroke="#f3fffc" stroke-linecap="round" stroke-linejoin="round" stroke-width="7"/><rect x="76" y="62" width="27" height="34" rx="3" fill="#174a59"/><rect x="39" y="61" width="25" height="20" rx="3" fill="#2b7d8c"/><rect x="116" y="61" width="24" height="20" rx="3" fill="#2b7d8c"/><path d="M18 97h145" stroke="#ffffff99" stroke-width="3" stroke-linecap="round"/></svg></span>
+                <span class="mode-info"><strong>Imóvel</strong><small>Financiamento SAC / Price</small></span>
+                <span class="mode-check" aria-hidden="true">✓</span>
+              </button>
+            </div>
+            <p class="hint" id="c-tipo-nota">Veículos: financiamento CDC / Price, com juros mensais. Imóveis: financiamento SAC ou Price, com juros anuais.</p>
+          </div>
         <section class="product-group product-group--consorcio" aria-labelledby="comparar-grupo-consorcio">
           <div class="product-heading"><div class="product-step" aria-hidden="true">01</div><div class="product-heading-copy"><span class="product-label">PRODUTO 1</span><h3 id="comparar-grupo-consorcio">Consórcio</h3><p>Informe o valor da carta e as condições do plano. Os lances, reajustes e custos adicionais ficam neste mesmo grupo.</p></div></div>
           <div class="form-section"><h3>Crédito de referência</h3><div class="fields">
