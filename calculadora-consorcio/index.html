@@ -184,12 +184,8 @@
               <label>Taxa de administração + fundo de reserva <span>% total</span><input id="a-taxa" inputmode="decimal" required placeholder="Ex.: 20,00"></label>
               <label>Parcela antes da contemplação <span>R$</span><input id="a-parcela" inputmode="decimal" required placeholder="Calculada automaticamente"></label>
             </div>
-            <div class="fields"><label><span id="a-reajuste-consorcio-label">Reajuste do consórcio pelo INCC-M</span> <span>% a.a. · hipótese editável</span><input id="a-reajuste-consorcio" type="number" min="-50" max="50" step="0.01" value="6.63"></label></div>
-            <div class="fields pat-vehicle-only" hidden><label>Referência de reajuste da carta <select id="a-indice-veiculo"><option value="ipca">IPCA — média histórica de 10 anos</option><option value="contrato">FIPE / montadora / contrato — valor manual</option></select></label><label>Periodicidade do reajuste <select id="a-periodicidade-veiculo"><option value="anual">Anual</option><option value="mensal">Mensal (taxa anual equivalente)</option></select></label></div>
-            <p class="hint" id="a-nota-reajuste">Referência editável de <strong>10 anos (set/2016–ago/2026)</strong>: INCC-M acumulado ≈ 89,99%, média composta de <strong>6,63% a.a.</strong> <a href="https://corrigirvalor.com.br/tabela/incc-m" target="_blank" rel="noopener noreferrer">Fonte: FGV IBRE / BCB (SGS 7456)</a>. Na projeção, reajuste anual no mês 13, 25, ...; não recalcula o crédito já liberado. Índice e regra real dependem do contrato.</p>
-            <p class="calc-status" id="a-core-status" role="status" aria-live="polite">Preencha a carta e mais dois valores entre prazo, taxa total e prestação; o terceiro será calculado.</p>
             <details class="finance-advanced" id="a-avancado">
-              <summary>Lances e contemplação <span>opcional · toque para expandir</span></summary>
+              <summary>Lances, contemplação e reajustes <span>opcional · toque para expandir</span></summary>
               <div class="fields advanced-fields">
                 <label>Lance com recursos próprios <span>R$</span><input id="a-proprio" inputmode="decimal" placeholder="0,00"></label>
                 <label>Lance embutido <span>R$</span><input id="a-embutido" inputmode="decimal" placeholder="0,00"></label>
@@ -197,9 +193,13 @@
                 <label>Parcela após contemplação <span>R$ · calculada se houver lance</span><input id="a-parcela-apos" inputmode="decimal" placeholder="Calculada como hipótese"></label>
                 <label>Prestações pós-contemplação <span>meses · estimadas se houver lance</span><input id="a-prazo-apos" type="number" min="0" max="600" placeholder="Calculado automaticamente"></label>
               </div>
+              <div class="fields advanced-fields"><label><span id="a-reajuste-consorcio-label">Reajuste do consórcio pelo INCC-M</span> <span>% a.a. · hipótese editável</span><input id="a-reajuste-consorcio" type="number" min="-50" max="50" step="0.01" value="6.63"></label></div>
+              <div class="fields advanced-fields pat-vehicle-only" hidden><label>Referência de reajuste da carta <select id="a-indice-veiculo"><option value="ipca">IPCA — média histórica de 10 anos</option><option value="contrato">FIPE / montadora / contrato — valor manual</option></select></label><label>Periodicidade do reajuste <select id="a-periodicidade-veiculo"><option value="anual">Anual</option><option value="mensal">Mensal (taxa anual equivalente)</option></select></label></div>
+              <p class="hint" id="a-nota-reajuste">Referência editável de <strong>10 anos (set/2016–ago/2026)</strong>: INCC-M acumulado ≈ 89,99%, média composta de <strong>6,63% a.a.</strong> <a href="https://corrigirvalor.com.br/tabela/incc-m" target="_blank" rel="noopener noreferrer">Fonte: FGV IBRE / BCB (SGS 7456)</a>. Na projeção, reajuste anual no mês 13, 25, ...; não recalcula o crédito já liberado. Índice e regra real dependem do contrato.</p>
               <p class="calc-status" id="a-post-status" role="status" aria-live="polite">Com lance, a projeção considera o mês 1 se não indicar outro. A primeira prestação é integral; o lance é distribuído linearmente pelas parcelas seguintes, mantendo o prazo.</p>
               <p class="hint">As taxas e prestações do plano podem ser não lineares; a regra de abatimento depende do contrato. Você pode substituir os números estimados pelos valores do demonstrativo da administradora. Nenhuma hipótese garante contemplação.</p>
             </details>
+            <p class="calc-status" id="a-core-status" role="status" aria-live="polite">Preencha a carta e mais dois valores entre prazo, taxa total e prestação; o terceiro será calculado.</p>
           </section>
           <section class="product-group product-group--imovel" aria-labelledby="patrimonio-grupo-imovel">
             <div class="product-heading"><div class="product-step" aria-hidden="true">03</div><div class="product-heading-copy"><span class="product-label">ATIVO PATRIMONIAL</span><h3 id="patrimonio-grupo-imovel">Imóvel e renda</h3><p id="a-bem-descricao">Defina o preço do imóvel e as hipóteses opcionais de locação e valorização.</p></div></div>
