@@ -163,12 +163,18 @@
     return '<div class="pat-smallmetric"><span>'+esc(label)+'</span><strong>'+esc(number)+'</strong>'
       +(sub?'<small>'+esc(sub)+'</small>':'')+'</div>';
   }
-  function cards(x) {
-    return '<div class="pat-scenario-grid">'
+  function cards(x, selected) {
+    return '<div class="pat-offer-selection"><strong>Quais cenários incluir na oferta?</strong>'
+      +'<p>Marque os cartões desejados. O comparativo completo permanece nesta análise.</p></div>'
+      +'<div class="pat-scenario-grid">'
       +x.scenarios.map((s,i)=>{
         const mark=["01","02","03"][i];
-        return '<article class="pat-scenario pat-scenario--'+s.id+'">'
+        const isSelected=selected.includes(s.id);
+        return '<article class="pat-scenario pat-scenario--'+s.id+(isSelected?' is-offer-selected':'')+'">'
           +'<div class="pat-scenario-heading"><span>'+mark+'</span><h4>'+esc(s.name)+'</h4></div>'
+          +'<label class="pat-offer-check"><input type="checkbox" data-offer-scenario="'+s.id+'"'
+          +(isSelected?' checked':'')+' aria-label="Incluir '+esc(s.name)+' na oferta">'
+          +'<span>Na oferta</span></label>'
           +'<div class="pat-scenario-value">'+(s.possible?esc(money(s.value)):"Não viável")
           +'<small>'+(s.possible?'ativos brutos no horizonte escolhido':'capital próprio insuficiente')+'</small></div>'
           +'<p>'+esc(s.subtitle)+'</p>'
@@ -248,7 +254,7 @@
       +'</tbody></table></div>'
       +'<p class="hint"><strong>Metodologia:</strong> '+(x.vehicle?"Veículo particular: não existe renda de aluguel; parcelas são pagas com dinheiro próprio e seu valor equivalente é aplicado apenas nas alternativas sem consórcio. O veículo deprecia conforme a curva selecionada ou taxa personalizada; o reajuste contratual continua editável, anual ou mensal equivalente.":"Imóvel: o aluguel abate primeiro a prestação do consórcio. O restante pago do bolso vira aporte nos cenários alternativos; a sobra do aluguel é aplicada. O aluguel é reajustado por IGP-M e a prestação por INCC-M, anualmente.")+' Nenhuma obrigação posterior ao mês escolhido é abatida dos ativos.</p></div>';
   }
-  function render(x) {
+  function render(x, selected=["invest","cash","lever"]) {
     const winner=x.best.name+" ("+money(x.best.value)+")";
     const note=x.cashPossible?"Os três cenários são possíveis com o capital inicial informado.":
       "Compra à vista inviável com o capital informado: faltam "+money(x.shortfall)+".";
@@ -257,7 +263,10 @@
       +'<h3>Qual será o estoque de ativos na data escolhida?</h3>'
       +'<p>'+(x.vehicle?'Veículo com depreciação por perfil, investimentos a 90% do CDI e reajuste da carta conforme índice e periodicidade escolhidos.':'Imóvel com IGMI-R, investimentos a 90% do CDI, INCC-M nas parcelas e IGP-M no aluguel.')+' Todas as taxas são editáveis.</p></div>'
       +'<button type="button" class="pat-expand-btn" id="pat-expand" aria-pressed="false" title="Ampliar resultado para tela inteira">Expandir tela inteira</button></div>'
-      +cards(x)
+      +cards(x, selected)
+      +'<p class="pat-offer-status" id="pat-offer-status" role="status">'
+      +(selected.length?int(selected.length)+' cenário(s) selecionado(s) para a oferta.':'Selecione pelo menos um cenário para gerar a oferta.')
+      +'</p>'
       +'<div class="pat-outcome"><strong>Maior estoque de ativos brutos nesta data:</strong> '+esc(winner)
       +'<span>Essa classificação NÃO mede patrimônio líquido ou o resultado da quitação. Na alavancagem restam '+esc(int(x.left))
       +' prestações; se congeladas no valor vigente de '+esc(money(x.installmentAtH))
