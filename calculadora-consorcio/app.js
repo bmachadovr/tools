@@ -99,8 +99,15 @@
     if (!analysis) {
       if (lastAnalysis && lastAnalysis.kind === "patrimonio") lastAnalysis = null;
     } else {
-      lastAnalysis = {kind:"patrimonio", rows:analysis.rows, warnings:analysis.warnings, example:!!analysis.example};
+      lastAnalysis = {kind:"patrimonio", rows:analysis.rows, warnings:analysis.warnings, example:!!analysis.example, offer:analysis.offer||null};
     }
+    renderOffer();
+  };
+  // Mudanças de seleção afetam somente a oferta, sem recalcular ou ocultar o estudo.
+  window.atualizarSelecaoOfertaPatrimonial = (ids) => {
+    if (!lastAnalysis || lastAnalysis.kind!=="patrimonio" || !lastAnalysis.offer) return;
+    const allowed=["invest","cash","lever"];
+    lastAnalysis.offer.selected=allowed.filter(id=>ids.includes(id));
     renderOffer();
   };
   function explain(sectionTitle, contents) {
@@ -403,8 +410,45 @@
     ], notices.map((x) => x.text));
   }
 
+  function buildPatrimonialOfferText() {
+    const offer=lastAnalysis.offer;
+    const selected=offer.selected.filter(id=>Object.prototype.hasOwnProperty.call(offer.scenarios,id));
+    if(!selected.length) return "Selecione pelo menos um cenário nos cartões da análise patrimonial para gerar a oferta.";
+    const intro=[selected.length===1?"PROJEÇÃO PATRIMONIAL":"ANÁLISE PATRIMONIAL — CENÁRIOS SELECIONADOS",
+      "Data: "+new Date().toLocaleDateString("pt-BR")];
+    if(lastAnalysis.example)intro.unshift("EXEMPLO ILUSTRATIVO — NÃO UTILIZAR COMO OFERTA REAL");
+    const nome=$("o-nome").value.trim(), objetivo=$("o-objetivo").value.trim();
+    if(nome)intro.push("Cliente: "+nome);
+    if(objetivo)intro.push("Objetivo: "+objetivo);
+    const line=([key,value])=>key+": "+value;
+    const contents=[
+      "", "CENÁRIOS INCLUÍDOS",
+      ...selected.map(id=>"• "+offer.scenarios[id].title),
+      "", "PREMISSAS UTILIZADAS",...offer.common.map(line)
+    ];
+    selected.forEach(id=>{
+      contents.push("","CENÁRIO — "+offer.scenarios[id].title.toUpperCase(),
+        ...offer.scenarios[id].rows.map(line));
+    });
+    if(selected.length>1) {
+      const viable=selected.filter(id=>offer.scenarioValues[id]&&offer.scenarioValues[id].possible);
+      if(viable.length>1) {
+        const best=viable.reduce((a,b)=>offer.scenarioValues[a].value>=offer.scenarioValues[b].value?a:b);
+        contents.push("","Maior estoque de ativos brutos entre os cenários incluídos: "
+          +offer.scenarios[best].title+" — "
+          +money(offer.scenarioValues[best].value));
+      }
+    }
+    const warnings=[...offer.warnings,
+      ...(selected.includes("lever")?offer.leverWarnings:[]),
+      ...(selected.includes("cash")?offer.cashWarnings:[])];
+    return intro.concat(contents,["","CONDIÇÕES E RESSALVAS",
+      ...warnings.map(value=>"• "+value),"",
+      "Simulação orientativa. Não é proposta contratual e não garante contemplação. Confirme regulamento, custos, índices e condições aplicáveis."]).join("\n");
+  }
   function buildOfferText() {
     if (!lastAnalysis) return "Faça uma comparação de alternativas ou uma análise patrimonial para gerar seu resumo comercial.";
+    if (lastAnalysis.kind==="patrimonio" && lastAnalysis.offer) return buildPatrimonialOfferText();
     const nome = $("o-nome").value.trim();
     const objetivo = $("o-objetivo").value.trim();
     const title = { comparar: "COMPARAÇÃO DE ALTERNATIVAS", lances: "ESTRATÉGIA DE LANCE", propostas: "COMPARAÇÃO DE PROPOSTAS", patrimonio: "FORMAÇÃO E ALAVANCAGEM PATRIMONIAL" }[lastAnalysis.kind];
@@ -418,7 +462,7 @@
   }
   function renderOffer() {
     $("o-previa").textContent = buildOfferText();
-    const disabled = !lastAnalysis;
+    const disabled = !lastAnalysis || !!(lastAnalysis.kind==="patrimonio" && lastAnalysis.offer && !lastAnalysis.offer.selected.length);
     ["o-copiar", "o-whatsapp", "o-imprimir"].forEach((id) => { $(id).disabled = disabled; });
     $("o-whatsapp").disabled = disabled || (lastAnalysis && lastAnalysis.example);
   }
@@ -518,10 +562,10 @@
   ["o-nome", "o-objetivo"].forEach((id) => $(id).addEventListener("input", renderOffer));
   $("o-copiar").addEventListener("click", copyOffer);
   $("o-whatsapp").addEventListener("click", () => {
-    if (!lastAnalysis || lastAnalysis.example) return;
+    if (!lastAnalysis || lastAnalysis.example || (lastAnalysis.kind==="patrimonio" && lastAnalysis.offer && !lastAnalysis.offer.selected.length)) return;
     window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(buildOfferText()), "_blank", "noopener,noreferrer");
   });
-  $("o-imprimir").addEventListener("click", () => { if (lastAnalysis) window.print(); });
+  $("o-imprimir").addEventListener("click", () => { if (lastAnalysis && !(lastAnalysis.kind==="patrimonio" && lastAnalysis.offer && !lastAnalysis.offer.selected.length)) window.print(); });
   renderOffer();
   if (window.ConsorcioCompareV2) window.ConsorcioCompareV2.init();
 }());
